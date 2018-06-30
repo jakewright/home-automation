@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+    <head>
+        <title>{{ title or 'Home Automation' }}</title>
+        <style>
+            body {
+                font-family: -apple-system, sans-serif;
+                color: rgb(51, 51, 51);
+                font-size: 16px;
+                line-height: 24px;
+                width: 888px;
+                margin: 0 auto;
+            }
+
+            h1, h2, h3 {
+                border-bottom: 1px solid #eee;
+                padding-bottom: 0.3em;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                font-weight: 600;
+            }
+
+            pre {
+                padding: 16px;
+                line-height: 1.45;
+            }
+
+            pre, code {
+                font-size: 0.85rem;
+                background-color: #f7f7f7;
+                border-radius: 3px;
+            }
+
+        </style>
+    </head>
+    <body>
+        {{ content }}
+    </body>
+</html>
