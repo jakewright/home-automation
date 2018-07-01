@@ -10,6 +10,7 @@ https://stackoverflow.com/a/22508876/3105582
 
 Which OLA plugin works
 http://www.martinjhiggins.co.uk/hashtag-lighting/
+TL;DR disable `Enttec Open DMX` and `Serial USB`, enable `FTDI USB DMX`
 
 The docker image has the OLA python libraries available at
 `/usr/local/lib/python2.7/dist-packages/ola`
