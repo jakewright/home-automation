@@ -11,14 +11,14 @@ api_client = ApiClient(service)
 
 device_identifier = service.app.config['DEVICE_IDENTIFIER']
 device_name = service.app.config['DEVICE_NAME']
-
+controller_name = service.app.config['CONTROLLER_NAME']
 api_client.register_room('living-room', 'Living Room')
 
 api_client.register_device(
     device_identifier,
     device_name,
     'dmx',
-    service.app.config['CONTROLLER_NAME'],
+    controller_name,
     'living-room',
 )
 
@@ -26,9 +26,11 @@ def dmx_sent(state):
     wrapper.Stop()
 
 class Device(Resource):
-    def __init__(self, device_identifier, device_name):
+    def __init__(self, device_identifier, device_name, controller_name):
         self.identifier = device_identifier
         self.name = device_name
+        self.controller_name = controller_name
+
         self.rgb = '#000000'
         self.brightness = 0
         self.strobe = 0
@@ -40,6 +42,7 @@ class Device(Resource):
                 'identifier': self.identifier,
                 'name': self.name,
                 'type': 'dmx',
+                'controller_name': self.controller_name,
                 'available_properties': {
                     'rgb': {'type': 'rgb'},
                     'brightness': {'type': 'int', 'min': 0, 'max': 255},
@@ -105,4 +108,5 @@ class Device(Resource):
 service.api.add_resource(Device, '/device/' + device_identifier, resource_class_kwargs={
     'device_identifier': device_identifier,
     'device_name': device_name,
+    'controller_name': controller_name,
 })
