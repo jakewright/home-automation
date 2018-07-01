@@ -2,11 +2,22 @@ import array
 import re
 import sys
 
-from bootstrap import Service
+from bootstrap import ApiClient, Service
 from flask_restful import Resource, reqparse
 from ola.ClientWrapper import ClientWrapper
 
 service = Service()
+api_client = ApiClient(service)
+
+api_client.register_room('living-room', 'Living Room')
+
+api_client.register_device(
+    service.app.config['DEVICE_IDENTIFIER'],
+    service.app.config['DEVICE_NAME'],
+    'dmx',
+    service.app.config['CONTROLLER_NAME'],
+    'living-room',
+)
 
 def dmx_sent(state):
     wrapper.Stop()
