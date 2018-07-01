@@ -27,8 +27,8 @@ def dmx_sent(state):
 
 class Device(Resource):
     def __init__(self, device_identifier, device_name):
-        self.identifier = identifier
-        self.name = name
+        self.identifier = device_identifier
+        self.name = device_name
         self.rgb = '#000000'
         self.brightness = 0
         self.strobe = 0
