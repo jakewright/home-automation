@@ -22,18 +22,21 @@ api_client.register_device(
     'living-room',
 )
 
+# This is awful but store state as global variables
+rgb = '#000000'
+brightness = 0
+strobe = 0
+
 def dmx_sent(state):
     wrapper.Stop()
 
 class Device(Resource):
     def __init__(self, device_identifier, device_name, controller_name):
+        print >> sys.stderr, "INSTANTIATE"
+
         self.identifier = device_identifier
         self.name = device_name
         self.controller_name = controller_name
-
-        self.rgb = '#000000'
-        self.brightness = 0
-        self.strobe = 0
 
     def to_json(self):
         return {
@@ -49,9 +52,9 @@ class Device(Resource):
                     'strobe': {'type': 'int', 'min': 0, 'max': 240},
                 },
 
-                'rgb': self.rgb,
-                'brightness': self.brightness,
-                'strobe': self.strobe,
+                'rgb': rgb,
+                'brightness': brightness,
+                'strobe': strobe,
             }
         }
 
@@ -59,6 +62,10 @@ class Device(Resource):
         return self.to_json(), 200
 
     def patch(self):
+        global rgb
+        global brightness
+        global strobe
+
         parser = reqparse.RequestParser()
         parser.add_argument('rgb', type=unicode)
         parser.add_argument('strobe', type=int)
@@ -70,30 +77,30 @@ class Device(Resource):
         if args['rgb']:
             if not re.search(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', args['rgb']):
                 return {'error': 'Invalid hex string'}, 400
-            self.rgb = args['rgb']
+            rgb = args['rgb']
 
         if args['brightness']:
             if args['brightness'] < 0 or args['brightness'] > 255:
                 return {'error': 'Invalid brightness value'}, 400
-            self.brightness = args['brightness']
+            brightness = args['brightness']
 
         if args['strobe']:
             if args['strobe'] < 0 or args['strobe'] > 240:
                 return {'error': 'Invalid strobe value'}, 400
-            self.strobe = args['strobe']
+            strobe = args['strobe']
 
 
-        hex = self.rgb.lstrip('#')
-        rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2 ,4))
+        hex = rgb.lstrip('#')
+        rgb_parts = tuple(int(hex[i:i+2], 16) for i in (0, 2 ,4))
 
         data = array.array('B', [
-            rgb[0], # red
-            rgb[1], # green
-            rgb[2], # blue
+            rgb_parts[0], # red
+            rgb_parts[1], # green
+            rgb_parts[2], # blue
             0, # color macros
-            self.strobe + 15, # strobing/program speed
+            strobe + 15, # strobing/program speed
             0, # programs
-            self.brightness # master dimmer
+            brightness # master dimmer
         ])
 
         global wrapper
