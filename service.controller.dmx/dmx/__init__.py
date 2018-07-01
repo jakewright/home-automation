@@ -1,5 +1,6 @@
 import array
 import re
+import sys
 
 from bootstrap import Service
 from flask_restful import Resource, reqparse
@@ -7,11 +8,7 @@ from ola.ClientWrapper import ClientWrapper
 
 service = Service()
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-
-@service.app.teardown_appcontext
-def close_wrapper(exception):
+def dmx_sent(state):
     wrapper.Stop()
 
 class Device(Resource):
@@ -20,7 +17,7 @@ class Device(Resource):
         self.brightness = 0
         self.strobe = 0
 
-    def get(self):
+    def to_json(self):
         return {
             'message': 'Device',
             'data': {
@@ -37,7 +34,10 @@ class Device(Resource):
                 'brightness': self.brightness,
                 'strobe': self.strobe,
             }
-        }, 200
+        }
+
+    def get(self):
+        return self.to_json(), 200
 
     def patch(self):
         parser = reqparse.RequestParser()
@@ -48,22 +48,23 @@ class Device(Resource):
         # Parse the arguments into an object
         args = parser.parse_args()
 
-        print args['rgb']
+        if args['rgb']:
+            if not re.search(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', args['rgb']):
+                return {'error': 'Invalid hex string'}, 400
+            self.rgb = args['rgb']
 
-        if not re.search(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', args['rgb']):
-            return {'error': 'Invalid hex string'}, 400
+        if args['brightness']:
+            if args['brightness'] < 0 or args['brightness'] > 255:
+                return {'error': 'Invalid brightness value'}, 400
+            self.brightness = args['brightness']
 
-        if args['brightness'] < 0 or args['brightness'] > 255:
-            return {'error': 'Invalid brightness value'}, 400
+        if args['strobe']:
+            if args['strobe'] < 0 or args['strobe'] > 240:
+                return {'error': 'Invalid strobe value'}, 400
+            self.strobe = args['strobe']
 
-        if args['strobe'] < 0 or args['strobe'] > 240:
-            return {'error': 'Invalid strobe value'}, 400
 
-        self.rgb = args['rgb']
-        self.brightness = args['brightness']
-        self.strobe = args['strobe']
-
-        hex = args['rgb'].lstrip('#')
+        hex = self.rgb.lstrip('#')
         rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2 ,4))
 
         data = array.array('B', [
@@ -71,14 +72,18 @@ class Device(Resource):
             rgb[1], # green
             rgb[2], # blue
             0, # color macros
-            args['strobe'] + 15, # strobing/program speed
+            self.strobe + 15, # strobing/program speed
             0, # programs
-            args['brightness'] # master dimmer
+            self.brightness # master dimmer
         ])
 
-        client.SendDmx(1, data)
+        global wrapper
+        wrapper = ClientWrapper()
+
+        client = wrapper.Client()
+        client.SendDmx(1, data, dmx_sent)
         wrapper.Run()
 
-        return self.get()
+        return self.to_json(), 200
 
 service.api.add_resource(Device, '/device/dmx')
