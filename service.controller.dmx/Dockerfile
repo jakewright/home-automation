@@ -1,6 +1,6 @@
 FROM s1lvester/docker-ola
 
-# Override the entrypoint because we want to wrap start.sh 
+# Override the entrypoint because we want to wrap start.sh
 # in a script that also starts the DMX python service.
 ENTRYPOINT []
 
@@ -27,7 +27,7 @@ COPY ./service.controller.dmx/wait-for-it.sh /
 RUN ["chmod", "+x", "/process_manager.sh"]
 RUN ["chmod", "+x", "/wait-for-it.sh"]
 
-# Add the DMX service
+# Copy the application files
 COPY ./service.controller.dmx .
 
 CMD ["/process_manager.sh"]

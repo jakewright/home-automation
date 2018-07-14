@@ -7,6 +7,7 @@ from flask_restful import Resource, reqparse
 from ola.ClientWrapper import ClientWrapper
 
 service = Service()
+app = service.app
 api_client = ApiClient(service)
 
 device_identifier = service.app.config['DEVICE_IDENTIFIER']
@@ -32,8 +33,6 @@ def dmx_sent(state):
 
 class Device(Resource):
     def __init__(self, device_identifier, device_name, controller_name):
-        print >> sys.stderr, "INSTANTIATE"
-
         self.identifier = device_identifier
         self.name = device_name
         self.controller_name = controller_name
@@ -74,17 +73,17 @@ class Device(Resource):
         # Parse the arguments into an object
         args = parser.parse_args()
 
-        if args['rgb']:
+        if args['rgb'] is not None:
             if not re.search(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', args['rgb']):
                 return {'error': 'Invalid hex string'}, 400
             rgb = args['rgb']
 
-        if args['brightness']:
+        if args['brightness'] is not None:
             if args['brightness'] < 0 or args['brightness'] > 255:
                 return {'error': 'Invalid brightness value'}, 400
             brightness = args['brightness']
 
-        if args['strobe']:
+        if args['strobe'] is not None:
             if args['strobe'] < 0 or args['strobe'] > 240:
                 return {'error': 'Invalid strobe value'}, 400
             strobe = args['strobe']

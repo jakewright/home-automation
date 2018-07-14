@@ -20,3 +20,17 @@ services:
       - ./service.api-gateway/config.yaml:/config/config.yaml
     ports:
       - 5005:80
+
+  service.controller.dmx:
+    build:
+      dockerfile: ./service.controller.dmx/Dockerfile
+      context: .
+    image: home-automation-controller-dmx
+    volumes:
+      - ./service.controller.dmx:/usr/src/app
+      - ./libraries/python:/root/.local/lib/python2.7/site-packages
+    ports:
+      - 5006:5006
+      - 9090:9090
+    environment:
+      APP_CONFIG_FILE: /usr/src/app/config/development.py

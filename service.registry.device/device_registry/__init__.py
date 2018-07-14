@@ -10,6 +10,7 @@ from flask_restful import Resource, Api, reqparse
 from bootstrap import Service
 
 service = Service()
+app = service.app
 
 def get_db():
     db = getattr(g, '_database', None)

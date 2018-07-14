@@ -2,11 +2,11 @@ apis:
   service.registry.device:
     name: Device Registry
     prefix: service.registry.device
-    upstream_url: http://service.registry.device
+    upstream_url: http://service.registry.device:5001
     allow_cross_origin: true
 
   service.controller.dmx:
     name: DMX Controller
     prefix: service.controller.dmx
-    upstream_url: http://service.controller.dmx
+    upstream_url: http://service.controller.dmx:5006
     allow_cross_origin: true
