@@ -23,9 +23,6 @@ class Service:
         # Create the API
         self.api = Api(self.app)
 
-    def serve(self):
-        self.app.run(host='0.0.0.0', port=int(self.app.config['PORT']), debug=True)
-
     def present_documentation(self):
         """Present some documentation."""
 

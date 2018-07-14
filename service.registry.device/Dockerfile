@@ -14,5 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application files
 COPY ./service.registry.device .
+RUN chmod +x ./run.sh
 
-CMD python run.py
+CMD ./run.sh
