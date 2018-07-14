@@ -14,3 +14,9 @@ services:
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
 
+  service.api-gateway:
+    image: jakewright/drawbridge
+    volumes:
+      - ./service.api-gateway/config.yaml:/config/config.yaml
+    ports:
+      - 5005:80
