@@ -10,7 +10,7 @@ services:
       - ./service.registry.device:/usr/src/app
       - ./libraries/python:/root/.local/lib/python3.5/site-packages
     ports:
-      - 5001:80
+      - 5001:5001
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
 
