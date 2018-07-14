@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  registry.device:
+  service.registry.device:
     build:
       dockerfile: ./service.registry.device/Dockerfile
       context: .
@@ -14,16 +14,3 @@ services:
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
 
-  controller.dmx:
-      build:
-        dockerfile: ./service.controller.dmx/Dockerfile
-        context: .
-      image: home-automation-controller-dmx
-      volumes:
-        - ./service.controller.dmx:/usr/src/app
-        - ./libraries/python:/root/.local/lib/python2.7/site-packages
-      ports:
-        - 5006:80
-        - 9090:9090
-      environment:
-        APP_CONFIG_FILE: /usr/src/app/config/development.py
