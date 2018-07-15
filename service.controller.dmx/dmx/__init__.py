@@ -47,8 +47,8 @@ class Device(Resource):
                 'controller_name': self.controller_name,
                 'available_properties': {
                     'rgb': {'type': 'rgb'},
-                    'brightness': {'type': 'int', 'min': 0, 'max': 255},
-                    'strobe': {'type': 'int', 'min': 0, 'max': 240},
+                    'brightness': {'type': 'int', 'min': 0, 'max': 255, 'interpolation': 'continuous'},
+                    'strobe': {'type': 'int', 'min': 0, 'max': 240, 'interpolation': 'continuous'},
                 },
 
                 'rgb': rgb,
