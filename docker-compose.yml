@@ -1,6 +1,17 @@
 version: '3'
 
 services:
+  web.client:
+    build:
+      dockerfile: ./web.client/Dockerfile
+      context: .
+    image: home-automation-web-client
+    volumes:
+      - ./web.client:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 5000:8080
+
   service.registry.device:
     build:
       dockerfile: ./service.registry.device/Dockerfile
