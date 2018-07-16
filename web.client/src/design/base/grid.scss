@@ -1,0 +1,27 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+
+    @media screen and (max-width: $screen-md-min) {
+        display: block;
+
+        // When the page is mobile-sized, make each column max width and browser-height
+        .grid-item {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100vh;
+            overflow-y: scroll;
+        }
+    }
+
+    &.full-height {
+        height: 100vh;
+    }
+}
+
+.grid-item {
+    background-color: $color-grey;
+    grid-column: span 6;
+}

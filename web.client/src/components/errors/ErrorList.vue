@@ -1,0 +1,54 @@
+<template>
+    <div :class="$style.errorList">
+        <transition-group name="error-item">
+            <BaseError v-for="err in errors" :key="err.id" @close="removeError(err.id)">
+                {{ err.message }}
+            </BaseError>
+        </transition-group>
+    </div>
+</template>
+
+<script>
+    import BaseError from './BaseError';
+    import { mapGetters } from 'vuex';
+
+    export default {
+        name: 'ErrorList',
+
+        components: {
+            BaseError,
+        },
+
+        computed: mapGetters({
+            errors: 'allErrors',
+        }),
+
+        methods: {
+            removeError (id) {
+                this.$store.dispatch('removeError', id);
+            },
+        },
+
+    }
+</script>
+
+<style module lang="scss">
+    .errorList {
+        position: fixed;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+    }
+</style>
+<style>
+    .error-item-enter-active, .error-item-leave-active {
+        transition: all 1s;
+    }
+    .error-item-enter, .error-item-leave-to /* .list-leave-active below version 2.1.8 */ {
+        opacity: 0;
+    }
+
+    .error-item-move {
+        transition: transform 0.5s;
+    }
+</style>

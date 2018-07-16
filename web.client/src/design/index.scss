@@ -1,0 +1,155 @@
+@import 'base/input.scss';
+@import 'base/list.scss';
+@import 'base/links.scss';
+@import 'base/grid.scss';
+@import 'base/buttons.scss';
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    font-family: 'Quicksand', system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: $color-white;
+    background-color: $color-grey;
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+#app {
+    >.grid-container {
+        >.grid-item {
+            padding: 20px;
+        }
+    }
+}
+
+.base-layout {
+
+    @media screen and (max-width: $screen-md-min) {
+        .slide-up-enter-active, .slide-up-leave-active {
+            transition: all .3s ease;
+        }
+
+        .slide-up-enter, .slide-up-leave-to {
+            transform: translateY(100%);
+        }
+    }
+
+}
+
+.nav-bar {
+    background-color: $color-grey-dark;
+    padding: 10px;
+    margin-bottom: 20px;
+
+    // Fix the height when all the elements are floating
+    &:after {
+        content: " ";
+        display: block;
+        height: 0;
+        clear: both;
+    }
+
+    .nav-bar__element--right {
+        float: right;
+    }
+}
+
+.loading {
+    //padding: 0 20px;
+    text-align: center;
+    align-items: center;
+    height: 100%;
+}
+
+.header {
+    padding: 0 20px;
+
+    &.header--icon {
+        text-align: center;
+
+        h1 {
+            margin-bottom: 50px;
+        }
+    }
+}
+
+.content {
+    padding: 0 20px;
+}
+
+
+
+.room-selector {
+    grid-column: 1 / span 2;
+    background-color: $color-grey-dark;
+    height: 100%;
+
+    @media screen and (max-width: $screen-lg-min) {
+        grid-column: 1 / span 3;
+    }
+
+    li.room {
+        font-size: 2.1rem;
+        margin-bottom: 20px;
+
+        a {
+            color: $color-white;
+
+            &:hover {
+                color: $color-highlight-primary;
+            }
+
+            &.router-link-active {
+                color: $color-highlight-primary;
+
+                &:after {
+                    content: ">";
+                    float: right;
+                }
+            }
+        }
+    }
+}
+
+
+.main-container {
+    grid-column: 3 / span 10;
+
+    @media screen and (max-width: $screen-lg-min) {
+        grid-column: 4 / span 9;
+    }
+}
+
+
+.device {
+    position: relative;
+    margin-bottom: 60px;
+
+    .title {}
+
+    ul li {
+        // Move the power toggle to top-right
+        &.power {
+            label.property-name-label {
+                display: none;
+            }
+
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+    }
+}
+
+
+.color-picker {
+    .color-circle {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+

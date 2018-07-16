@@ -1,0 +1,62 @@
+// Styling Cross-Browser Compatible Range Inputs with Sass
+// Github: https://github.com/darlanrod/input-range-sass
+// Author: Darlan Rod https://github.com/darlanrod
+// Version 1.4.1
+// MIT License
+
+$track-color: $color-white !default;
+$thumb-color: $color-highlight-primary !default;
+
+$thumb-radius: 16px !default;
+$thumb-height: 32px !default;
+$thumb-width: 32px !default;
+
+$track-width: 100% !default;
+$track-height: 4px !default;
+
+$track-radius: 5px !default;
+
+
+@mixin track {
+    cursor: pointer;
+    height: $track-height;
+    transition: all .2s ease;
+    width: $track-width;
+}
+
+@mixin thumb {
+    background: $thumb-color;
+    border: none;
+    border-radius: $thumb-radius;
+    cursor: ew-resize;
+    height: $thumb-height;
+    width: $thumb-width;
+}
+
+[type='range'] {
+    -webkit-appearance: none;
+    margin: $thumb-height / 2 0;
+    width: $track-width;
+    transition: all 0.5s ease;
+
+    &:focus {
+        outline: 0;
+
+        &::-webkit-slider-runnable-track {
+            background: $track-color;
+        }
+    }
+
+    &::-webkit-slider-runnable-track {
+        @include track;
+        background: $track-color;
+        border: none;
+        border-radius: $track-radius;
+    }
+
+    &::-webkit-slider-thumb {
+        @include thumb;
+        -webkit-appearance: none;
+        margin-top: ($track-height / 2) - ($thumb-height / 2);
+    }
+}
