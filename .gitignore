@@ -1,2 +1,5 @@
 env/
 *.db
+.npmrc
+dist/
+node_modules/
