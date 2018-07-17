@@ -12,11 +12,13 @@ from bootstrap import Service
 service = Service()
 app = service.app
 
+
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = shelve.open(service.app.config['DATABASE'])
     return db
+
 
 def get_device_repo():
     repo = getattr(g, '_device_repository', None)
@@ -24,11 +26,13 @@ def get_device_repo():
         repo = g._device_repository = Repository(get_db(), 'device')
     return repo
 
+
 def get_room_repo():
     repo = getattr(g, '_room_repository', None)
     if repo is None:
         repo = g._room_repository = Repository(get_db(), 'room')
     return repo
+
 
 @service.app.teardown_appcontext
 def close_connection(exception):
@@ -103,6 +107,7 @@ class Device(Resource):
 
         return '', 204
 
+
 class RoomList(Resource):
     def get(self):
         rooms = get_room_repo().find_all()
@@ -118,8 +123,8 @@ class RoomList(Resource):
 
         parser = reqparse.RequestParser()
 
-        parser.add_argument('identifier', required = True)
-        parser.add_argument('name', required = True)
+        parser.add_argument('identifier', required=True)
+        parser.add_argument('name', required=True)
 
         # Parse the arguments into an object
         args = parser.parse_args()
@@ -135,6 +140,7 @@ class RoomList(Resource):
 
         print('Registered room: ' + args['identifier'], file=sys.stderr)
         return {'message': 'Room registered', 'data': room}, 201
+
 
 class Room(Resource):
     def get(self, identifier: str):
@@ -165,15 +171,16 @@ class Room(Resource):
 
         return '', 204
 
+
 service.api.add_resource(DeviceList, '/devices')
 service.api.add_resource(Device, '/device/<string:identifier>')
 service.api.add_resource(RoomList, '/rooms')
 service.api.add_resource(Room, '/room/<string:identifier>')
 
-# Database access
 
+# Database access
 class Repository:
-    def __init__(self, shelf, prefix:str):
+    def __init__(self, shelf, prefix: str):
         self.shelf = shelf
         self.prefix = prefix + ':'
 
@@ -189,18 +196,17 @@ class Repository:
 
         return objects
 
-    def find(self, identifier:str):
+    def find(self, identifier: str):
         """Return the object with the given identifier or None if it cannot be found."""
 
         identifier = self.prefix + identifier
 
-        if not(identifier in self.shelf):
+        if not (identifier in self.shelf):
             return None
 
         return self.shelf[identifier]
 
-
-    def find_by(self, key:str, value:str):
+    def find_by(self, key: str, value: str):
         """Return an array of objects that match the given condition."""
 
         objects = []
@@ -214,12 +220,11 @@ class Repository:
     def save(self, obj):
         self.shelf[self.prefix + obj['identifier']] = obj
 
-    def delete(self, identifier:str):
+    def delete(self, identifier: str):
         del self.shelf[self.prefix + identifier]
 
 
 # Decorators
-
 def decorate_with_room(room_repository, device):
     # Decorate the device with the room
     device['room'] = room_repository.find(device['room_identifier'])

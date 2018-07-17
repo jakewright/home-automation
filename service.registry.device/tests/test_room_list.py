@@ -3,11 +3,11 @@ import os
 import unittest
 from tests import add_device, add_room, decode_response
 
-class TestRoomList(unittest.TestCase):
 
+class TestRoomList(unittest.TestCase):
     def setUp(self):
         # Create an instance of the test client
-        self.app = app.test_client();
+        self.app = app.test_client()
 
         # Use a temporary file as the database file
         app.config['DATABASE'] = '/tmp/test'
@@ -24,7 +24,6 @@ class TestRoomList(unittest.TestCase):
 
         # Assert that the status code is correct
         self.assertEqual(200, response.status_code)
-
 
         # Assert that no rooms were returned
         self.assertEqual([], decoded_response)

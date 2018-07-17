@@ -1,7 +1,8 @@
 FROM python:3.5-jessie
 
-# Upgrade pip
-RUN pip install --upgrade pip
+# Upgrade pip and install YAPF
+RUN pip install --upgrade pip && \
+    pip install yapf
 
 # Add the libraries
 COPY ./libraries/python /root/.local/lib/python3.5/site-packages/

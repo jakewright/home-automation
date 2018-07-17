@@ -4,8 +4,8 @@ from device_registry import app
 import json
 from tests import add_device, add_room, decode_response
 
-class TestRoom(unittest.TestCase):
 
+class TestRoom(unittest.TestCase):
     def setUp(self):
         # Create an instance of the test client
         self.app = app.test_client()

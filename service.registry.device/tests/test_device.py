@@ -3,8 +3,8 @@ import os
 from device_registry import app
 from tests import add_device, add_room, decode_response
 
-class TestDevice(unittest.TestCase):
 
+class TestDevice(unittest.TestCase):
     def setUp(self):
         # Create an instance of the test client
         self.app = app.test_client()
@@ -39,11 +39,8 @@ class TestDevice(unittest.TestCase):
         }
 
         # Add the device to the registry
-        add_device(device['identifier'],
-                        device['name'],
-                        device['device_type'],
-                        device['controller_name'],
-                        device['room']['identifier'])
+        add_device(device['identifier'], device['name'], device['device_type'],
+                   device['controller_name'], device['room']['identifier'])
 
         # Ask the registry for the device's details
         response = self.app.get('/device/test')

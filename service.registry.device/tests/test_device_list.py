@@ -3,8 +3,8 @@ import os
 import unittest
 from tests import add_device, add_room, decode_response
 
-class TestDeviceList(unittest.TestCase):
 
+class TestDeviceList(unittest.TestCase):
     def setUp(self):
         # Create an instance of the test client
         self.app = app.test_client()
@@ -34,7 +34,8 @@ class TestDeviceList(unittest.TestCase):
     def test_add_device_invalid_room(self):
         """Test that adding a device with an unknown room returns a 400"""
 
-        response = add_device('invalid-room-test', 'name', 'type', 'controller', 'unknown-room')
+        response = add_device('invalid-room-test', 'name', 'type',
+                              'controller', 'unknown-room')
         self.assertEqual(400, response.status_code)
 
     def test_add_device(self):
@@ -69,7 +70,8 @@ class TestDeviceList(unittest.TestCase):
 
         # Add the same device twice
         add_device('device1', 'device 1', 'switch', 'controller', 'room')
-        response = add_device('device1', 'device new', 'switch', 'controller', 'room')
+        response = add_device('device1', 'device new', 'switch', 'controller',
+                              'room')
 
         # Assert that we get a 201 response code the second time
         self.assertEqual(201, response.status_code)
