@@ -10,7 +10,9 @@ RUN  apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install pip
-RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' && python get-pip.py
+RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' && \
+  python get-pip.py && \
+  pip install yapf
 
 # Add the libraries
 COPY ./libraries/python /root/.local/lib/python2.7/site-packages/

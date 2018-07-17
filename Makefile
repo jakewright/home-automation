@@ -20,6 +20,11 @@ test-service.registry.device: ## Run tests for device registry
 test: ## Run all tests
 	$(MAKE) test-service.registry.device
 
+.PHONY: fmt
+fmt: ## Format the code
+	$(DOCKER_COMPOSE_RUN) service.registry.device yapf --in-place --recursive --verbose .
+	$(DOCKER_COMPOSE_RUN) service.controller.dmx yapf --in-place --recursive --verbose .
+
 .PHONY: clean
 clean: ## Clean up any containers and images
 	rm -r vendor/

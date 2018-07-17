@@ -28,8 +28,10 @@ rgb = '#000000'
 brightness = 0
 strobe = 0
 
+
 def dmx_sent(state):
     wrapper.Stop()
+
 
 class Device(Resource):
     def __init__(self, device_identifier, device_name, controller_name):
@@ -46,11 +48,22 @@ class Device(Resource):
                 'type': 'dmx',
                 'controller_name': self.controller_name,
                 'available_properties': {
-                    'rgb': {'type': 'rgb'},
-                    'brightness': {'type': 'int', 'min': 0, 'max': 255, 'interpolation': 'continuous'},
-                    'strobe': {'type': 'int', 'min': 0, 'max': 240, 'interpolation': 'continuous'},
+                    'rgb': {
+                        'type': 'rgb'
+                    },
+                    'brightness': {
+                        'type': 'int',
+                        'min': 0,
+                        'max': 255,
+                        'interpolation': 'continuous'
+                    },
+                    'strobe': {
+                        'type': 'int',
+                        'min': 0,
+                        'max': 240,
+                        'interpolation': 'continuous'
+                    },
                 },
-
                 'rgb': rgb,
                 'brightness': brightness,
                 'strobe': strobe,
@@ -74,7 +87,8 @@ class Device(Resource):
         args = parser.parse_args()
 
         if args['rgb'] is not None:
-            if not re.search(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', args['rgb']):
+            if not re.search(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                             args['rgb']):
                 return {'error': 'Invalid hex string'}, 400
             rgb = args['rgb']
 
@@ -88,19 +102,20 @@ class Device(Resource):
                 return {'error': 'Invalid strobe value'}, 400
             strobe = args['strobe']
 
-
         hex = rgb.lstrip('#')
-        rgb_parts = tuple(int(hex[i:i+2], 16) for i in (0, 2 ,4))
+        rgb_parts = tuple(int(hex[i:i + 2], 16) for i in (0, 2, 4))
 
-        data = array.array('B', [
-            rgb_parts[0], # red
-            rgb_parts[1], # green
-            rgb_parts[2], # blue
-            0, # color macros
-            strobe + 15, # strobing/program speed
-            0, # programs
-            brightness # master dimmer
-        ])
+        data = array.array(
+            'B',
+            [
+                rgb_parts[0],  # red
+                rgb_parts[1],  # green
+                rgb_parts[2],  # blue
+                0,  # color macros
+                strobe + 15,  # strobing/program speed
+                0,  # programs
+                brightness  # master dimmer
+            ])
 
         global wrapper
         wrapper = ClientWrapper()
@@ -111,8 +126,12 @@ class Device(Resource):
 
         return self.to_json(), 200
 
-service.api.add_resource(Device, '/device/' + device_identifier, resource_class_kwargs={
-    'device_identifier': device_identifier,
-    'device_name': device_name,
-    'controller_name': controller_name,
-})
+
+service.api.add_resource(
+    Device,
+    '/device/' + device_identifier,
+    resource_class_kwargs={
+        'device_identifier': device_identifier,
+        'device_name': device_name,
+        'controller_name': controller_name,
+    })
