@@ -1,0 +1,18 @@
+apis:
+  service.registry.device:
+    name: Device Registry
+    prefix: service.registry.device
+    upstream_url: http://192.168.1.210:5001
+    allow_cross_origin: true
+
+  controller-1:
+    name: Controller 1
+    prefix: controller-1
+    upstream_url: http://192.168.1.210:5003
+    allow_cross_origin: true
+
+  service.controller.dmx:
+    name: DMX Controller
+    prefix: service.controller.dmx
+    upstream_url: http://192.168.1.213:5006
+    allow_cross_origin: true

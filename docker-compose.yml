@@ -28,7 +28,7 @@ services:
   service.api-gateway:
     image: jakewright/drawbridge
     volumes:
-      - ./service.api-gateway/config.yaml:/config/config.yaml
+      - ./service.api-gateway/config.dev.yaml:/config/config.yaml
     ports:
       - 5005:80
 
