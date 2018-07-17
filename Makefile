@@ -23,7 +23,7 @@ test: ## Run all tests
 .PHONY: fmt
 fmt: ## Format the code
 	$(DOCKER_COMPOSE_RUN) service.registry.device yapf --in-place --recursive --verbose .
-	$(DOCKER_COMPOSE_RUN) service.registry.deviceservice.registry.device yapf --in-place --recursive --verbose /root/.local/lib/python3.5/site-packages/
+	$(DOCKER_COMPOSE_RUN) service.registry.device yapf --in-place --recursive --verbose /root/.local/lib/python3.5/site-packages/
 	$(DOCKER_COMPOSE_RUN) service.controller.dmx yapf --in-place --recursive --verbose .
 
 .PHONY: clean
