@@ -14,7 +14,7 @@ class TestDevice(unittest.TestCase):
 
     def tearDown(self):
         # Delete the temporary file
-        os.unlink(app.config['DATABASE'] + '.db')
+        os.unlink(app.config['DATABASE'])
 
     def test_get_invalid_device(self):
         """Test that getting an invalid device's details will return a 404."""
@@ -69,7 +69,7 @@ class TestDevice(unittest.TestCase):
 
         # Delete the device
         response = self.app.delete('/device/test-del')
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # Try to get the device again
         response = self.app.get('/device/test-del')

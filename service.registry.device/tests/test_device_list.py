@@ -16,7 +16,7 @@ class TestDeviceList(unittest.TestCase):
 
     def tearDown(self):
         # Delete the temporary file
-        os.unlink(app.config['DATABASE'] + '.db')
+        os.unlink(app.config['DATABASE'])
 
     def test_no_devices(self):
         """Test that an empty array is returned when there are no devices known by the registry."""

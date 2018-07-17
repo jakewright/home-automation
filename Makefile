@@ -8,8 +8,17 @@ help: ## Show this help message
 	echo "targets:"
 	fgrep --no-filename "##" $(MAKEFILE_LIST) | fgrep --invert-match $$'\t' | sed -e 's/: ## / - /'
 
-start: ## Start the service
-	$(DOCKER_COMPOSE) up
+.PHONY: start
+start: ## Start the system
+	$(DOCKER_COMPOSE) up -d
+
+.PHONY: test-service.registry.device
+test-service.registry.device: ## Run tests for device registry
+	$(DOCKER_COMPOSE_RUN) service.registry.device python -m unittest
+
+.PHONY: test
+test: ## Run all tests
+	$(MAKE) test-service.registry.device
 
 .PHONY: clean
 clean: ## Clean up any containers and images

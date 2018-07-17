@@ -15,7 +15,7 @@ class TestRoom(unittest.TestCase):
 
     def tearDown(self):
         # Delete the temporary file
-        os.unlink(app.config['DATABASE'] + '.db')
+        os.unlink(app.config['DATABASE'])
 
     def test_get_invalid_room(self):
         """Test that getting an invalid room's details will return a 404."""
@@ -40,11 +40,10 @@ class TestRoom(unittest.TestCase):
             'controller_name': 'controller-1',
         }
 
-
         room = {
             'identifier': 'bedroom',
             'name': "Jake's Bedroom",
-            'devices': [device2, device1],
+            'devices': [device1, device2],
         }
 
         add_room(room['identifier'], room['name'])
@@ -81,7 +80,7 @@ class TestRoom(unittest.TestCase):
 
         # Delete the room
         response = self.app.delete('/room/test-del')
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # Try to get the room again
         response = self.app.get('/room/test-del')

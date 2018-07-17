@@ -14,7 +14,7 @@ class TestRoomList(unittest.TestCase):
 
     def tearDown(self):
         # Delete the temporary file
-        os.unlink(app.config['DATABASE'] + '.db')
+        os.unlink(app.config['DATABASE'])
 
     def test_no_rooms(self):
         """Test that an empty array is returned when there are no rooms known by the registry."""
