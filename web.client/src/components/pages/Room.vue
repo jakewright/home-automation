@@ -1,36 +1,40 @@
 <template>
 
-    <BaseLayout
-        :done="false"
-        class="room grid-container"
-    >
-        <template slot="heading">{{ name }}</template>
-        <template slot="content">
+  <BaseLayout
+    :done="false"
+    class="room grid-container"
+  >
+    <template slot="heading">{{ name }}</template>
+    <template slot="content">
 
 
-                <div v-if="notFound">
-                    Not found
-                </div>
-                <template v-else>
+      <div v-if="notFound">
+        Not found
+      </div>
+      <template v-else>
 
 
-                    <div v-if="!room && !fetchError">Loading…</div>
+        <div v-if="!room && !fetchError">Loading…</div>
 
-                    <div v-else-if="fetchError">
-                        <p>Failed to fetch room: {{ fetchError }}</p>
-                    </div>
+        <div v-else-if="fetchError">
+          <p>Failed to fetch room: {{ fetchError }}</p>
+        </div>
 
-                    <div v-else-if="room">
+        <div v-else-if="room">
 
-                        <div v-for="deviceHeader in room.deviceHeaders" :key="deviceHeader.identifier">
-                            <Component :is="getComponentForDeviceType(deviceHeader.type)" :device-header="deviceHeader" />
-                        </div>
+          <div 
+            v-for="deviceHeader in room.deviceHeaders" 
+            :key="deviceHeader.identifier">
+            <Component 
+              :is="getComponentForDeviceType(deviceHeader.type)" 
+              :device-header="deviceHeader" />
+          </div>
 
-                    </div>
-                </template>
+        </div>
+      </template>
 
-        </template>
-    </BaseLayout>
+    </template>
+  </BaseLayout>
 
 
 </template>
@@ -41,6 +45,10 @@
 
     export default {
         name: 'Room',
+
+        components: {
+            Device, BaseLayout
+        },
 
         data () {
             return {
@@ -59,19 +67,6 @@
             }
         },
 
-        methods: {
-            getComponentForDeviceType (type) {
-                switch (type) {
-                    default:
-                        return 'Device';
-                }
-            },
-        },
-
-        components: {
-            Device, BaseLayout
-        },
-
         async created () {
             // If the store already has the data, return early.
             if (this.room) return;
@@ -88,6 +83,15 @@
             if (!this.room) {
                 this.notFound = true;
             }
-        }
+        },
+
+        methods: {
+            getComponentForDeviceType (type) {
+                switch (type) {
+                    default:
+                        return 'Device';
+                }
+            },
+        },
     };
 </script>

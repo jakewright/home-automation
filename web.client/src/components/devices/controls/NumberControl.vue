@@ -1,7 +1,12 @@
 <template>
-    <div>
-        <input type="number" :min="min" :max="max" :value="value" @change="$emit('input', $event.target.value)">
-    </div>
+  <div>
+    <input 
+      :min="min" 
+      :max="max" 
+      :value="value" 
+      type="number" 
+      @change="$emit('input', $event.target.value)">
+  </div>
 </template>
 
 <script>

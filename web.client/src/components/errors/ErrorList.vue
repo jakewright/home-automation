@@ -1,11 +1,14 @@
 <template>
-    <div :class="$style.errorList">
-        <transition-group name="error-item">
-            <BaseError v-for="err in errors" :key="err.id" @close="removeError(err.id)">
-                {{ err.message }}
-            </BaseError>
-        </transition-group>
-    </div>
+  <div :class="$style.errorList">
+    <transition-group name="error-item">
+      <BaseError 
+        v-for="err in errors" 
+        :key="err.id" 
+        @close="removeError(err.id)">
+        {{ err.message }}
+      </BaseError>
+    </transition-group>
+  </div>
 </template>
 
 <script>

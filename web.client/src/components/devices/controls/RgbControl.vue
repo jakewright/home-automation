@@ -1,7 +1,11 @@
 <template>
-    <div class="rgb-control">
-        <input type="color" :value="value" @click.prevent="focusColorCircle" ref="input">
-    </div>
+  <div class="rgb-control">
+    <input 
+      ref="input" 
+      :value="value" 
+      type="color" 
+      @click.prevent="focusColorCircle">
+  </div>
 </template>
 
 <script>

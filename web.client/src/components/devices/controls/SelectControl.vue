@@ -1,12 +1,19 @@
 <template>
-    <div>
-        <select :value="value" @change="$emit('input', $event.target.value)">
-            <option disabled value="">Please select one</option>
-            <option v-for="option in options" :value="option.value" :key="option.value">
-                {{ option.text }}
-            </option>
-        </select>
-    </div>
+  <div>
+    <select 
+      :value="value" 
+      @change="$emit('input', $event.target.value)">
+      <option 
+        disabled 
+        value="">Please select one</option>
+      <option 
+        v-for="option in options" 
+        :value="option.value" 
+        :key="option.value">
+        {{ option.text }}
+      </option>
+    </select>
+  </div>
 </template>
 
 <script>

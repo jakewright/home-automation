@@ -1,8 +1,8 @@
 <template>
-    <div id="app">
-        <router-view />
-        <ErrorList />
-    </div>
+  <div id="app">
+    <router-view />
+    <ErrorList />
+  </div>
 </template>
 
 <script>
@@ -10,7 +10,7 @@
     import ErrorList from './components/errors/ErrorList';
 
     export default {
-        name: 'app',
+        name: 'App',
         components: {ErrorList},
     }
 </script>

@@ -1,60 +1,70 @@
 <template>
-    <div class="device">
-        <h3 class="title">{{ deviceHeader.name }}</h3>
+  <div class="device">
+    <h3 class="title">{{ deviceHeader.name }}</h3>
 
-        <template v-if="fetchError">
-            <p>Failed to fetch device: {{ fetchError }}</p>
-        </template>
-        <template v-else-if="notFound">
-            Device not found
-        </template>
-        <template v-else-if="!device">
-            Loading…
-        </template>
-        <template v-else>
-            <ul>
-                <li :class="propertyName" v-for="(property, propertyName) in device.properties" :key="propertyName">
+    <template v-if="fetchError">
+      <p>Failed to fetch device: {{ fetchError }}</p>
+    </template>
+    <template v-else-if="notFound">
+      Device not found
+    </template>
+    <template v-else-if="!device">
+      Loading…
+    </template>
+    <template v-else>
+      <ul>
+        <li 
+          v-for="(property, propertyName) in device.properties" 
+          :class="propertyName" 
+          :key="propertyName">
 
-                    <label class="property-name-label">{{ propertyName }}</label>
+          <label class="property-name-label">{{ propertyName }}</label>
 
-                    <template v-if="property.type === 'bool'">
-                        <ToggleControl :value="property.value" @input="updateProperty(propertyName, $event)" />
-                    </template>
+          <template v-if="property.type === 'bool'">
+            <ToggleControl 
+              :value="property.value" 
+              @input="updateProperty(propertyName, $event)" />
+          </template>
 
-                    <template v-else-if="property.type === 'int' && property.interpolation === 'continuous'">
-                        <SliderControl
-                            :value="property.value"
-                            :min="property.min"
-                            :max="property.max"
-                            @input="updateProperty(propertyName, $event)"
-                        />
-                    </template>
+          <template v-else-if="property.type === 'int' && property.interpolation === 'continuous'">
+            <SliderControl
+              :value="property.value"
+              :min="property.min"
+              :max="property.max"
+              @input="updateProperty(propertyName, $event)"
+            />
+          </template>
 
-                    <template v-else-if="property.type === 'int'">
-                        <NumberControl :value="property.value" @input="updateProperty(propertyName, $event)" />
-                    </template>
+          <template v-else-if="property.type === 'int'">
+            <NumberControl 
+              :value="property.value" 
+              @input="updateProperty(propertyName, $event)" />
+          </template>
 
-                    <template v-else-if="property.options">
-                        <SelectControl
-                            :value="property.value"
-                            :options="property.options"
-                            @input="updateProperty(propertyName, $event)"
-                        />
-                    </template>
+          <template v-else-if="property.options">
+            <SelectControl
+              :value="property.value"
+              :options="property.options"
+              @input="updateProperty(propertyName, $event)"
+            />
+          </template>
 
-                    <template v-else-if="property.type === 'rgb'">
-                        <RgbControl :value="property.value" :device-id="device.identifier" @input="updateProperty(propertyName, $event)" />
-                    </template>
+          <template v-else-if="property.type === 'rgb'">
+            <RgbControl 
+              :value="property.value" 
+              :device-id="device.identifier" 
+              @input="updateProperty(propertyName, $event)" />
+          </template>
 
-                    <template v-else>
-                        {{ property.value }}
-                    </template>
+          <template v-else>
+            {{ property.value }}
+          </template>
 
-                </li>
-            </ul>
-        </template>
+        </li>
+      </ul>
+    </template>
 
-    </div>
+  </div>
 </template>
 
 <script>
@@ -68,12 +78,6 @@
     export default {
         name: 'Device',
         components: {NumberControl, RgbControl, SelectControl, SliderControl, ToggleControl},
-        data () {
-            return {
-                notFound: false,
-                fetchError: null,
-            };
-        },
 
         props: {
             deviceHeader: {
@@ -81,10 +85,30 @@
                 required: true,
             }
         },
+        data () {
+            return {
+                notFound: false,
+                fetchError: null,
+            };
+        },
 
         computed: {
             device () {
                 return this.$store.getters.device(this.deviceHeader.identifier);
+            }
+        },
+
+        async created () {
+            if (this.device) return;
+
+            try {
+                await this.$store.dispatch('fetchDevice', this.deviceHeader);
+            } catch (err) {
+                this.fetchError = err.message;
+            }
+
+            if (!this.device) {
+                this.notFound = true;
             }
         },
 
@@ -102,19 +126,5 @@
                 }
             }
         },
-
-        async created () {
-            if (this.device) return;
-
-            try {
-                await this.$store.dispatch('fetchDevice', this.deviceHeader);
-            } catch (err) {
-                this.fetchError = err.message;
-            }
-
-            if (!this.device) {
-                this.notFound = true;
-            }
-        }
     };
 </script>

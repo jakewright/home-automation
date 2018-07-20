@@ -1,8 +1,11 @@
 <template>
-        <label :class="$style.switch">
-            <input type="checkbox" :checked="value" @change="$emit('input', $event.target.checked)">
-            <span :class="[$style.slider, $style.round]"></span>
-        </label>
+  <label :class="$style.switch">
+    <input 
+      :checked="value" 
+      type="checkbox" 
+      @change="$emit('input', $event.target.checked)">
+    <span :class="[$style.slider, $style.round]"/>
+  </label>
 </template>
 
 <script>

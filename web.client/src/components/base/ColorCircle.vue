@@ -1,15 +1,17 @@
 <template>
-    <div class="color-circle">
-        <input
-            :class="$style.hide"
-            type="color"
-            :value="value"
-            @input="$emit('input', $event.target.value)"
-            @change="$emit('change', $event.target.value)"
-            ref="input">
+  <div class="color-circle">
+    <input
+      ref="input"
+      :class="$style.hide"
+      :value="value"
+      type="color"
+      @input="$emit('input', $event.target.value)"
+      @change="$emit('change', $event.target.value)">
 
-        <div class="target" ref="target"></div>
-    </div>
+    <div 
+      ref="target" 
+      class="target"/>
+  </div>
 </template>
 
 <script>

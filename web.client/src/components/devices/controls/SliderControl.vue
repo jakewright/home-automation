@@ -1,20 +1,20 @@
 <template>
-    <form class="slider">
-        <input
-            type="range"
-            :min="min"
-            :max="max"
-            v-model="currentValue"
+  <form class="slider">
+    <input
+      :min="min"
+      :max="max"
+      v-model="currentValue"
+      :name="name"
 
-            @change="$emit('input', $event.target.value)"
+      type="range"
 
-            :name="name"
-        />
+      @change="$emit('input', $event.target.value)"
+    >
 
-        <output>
-            {{ currentValue }}
-        </output>
-    </form>
+    <output>
+      {{ currentValue }}
+    </output>
+  </form>
 </template>
 
 <script>

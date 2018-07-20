@@ -1,19 +1,19 @@
 <template>
-    <SideColumn
-        done
-        icon="lightbulb"
-        class="color-picker"
-        :loading="!device"
-    >
-        <template slot="heading">Colour</template>
-        <template slot="content">
-            <ColorCircle
-                :value="value"
-                @input="handleInput"
-                @change="handleChange"
-            ></ColorCircle>
-        </template>
-    </SideColumn>
+  <SideColumn
+    :loading="!device"
+    done
+    icon="lightbulb"
+    class="color-picker"
+  >
+    <template slot="heading">Colour</template>
+    <template slot="content">
+      <ColorCircle
+        :value="value"
+        @input="handleInput"
+        @change="handleChange"
+      />
+    </template>
+  </SideColumn>
 </template>
 
 <script>
@@ -24,6 +24,8 @@
 
     export default {
         name: 'ColorPicker',
+
+        components: {SideColumn, ColorCircle},
 
         props: {
             initialValue: {
@@ -77,7 +79,5 @@
                 }
             },
         },
-
-        components: {SideColumn, ColorCircle},
     }
 </script>
