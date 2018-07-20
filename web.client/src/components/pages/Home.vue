@@ -6,9 +6,9 @@
 </template>
 
 <script>
-    import RoomSelector from './RoomSelector';
+import RoomSelector from './RoomSelector';
 
-    export default {
-        components: {RoomSelector}
-    }
+export default {
+  components: { RoomSelector },
+};
 </script>

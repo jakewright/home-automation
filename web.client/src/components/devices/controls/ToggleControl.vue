@@ -1,24 +1,24 @@
 <template>
   <label :class="$style.switch">
-    <input 
-      :checked="value" 
-      type="checkbox" 
+    <input
+      :checked="value"
+      type="checkbox"
       @change="$emit('input', $event.target.checked)">
     <span :class="[$style.slider, $style.round]"/>
   </label>
 </template>
 
 <script>
-    export default {
-        name: 'ToggleControl',
+export default {
+  name: 'ToggleControl',
 
-        props: {
-            value: {
-                type: Boolean,
-                required: true,
-            },
-        }
-    }
+  props: {
+    value: {
+      type: Boolean,
+      required: true,
+    },
+  },
+};
 </script>
 
 <style module lang="scss">

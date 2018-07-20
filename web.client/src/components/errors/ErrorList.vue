@@ -1,9 +1,9 @@
 <template>
   <div :class="$style.errorList">
     <transition-group name="error-item">
-      <BaseError 
-        v-for="err in errors" 
-        :key="err.id" 
+      <BaseError
+        v-for="err in errors"
+        :key="err.id"
         @close="removeError(err.id)">
         {{ err.message }}
       </BaseError>
@@ -12,27 +12,27 @@
 </template>
 
 <script>
-    import BaseError from './BaseError';
-    import { mapGetters } from 'vuex';
+import BaseError from './BaseError';
+import { mapGetters } from 'vuex';
 
-    export default {
-        name: 'ErrorList',
+export default {
+  name: 'ErrorList',
 
-        components: {
-            BaseError,
-        },
+  components: {
+    BaseError,
+  },
 
-        computed: mapGetters({
-            errors: 'allErrors',
-        }),
+  computed: mapGetters({
+    errors: 'allErrors',
+  }),
 
-        methods: {
-            removeError (id) {
-                this.$store.dispatch('removeError', id);
-            },
-        },
+  methods: {
+    removeError(id) {
+      this.$store.dispatch('removeError', id);
+    },
+  },
 
-    }
+};
 </script>
 
 <style module lang="scss">

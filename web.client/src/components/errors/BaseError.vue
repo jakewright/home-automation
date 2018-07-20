@@ -1,7 +1,7 @@
 <template>
   <div class="notification is-danger">
-    <button 
-      class="delete" 
+    <button
+      class="delete"
       @click="$emit('close')"/>
     <slot/>
   </div>

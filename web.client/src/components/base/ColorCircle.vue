@@ -8,37 +8,37 @@
       @input="$emit('input', $event.target.value)"
       @change="$emit('change', $event.target.value)">
 
-    <div 
-      ref="target" 
+    <div
+      ref="target"
       class="target"/>
   </div>
 </template>
 
 <script>
-    import { isHexColor } from '../../utils/validators';
-    import ColorCircle from 'color-circle';
+import { isHexColor } from '../../utils/validators';
+import ColorCircle from 'color-circle';
 
 
-    export default {
-        name: 'ColorCircle',
+export default {
+  name: 'ColorCircle',
 
-        props: {
-            value: {
-                type: String,
-                required: true,
-                validator: isHexColor,
-            },
-        },
+  props: {
+    value: {
+      type: String,
+      required: true,
+      validator: isHexColor,
+    },
+  },
 
-        mounted: function() {
-            new ColorCircle({
-                input: this.$refs.input,
-                target: this.$refs.target,
-                diameterRatio: 0.25,
-                thumbDiameter: 30,
-            });
-        },
-    };
+  mounted() {
+    new ColorCircle({
+      input: this.$refs.input,
+      target: this.$refs.target,
+      diameterRatio: 0.25,
+      thumbDiameter: 30,
+    });
+  },
+};
 
 </script>
 

@@ -9,7 +9,7 @@
 </template>
 
 <script>
-    export default {
-        name: 'RawJsonViewer',
-    }
+export default {
+  name: 'RawJsonViewer',
+};
 </script>

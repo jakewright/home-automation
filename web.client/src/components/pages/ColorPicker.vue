@@ -17,67 +17,67 @@
 </template>
 
 <script>
-    import ColorCircle from '../base/ColorCircle';
-    import _ from 'lodash';
-    import SideColumn from '../layouts/SideColumn';
-    import { isHexColor } from '../../utils/validators';
+import ColorCircle from '../base/ColorCircle';
+import _ from 'lodash';
+import SideColumn from '../layouts/SideColumn';
+import { isHexColor } from '../../utils/validators';
 
-    export default {
-        name: 'ColorPicker',
+export default {
+  name: 'ColorPicker',
 
-        components: {SideColumn, ColorCircle},
+  components: { SideColumn, ColorCircle },
 
-        props: {
-            initialValue: {
-                type: String,
-                required: false,
-                default: '#000000',
-                validator: isHexColor,
-            },
-        },
+  props: {
+    initialValue: {
+      type: String,
+      required: false,
+      default: '#000000',
+      validator: isHexColor,
+    },
+  },
 
-        // created () {
-        //     this.value = this.initialValue;
-        // },
+  // created () {
+  //     this.value = this.initialValue;
+  // },
 
-        data () {
-            return {
-                throttled: _.throttle(async () => await this.updateRgb(), 200),
-            };
-        },
+  data() {
+    return {
+      throttled: _.throttle(async () => await this.updateRgb(), 200),
+    };
+  },
 
-        computed: {
-            device () {
-                return this.$store.getters.device(this.$route.params.deviceId);
-            },
+  computed: {
+    device() {
+      return this.$store.getters.device(this.$route.params.deviceId);
+    },
 
-            value () {
-                return this.device ? this.device.properties.rgb.value : this.initialValue;
-            }
-        },
+    value() {
+      return this.device ? this.device.properties.rgb.value : this.initialValue;
+    },
+  },
 
-        methods: {
-            handleInput (value) {
-                this._value = value;
-                this.throttled();
-            },
+  methods: {
+    handleInput(value) {
+      this._value = value;
+      this.throttled();
+    },
 
-            handleChange () {
-                this.throttled.flush();
-            },
+    handleChange() {
+      this.throttled.flush();
+    },
 
-            async updateRgb () {
-                try {
-                    await this.$store.dispatch('updateDeviceProperty', {
-                        deviceId: this.$route.params.deviceId,
-                        name: 'rgb',
-                        value: this._value
-                    });
-                } catch (err) {
-                    console.log(err);
-                    await this.$store.dispatch('enqueueError', err);
-                }
-            },
-        },
-    }
+    async updateRgb() {
+      try {
+        await this.$store.dispatch('updateDeviceProperty', {
+          deviceId: this.$route.params.deviceId,
+          name: 'rgb',
+          value: this._value,
+        });
+      } catch (err) {
+        console.log(err);
+        await this.$store.dispatch('enqueueError', err);
+      }
+    },
+  },
+};
 </script>

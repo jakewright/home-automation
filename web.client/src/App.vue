@@ -7,12 +7,12 @@
 
 <script>
 
-    import ErrorList from './components/errors/ErrorList';
+import ErrorList from './components/errors/ErrorList';
 
-    export default {
-        name: 'App',
-        components: {ErrorList},
-    }
+export default {
+  name: 'App',
+  components: { ErrorList },
+};
 </script>
 
 <style lang="scss">

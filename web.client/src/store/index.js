@@ -10,11 +10,11 @@ Vue.use(Vuex);
 const debug = true;
 
 export default new Vuex.Store({
-    modules: {
-        devices,
-        errors,
-        rooms,
-    },
-    strict: debug,
-    plugins: debug ? [createLogger()] : [],
+  modules: {
+    devices,
+    errors,
+    rooms,
+  },
+  strict: debug,
+  plugins: debug ? [createLogger()] : [],
 });

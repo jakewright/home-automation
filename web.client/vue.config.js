@@ -1,7 +1,7 @@
 module.exports = {
-    configureWebpack: {
-        resolve: {
-            alias: require('./aliases.config').webpack,
-        }
-    }
+  configureWebpack: {
+    resolve: {
+      alias: require('./aliases.config').webpack,
+    },
+  },
 };

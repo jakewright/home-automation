@@ -13,16 +13,16 @@
     </template>
     <template v-else>
       <ul>
-        <li 
-          v-for="(property, propertyName) in device.properties" 
-          :class="propertyName" 
+        <li
+          v-for="(property, propertyName) in device.properties"
+          :class="propertyName"
           :key="propertyName">
 
           <label class="property-name-label">{{ propertyName }}</label>
 
           <template v-if="property.type === 'bool'">
-            <ToggleControl 
-              :value="property.value" 
+            <ToggleControl
+              :value="property.value"
               @input="updateProperty(propertyName, $event)" />
           </template>
 
@@ -36,8 +36,8 @@
           </template>
 
           <template v-else-if="property.type === 'int'">
-            <NumberControl 
-              :value="property.value" 
+            <NumberControl
+              :value="property.value"
               @input="updateProperty(propertyName, $event)" />
           </template>
 
@@ -50,9 +50,9 @@
           </template>
 
           <template v-else-if="property.type === 'rgb'">
-            <RgbControl 
-              :value="property.value" 
-              :device-id="device.identifier" 
+            <RgbControl
+              :value="property.value"
+              :device-id="device.identifier"
               @input="updateProperty(propertyName, $event)" />
           </template>
 
@@ -68,63 +68,65 @@
 </template>
 
 <script>
-    import DeviceHeader from '../../domain/DeviceHeader';
-    import ToggleControl from './controls/ToggleControl';
-    import SliderControl from './controls/SliderControl';
-    import NumberControl from './controls/NumberControl';
-    import SelectControl from './controls/SelectControl';
-    import RgbControl from './controls/RgbControl';
+import DeviceHeader from '../../domain/DeviceHeader';
+import ToggleControl from './controls/ToggleControl';
+import SliderControl from './controls/SliderControl';
+import NumberControl from './controls/NumberControl';
+import SelectControl from './controls/SelectControl';
+import RgbControl from './controls/RgbControl';
 
-    export default {
-        name: 'Device',
-        components: {NumberControl, RgbControl, SelectControl, SliderControl, ToggleControl},
+export default {
+  name: 'Device',
+  components: {
+    NumberControl, RgbControl, SelectControl, SliderControl, ToggleControl,
+  },
 
-        props: {
-            deviceHeader: {
-                type: DeviceHeader,
-                required: true,
-            }
-        },
-        data () {
-            return {
-                notFound: false,
-                fetchError: null,
-            };
-        },
-
-        computed: {
-            device () {
-                return this.$store.getters.device(this.deviceHeader.identifier);
-            }
-        },
-
-        async created () {
-            if (this.device) return;
-
-            try {
-                await this.$store.dispatch('fetchDevice', this.deviceHeader);
-            } catch (err) {
-                this.fetchError = err.message;
-            }
-
-            if (!this.device) {
-                this.notFound = true;
-            }
-        },
-
-        methods: {
-            async updateProperty (name, value) {
-                try {
-                    await this.$store.dispatch('updateDeviceProperty', {
-                        deviceId: this.deviceHeader.identifier,
-                        name,
-                        value
-                    });
-                } catch (err) {
-                    console.log(err);
-                    await this.$store.dispatch('enqueueError', err);
-                }
-            }
-        },
+  props: {
+    deviceHeader: {
+      type: DeviceHeader,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      notFound: false,
+      fetchError: null,
     };
+  },
+
+  computed: {
+    device() {
+      return this.$store.getters.device(this.deviceHeader.identifier);
+    },
+  },
+
+  async created() {
+    if (this.device) return;
+
+    try {
+      await this.$store.dispatch('fetchDevice', this.deviceHeader);
+    } catch (err) {
+      this.fetchError = err.message;
+    }
+
+    if (!this.device) {
+      this.notFound = true;
+    }
+  },
+
+  methods: {
+    async updateProperty(name, value) {
+      try {
+        await this.$store.dispatch('updateDeviceProperty', {
+          deviceId: this.deviceHeader.identifier,
+          name,
+          value,
+        });
+      } catch (err) {
+        console.log(err);
+        await this.$store.dispatch('enqueueError', err);
+      }
+    },
+  },
+};
 </script>
