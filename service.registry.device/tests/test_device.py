@@ -31,11 +31,13 @@ class TestDevice(unittest.TestCase):
             'identifier': 'test',
             'name': 'Test',
             'device_type': 'switch',
+            'depends_on': None,
             'controller_name': 'controller-1',
             'room': {
                 'identifier': 'bedroom',
                 'name': "Jake's Bedroom",
             },
+            'state_providers': None,
         }
 
         # Add the device to the registry

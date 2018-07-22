@@ -12,7 +12,7 @@ def add_device(identifier, name, device_type, controller_name,
 
         return c.post(
             '/devices',
-            data={
+            json={
                 'identifier': identifier,
                 'name': name,
                 'device_type': device_type,
@@ -28,7 +28,7 @@ def add_room(identifier, name):
     with app.test_client() as c:
 
         return c.post(
-            '/rooms', data={
+            '/rooms', json={
                 'identifier': identifier,
                 'name': name,
             })

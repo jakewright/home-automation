@@ -45,11 +45,13 @@ class TestDeviceList(unittest.TestCase):
             'identifier': 'device1',
             'name': 'Device 1',
             'device_type': 'switch',
+            'depends_on': None,
             'controller_name': 'controller',
             'room': {
                 'identifier': 'room',
                 'name': 'Room',
             },
+            'state_providers': None,
         }
 
         # Add a new device and get the response

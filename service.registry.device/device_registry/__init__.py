@@ -4,7 +4,7 @@ import shelve
 import sys
 
 # Import the framework
-from flask import Flask, g, Markup, render_template
+from flask import Flask, g, Markup, render_template, request
 from flask_restful import Resource, Api, reqparse
 
 from bootstrap import Service
@@ -43,7 +43,13 @@ def close_connection(exception):
 
 class DeviceList(Resource):
     def get(self):
-        devices = get_device_repo().find_all()
+        repo = get_device_repo()
+        controller_name = request.args.get('controller_name')
+
+        if controller_name is not None:
+            devices = repo.find_by('controller_name', controller_name)
+        else:
+            devices = repo.find_all()
 
         for device in devices:
             decorate_with_room(get_room_repo(), device)
@@ -56,11 +62,14 @@ class DeviceList(Resource):
 
         parser = reqparse.RequestParser()
 
-        parser.add_argument('identifier', required=True)
-        parser.add_argument('name', required=True)
-        parser.add_argument('device_type', required=True)
-        parser.add_argument('controller_name', required=True)
-        parser.add_argument('room_identifier', required=True)
+        parser.add_argument('identifier', required=True, location='json')
+        parser.add_argument('name', required=True, location='json')
+        parser.add_argument('device_type', required=True, location='json')
+        parser.add_argument('controller_name', required=True, location='json')
+        parser.add_argument('room_identifier', required=True, location='json')
+
+        parser.add_argument('depends_on', type=list, required=False, location='json')
+        parser.add_argument('state_providers', type=list, required=False, location='json')
 
         # Parse the arguments into an object
         args = parser.parse_args()

@@ -30,14 +30,18 @@ class TestRoom(unittest.TestCase):
             'identifier': 'device1',
             'name': 'Test Device 1',
             'device_type': 'switch',
+            'depends_on': None,
             'controller_name': 'controller-1',
+            'state_providers': None,
         }
 
         device2 = {
             'identifier': 'device2',
             'name': 'Test Device 2',
             'device_type': 'switch',
+            'depends_on': None,
             'controller_name': 'controller-1',
+            'state_providers': None,
         }
 
         room = {
