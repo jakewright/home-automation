@@ -44,31 +44,17 @@ class Service:
 
 class ApiClient:
     def __init__(self, service):
-        self.service = service
         self.api_gateway = service.app.config['API_GATEWAY']
 
-    def register_room(self, identifier, name):
-        r = requests.post(
-            self.api_gateway + '/service.registry.device/rooms',
-            data={
-                'identifier': identifier,
-                'name': name,
-            })
-
-        if r.status_code != 201:
-            raise Exception('Status code was not 201')
-
-    def register_device(self, identifier, name, device_type, controller_name,
-                        room_identifier):
-        r = requests.post(
+    def get_devices(self, controller_name):
+        r = requests.get(
             self.api_gateway + '/service.registry.device/devices',
-            data={
-                'identifier': identifier,
-                'name': name,
-                'device_type': device_type,
+            params={
                 'controller_name': controller_name,
-                'room_identifier': room_identifier,
-            })
+            }
+        )
 
-        if r.status_code != 201:
-            raise Exception('Status code was not 201')
+        if r.status_code != 200:
+            raise Exception('service.registry.device returned status code of {}, expected 200'.format(r.status_code))
+
+        return r.json()['data']

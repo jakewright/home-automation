@@ -6,22 +6,27 @@ from bootstrap import ApiClient, Service
 from flask_restful import Resource, reqparse
 from ola.ClientWrapper import ClientWrapper
 
-service = Service()
-app = service.app
-api_client = ApiClient(service)
+def create_app():
+    service = Service()
+    controller_name = service.app.config['CONTROLLER_NAME']
+    api_client = ApiClient(service)
 
-device_identifier = service.app.config['DEVICE_IDENTIFIER']
-device_name = service.app.config['DEVICE_NAME']
-controller_name = service.app.config['CONTROLLER_NAME']
-api_client.register_room('living-room', 'Living Room')
+    devices = api_client.get_devices(controller_name)
+    if len(devices) == 0:
+        raise Exception('Did not find any devices')
 
-api_client.register_device(
-    device_identifier,
-    device_name,
-    'dmx',
-    controller_name,
-    'living-room',
-)
+    for device in devices:
+        service.api.add_resource(
+            Device,
+            '/device/' + device['identifier'],
+            resource_class_kwargs={
+                'device_identifier': device['identifier'],
+                'device_name': device['name'],
+                'controller_name': controller_name,
+            })
+
+    return service.app
+
 
 # This is awful but store state as global variables
 rgb = '#000000'
@@ -125,13 +130,3 @@ class Device(Resource):
         wrapper.Run()
 
         return self.to_json(), 200
-
-
-service.api.add_resource(
-    Device,
-    '/device/' + device_identifier,
-    resource_class_kwargs={
-        'device_identifier': device_identifier,
-        'device_name': device_name,
-        'controller_name': controller_name,
-    })
