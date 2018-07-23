@@ -15,8 +15,8 @@ export default class EventConsumer {
         const [eventType] = data.channel.split('.');
 
         switch (eventType) {
-          case 'state-change':
-            this.handleStateChangeEvent(data.message);
+          case 'device-state-changed':
+            this.handleStateChangedEvent(data.message);
         }
       } catch (err) {
         // Ignore events that are not JSON encoded
@@ -24,7 +24,7 @@ export default class EventConsumer {
     };
   }
 
-  handleStateChangeEvent(msg) {
+  handleStateChangedEvent(msg) {
     this.store.commit('setDevice', apiToDevice(msg));
   }
 }

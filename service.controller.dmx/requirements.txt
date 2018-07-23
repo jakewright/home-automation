@@ -1,5 +1,6 @@
 Flask==1.0.2
 flask-restful==0.3.6
 markdown==2.6.11
+redis==2.10.6
 requests==2.19.1
 requests-mock==1.5.0

@@ -3,7 +3,7 @@ import os
 import requests
 import sys
 from flask import Flask, g, Markup, render_template
-from flask_restful import Resource, Api, reqparse
+from flask_restful import Api, reqparse, Resource
 
 
 class Service:
@@ -19,6 +19,13 @@ class Service:
         self.app.config.from_envvar('APP_CONFIG_FILE')
 
         self.app.add_url_rule('/', 'index', self.present_documentation)
+
+        # Connect to Redis
+        if 'REDIS' in self.app.config:
+            import redis
+            self.r = redis.StrictRedis(
+                host=self.app.config['REDIS']['host'],
+                port=self.app.config['REDIS']['port'])
 
         # Create the API
         self.api = Api(self.app)
@@ -41,6 +48,9 @@ class Service:
 
         return render_template('index.html', content=html)
 
+    def publish(self, channel, data):
+        self.r.publish(channel, data)
+
 
 class ApiClient:
     def __init__(self, service):
@@ -51,10 +61,11 @@ class ApiClient:
             self.api_gateway + '/service.registry.device/devices',
             params={
                 'controller_name': controller_name,
-            }
-        )
+            })
 
         if r.status_code != 200:
-            raise Exception('service.registry.device returned status code of {}, expected 200'.format(r.status_code))
+            raise Exception(
+                'service.registry.device returned status code of {}, expected 200'.
+                format(r.status_code))
 
         return r.json()['data']

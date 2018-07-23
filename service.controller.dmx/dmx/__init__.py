@@ -6,6 +6,7 @@ from bootstrap import ApiClient, Service
 from flask_restful import Resource, reqparse
 from ola.ClientWrapper import ClientWrapper
 
+
 def create_app():
     service = Service()
     controller_name = service.app.config['CONTROLLER_NAME']
@@ -20,6 +21,7 @@ def create_app():
             Device,
             '/device/' + device['identifier'],
             resource_class_kwargs={
+                'service': service,
                 'device_identifier': device['identifier'],
                 'device_name': device['name'],
                 'controller_name': controller_name,
@@ -39,7 +41,9 @@ def dmx_sent(state):
 
 
 class Device(Resource):
-    def __init__(self, device_identifier, device_name, controller_name):
+    def __init__(self, service, device_identifier, device_name,
+                 controller_name):
+        self.service = service
         self.identifier = device_identifier
         self.name = device_name
         self.controller_name = controller_name
@@ -75,18 +79,21 @@ class Device(Resource):
             }
         }
 
+    def hash(self):
+        global rgb, brightness, strobe
+        return rgb + str(brightness) + str(strobe)
+
     def get(self):
         return self.to_json(), 200
 
     def patch(self):
-        global rgb
-        global brightness
-        global strobe
+        global rgb, brightness, strobe
+        cache = self.hash()
 
         parser = reqparse.RequestParser()
-        parser.add_argument('rgb', type=unicode)
-        parser.add_argument('strobe', type=int)
-        parser.add_argument('brightness', type=int)
+        parser.add_argument('rgb', type=unicode, location='json')
+        parser.add_argument('strobe', type=int, location='json')
+        parser.add_argument('brightness', type=int, location='json')
 
         # Parse the arguments into an object
         args = parser.parse_args()
@@ -128,5 +135,10 @@ class Device(Resource):
         client = wrapper.Client()
         client.SendDmx(1, data, dmx_sent)
         wrapper.Run()
+
+        # If the state has changed, publish a state-change event.
+        if cache != self.hash():
+            self.service.publish('device-state-changed.{}'.format(self.identifier),
+                                 self.to_json())
 
         return self.to_json(), 200

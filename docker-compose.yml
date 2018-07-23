@@ -45,3 +45,8 @@ services:
       - 9090:9090
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
