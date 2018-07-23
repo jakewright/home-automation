@@ -68,8 +68,10 @@ class DeviceList(Resource):
         parser.add_argument('controller_name', required=True, location='json')
         parser.add_argument('room_identifier', required=True, location='json')
 
-        parser.add_argument('depends_on', type=list, required=False, location='json')
-        parser.add_argument('state_providers', type=list, required=False, location='json')
+        parser.add_argument(
+            'depends_on', type=list, required=False, location='json')
+        parser.add_argument(
+            'state_providers', type=list, required=False, location='json')
 
         # Parse the arguments into an object
         args = parser.parse_args()

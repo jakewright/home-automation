@@ -1,7 +1,6 @@
 import markdown
 import os
 import requests
-import sys
 from flask import Flask, g, Markup, render_template
 from flask_restful import Api, reqparse, Resource
 
@@ -34,7 +33,7 @@ class Service:
         """Present some documentation."""
 
         # Get the path of the running script (not this script)
-        path = os.path.abspath(os.path.dirname(sys.argv[0]))
+        path = os.path.abspath(os.getcwd())
 
         # Open the README file
         with open(path + '/README.md', 'r') as markdown_file:
