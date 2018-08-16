@@ -31,6 +31,7 @@ def create_app():
 
 
 # This is awful but store state as global variables
+# @todo: make this work with multiple devices
 rgb = '#000000'
 brightness = 0
 strobe = 0
