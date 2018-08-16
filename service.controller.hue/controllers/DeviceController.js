@@ -3,11 +3,11 @@ export default class DeviceController {
     this.lights = lights;
 
     /* Middleware */
-    express.use('/device/:deviceId', this.loadDevice.bind(this));
+    express.use("/device/:deviceId", this.loadDevice.bind(this));
 
     /* Routes */
-    express.get('/device/:deviceId', this.retrieveDevice.bind(this));
-    express.patch('/device/:deviceId', this.updateDevice.bind(this));
+    express.get("/device/:deviceId", this.retrieveDevice.bind(this));
+    express.patch("/device/:deviceId", this.updateDevice.bind(this));
   }
 
   /**
@@ -18,7 +18,7 @@ export default class DeviceController {
 
     if (!req.device) {
       res.status(404);
-      res.json({ message: 'Device not found' })
+      res.json({ message: "Device not found" });
       return;
     }
 
@@ -31,7 +31,7 @@ export default class DeviceController {
    * Retrieve a device's current state
    */
   retrieveDevice(req, res) {
-    res.json({ message: 'Device', data: req.device });
+    res.json({ message: "Device", data: req.device });
   }
 
   /**
@@ -40,6 +40,6 @@ export default class DeviceController {
   async updateDevice(req, res) {
     req.device.setState(req.body);
     await req.device.save();
-    res.json({ message: 'Updated device', data: req.device });
+    res.json({ message: "Updated device", data: req.device });
   }
 }

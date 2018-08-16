@@ -1,4 +1,4 @@
-import huejay from 'huejay';
+import huejay from "huejay";
 
 export default class HueBridgeClient {
   /**
@@ -21,14 +21,14 @@ export default class HueBridgeClient {
   }
 
   connect() {
-    console.log('Connecting to Hue Bridge');
+    console.log("Connecting to Hue Bridge");
     this.client = new huejay.Client(this.config);
   }
 
   createUser() {
-    if (this.config.username) throw new Error('User is already set');
-    let user = new this.client.users.User;
-    return this.client.users.create(user)
+    if (this.config.username) throw new Error("User is already set");
+    let user = new this.client.users.User();
+    return this.client.users.create(user);
   }
 
   getAllUsers() {
@@ -47,4 +47,3 @@ export default class HueBridgeClient {
     return this.client.lights.save(light);
   }
 }
-

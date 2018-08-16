@@ -1,6 +1,6 @@
-import EventEmitter from 'events';
-import Promise from 'bluebird';
-import HueBridgeClient from '../api/HueBridgeClient';
+import EventEmitter from "events";
+import Promise from "bluebird";
+import HueBridgeClient from "../api/HueBridgeClient";
 
 export default class HueLight extends EventEmitter {
   /**
@@ -34,8 +34,12 @@ export default class HueLight extends EventEmitter {
     this.pollingTimer = setInterval(() => {
       this.fetchRemoteState()
         .then(this.applyRemoteState)
-        .catch((err) => {
-          console.error(`An error occurred while refreshing state for device ${this.identifier}: ${err.message}`);
+        .catch(err => {
+          console.error(
+            `An error occurred while refreshing state for device ${
+              this.identifier
+            }: ${err.message}`
+          );
         });
     }, interval);
   }
@@ -53,8 +57,8 @@ export default class HueLight extends EventEmitter {
    * @param {state} Object
    */
   setState(state) {
-    if ('power' in state) this.setPower(state.power);
-    if ('brightness' in state) this.setBrightess(state.brightness);
+    if ("power" in state) this.setPower(state.power);
+    if ("brightness" in state) this.setBrightess(state.brightness);
   }
 
   /**
@@ -73,7 +77,7 @@ export default class HueLight extends EventEmitter {
     // The light object is returned from the Huejay library and is needed to save changes, so
     // fetchRemoteState() must be called before save() (and thus prepareLight()).
     if (this.light === null) {
-      throw new Error('State must be fetched before saving is allowed');
+      throw new Error("State must be fetched before saving is allowed");
     }
 
     this.light.on = this.power;
@@ -108,7 +112,7 @@ export default class HueLight extends EventEmitter {
 
     // If the state has changed, emit an event
     if (oldCache !== this.cache) {
-      super.emit('state-change', this.toJSON());
+      super.emit("state-change", this.toJSON());
     }
   }
 
@@ -145,7 +149,7 @@ export default class HueLight extends EventEmitter {
       controllerName: this.controllerName,
       availableProperties: this.getProperties(),
       power: this.power,
-      brightness: this.brightness,
+      brightness: this.brightness
     };
   }
 
@@ -155,10 +159,13 @@ export default class HueLight extends EventEmitter {
    */
   getProperties() {
     return {
-      power: { type: 'bool' },
+      power: { type: "bool" },
       brightness: {
-        type: 'int', min: 0, max: 100, interpolation: 'continuous',
-      },
+        type: "int",
+        min: 0,
+        max: 100,
+        interpolation: "continuous"
+      }
     };
   }
 
