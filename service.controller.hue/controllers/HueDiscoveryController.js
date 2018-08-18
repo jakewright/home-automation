@@ -1,6 +1,6 @@
-import huejay from "huejay";
+const huejay = require("huejay");
 
-export default class HueDiscoveryController {
+class HueDiscoveryController {
   constructor(express, client) {
     this.client = client;
 
@@ -11,33 +11,49 @@ export default class HueDiscoveryController {
     express.get("/hue/bridge/lights", this.getAllLights.bind(this));
   }
 
-  async discoverBridges(req, res) {
-    const bridges = await client.discover();
-    res.json({ message: `${bridges.length} bridges found`, data: bridges });
+  discoverBridges(req, res, next) {
+    this.client
+      .discover()
+      .then(bridges => {
+        res.json({ message: `${bridges.length} bridges found`, data: bridges });
+      })
+      .catch(next);
   }
 
-  async createUser(req, res) {
-    try {
-      const user = await this.client.createUser();
-      res.json({ message: `User ${user.username} created`, data: user });
-    } catch (err) {
-      if (err instanceof huejay.Error && err.type === 101) {
-        res.status(412);
-        res.json({ message: "Link button not pressed" });
-        return;
-      }
+  createUser(req, res, next) {
+    this.client
+      .createUser()
+      .then(user => {
+        res.json({ message: `User ${user.username} created`, data: user });
+      })
+      .catch(err => {
+        if (err instanceof huejay.Error && err.type === 101) {
+          res.status(412);
+          res.json({ message: "Link button not pressed" });
+          return;
+        }
 
-      throw err;
-    }
+        next(err);
+      });
   }
 
-  async getAllUsers(req, res) {
-    const users = await this.client.getAllUsers();
-    res.json({ message: "Success", data: users });
+  getAllUsers(req, res, next) {
+    this.client
+      .getAllUsers()
+      .then(users => {
+        res.json({ message: "Success", data: users });
+      })
+      .catch(next);
   }
 
-  async getAllLights(req, res) {
-    const lights = await this.client.getAllLights();
-    res.json({ message: "Success", data: lights });
+  getAllLights(req, res, next) {
+    this.client
+      .getAllLights()
+      .then(lights => {
+        res.json({ message: "Success", data: lights });
+      })
+      .catch(err);
   }
 }
+
+exports = module.exports = HueDiscoveryController;

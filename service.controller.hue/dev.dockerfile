@@ -1,11 +1,17 @@
 FROM node:8.11
 
+# Install nodemon
+RUN npm install -g nodemon
+
+# Add the libraries
+RUN mkdir -p /usr/src/libraries/javascript
+COPY ./libraries/javascript /usr/src/libraries/javascript
+WORKDIR /usr/src/libraries/javascript
+RUN npm install
+
 # Create app directory
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
-
-# Install nodemon
-RUN npm install -g nodemon
 
 # Install app dependencies
 COPY ./service.controller.hue/package.json .

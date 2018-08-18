@@ -1,18 +1,15 @@
-import _ from "lodash";
+const _ = require("lodash");
 
 const HUE_MIN = 0;
-const HUE_MATCH = 65536;
+const HUE_MAX = 65536;
 const SAT_MIN = 0;
 const SAT_MAX = 254;
 
-export default (ColorDecorator = hueLight => {
+const ColorDecorator = hueLight => {
   hueLight.color = { hue: 0, saturation: 0 };
 
   hueLight.setColor = ({ hue, saturation }) => {
     if (_.isEqual(hueLight.color, { hue, saturation })) return;
-
-    if (!hue) throw new Error("Must set hue");
-    if (!saturation) throw new Error("Must set saturation");
 
     if (hue < HUE_MIN || hue > HUE_MAX) throw new Error(`Invalid hue '${hue}'`);
     if (saturation < SAT_MIN || saturation > SAT_MAX)
@@ -22,38 +19,51 @@ export default (ColorDecorator = hueLight => {
     hueLight.power = true;
   };
 
+  const setState = hueLight.setState;
   hueLight.setState = state => {
-    huelight.setState(state);
+    setState.call(hueLight, state);
     if ("color" in state) hueLight.setColor(state.color);
   };
 
+  const prepareLight = hueLight.prepareLight;
   hueLight.prepareLight = () => {
-    hueLight.prepareLight();
+    prepareLight.call(hueLight);
 
-    hueLight.light.hue = hueLight.color.hue;
-    hueLight.light.saturation = hueLight.color.saturation;
+    // Don't try to set color if the light is off
+    if (!hueLight.power) return;
 
-    return hueLight.light;
+    if (hueLight.cache.hue !== hueLight.color.hue) {
+      hueLight.light.hue = hueLight.color.hue;
+    }
+
+    if (hueLight.cache.saturation !== hueLight.color.saturation) {
+      hueLight.light.saturation = hueLight.color.saturation;
+    }
   };
 
+  const applyRemoteState = hueLight.applyRemoteState;
   hueLight.applyRemoteState = light => {
     hueLight.setColor({
       hue: light.hue,
       saturation: light.saturation
     });
 
-    hueLight.applyRemoteState(light);
+    applyRemoteState.call(hueLight, light);
   };
 
+  const toJSON = hueLight.toJSON;
   hueLight.toJSON = () => {
-    let json = hueLight.toJSON();
+    let json = toJSON.call(hueLight);
     json["color"] = hueLight.color;
     return json;
   };
 
+  const getProperties = hueLight.getProperties;
   hueLight.getProperties = () => {
-    let properties = hueLight.getProperties();
+    let properties = getProperties.call(hueLight);
     properties["color"] = { type: "color" };
     return properties;
   };
-});
+};
+
+exports = module.exports = ColorDecorator;

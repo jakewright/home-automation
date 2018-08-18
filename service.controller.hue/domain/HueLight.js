@@ -1,8 +1,7 @@
-import EventEmitter from "events";
-import Promise from "bluebird";
-import HueBridgeClient from "../api/HueBridgeClient";
+const EventEmitter = require("events");
+const HueBridgeClient = require("../api/HueBridgeClient");
 
-export default class HueLight extends EventEmitter {
+class HueLight extends EventEmitter {
   /**
    * @param {Object} config Configuration for the device
    * @param {string} config.identifier The unique identifier for the device
@@ -18,7 +17,7 @@ export default class HueLight extends EventEmitter {
     this.identifier = config.identifier;
     this.name = config.name;
     this.type = config.type;
-    this.room = config.room;
+    this.controllerName = config.controllerName;
     this.hueId = config.hueId;
     this.client = config.client;
 
@@ -58,16 +57,15 @@ export default class HueLight extends EventEmitter {
    */
   setState(state) {
     if ("power" in state) this.setPower(state.power);
-    if ("brightness" in state) this.setBrightess(state.brightness);
+    if ("brightness" in state) this.setBrightness(state.brightness);
   }
 
   /**
    * Apply the local state to the remote bulb via the Hue Bridge
    */
   save() {
-    return Promise.try(this.prepareLight)
-      .then(this.client.saveLight)
-      .then(this.applyRemoteState);
+    this.prepareLight();
+    return this.client.saveLight(this.light).then(this.applyRemoteState);
   }
 
   /**
@@ -80,10 +78,16 @@ export default class HueLight extends EventEmitter {
       throw new Error("State must be fetched before saving is allowed");
     }
 
-    this.light.on = this.power;
-    this.light.brightness = Math.floor(this.brightness * 2.54);
+    if (this.light.on !== this.power) {
+      this.light.on = this.power;
+    }
 
-    return this.light;
+    if (!this.power) return;
+
+    const brightness = Math.floor(this.brightness * 2.54);
+    if (this.light.brightness !== brightness) {
+      this.light.brightness = brightness;
+    }
   }
 
   /**
@@ -102,16 +106,19 @@ export default class HueLight extends EventEmitter {
     this.light = light;
 
     this.setPower(light.on);
-    this.setBrightness(Math.ceil(light.brightness / 2.54));
+
+    // Don't use the setter for brightness because it will override
+    // the power state.
+    this.brightness = Math.ceil(light.brightness / 2.54);
 
     const oldCache = this.cache;
-    this.cache = this.hash();
+    this.cache = this.createCache();
 
     // Return early if this is the first invocation of this function
     if (oldCache === undefined) return;
 
     // If the state has changed, emit an event
-    if (oldCache !== this.cache) {
+    if (JSON.stringify(oldCache) !== JSON.stringify(this.cache)) {
       super.emit("state-change", this.toJSON());
     }
   }
@@ -170,15 +177,16 @@ export default class HueLight extends EventEmitter {
   }
 
   /**
-   * Return a string representation of the current state of the device. Used for checking whether
-   * state has changed when emitting events.
+   * Return an object representing the current state of the device.
    */
-  hash() {
-    const cache = {};
-    for (const property in this.properties) {
+  createCache() {
+    let cache = {};
+    for (const property in this.getProperties()) {
       cache[property] = this[property];
     }
 
-    return JSON.stringify(cache);
+    return cache;
   }
 }
+
+exports = module.exports = HueLight;

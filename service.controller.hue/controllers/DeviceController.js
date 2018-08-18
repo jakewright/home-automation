@@ -1,4 +1,4 @@
-export default class DeviceController {
+class DeviceController {
   constructor(express, lights) {
     this.lights = lights;
 
@@ -13,7 +13,7 @@ export default class DeviceController {
   /**
    * Middleware to load the device and update it's state
    */
-  async loadDevices(req, res, next) {
+  loadDevice(req, res, next) {
     req.device = this.lights[req.params.deviceId];
 
     if (!req.device) {
@@ -22,9 +22,11 @@ export default class DeviceController {
       return;
     }
 
-    const state = await req.device.fetchRemoteState();
-    req.device.applyRemoteState(state);
-    next();
+    req.device
+      .fetchRemoteState()
+      .then(req.device.applyRemoteState)
+      .then(next)
+      .catch(next);
   }
 
   /**
@@ -37,9 +39,15 @@ export default class DeviceController {
   /**
    * Update a device. Only properties that are set will be updated.
    */
-  async updateDevice(req, res) {
-    req.device.setState(req.body);
-    await req.device.save();
-    res.json({ message: "Updated device", data: req.device });
+  updateDevice(req, res, next) {
+    req.device.setState(req.body)
+
+    req.device.save()
+    .then(() => {
+        res.json({ message: "Updated device", data: req.device });
+      })
+      .catch(next);
   }
 }
+
+exports = module.exports = DeviceController;

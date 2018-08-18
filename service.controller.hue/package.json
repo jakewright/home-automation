@@ -4,11 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "debug": "nodemon --inspect=0.0.0.0:9229 index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jake Wright",
   "license": "MIT",
   "devDependencies": {
     "prettier": "^1.14.2"
+  },
+  "dependencies": {
+    "huejay": "^1.8.4",
+    "lodash": "^4.17.10"
   }
 }

@@ -1,11 +1,24 @@
 /**
+ * @param {string} rgb hexadecimal RGB string e.g. #FBEE13
+ *
+ * @return {array} x and y values
+ */
+const rgbHexToXy = rgb => {
+  return rgbToXy(
+    parseInt(rgb.substring(1, 3), 16),
+    parseInt(rgb.substring(3, 5), 16),
+    parseInt(rgb.substring(5, 7), 16)
+  );
+}
+
+/**
  * https://developers.meethue.com/documentation/color-conversions-rgb-xy
  *
  * @param {number} r Red 0-255 (inclusive)
  * @param {number} g Green 0-255 (inclusive)
  * @param {number} b Blue 0-255 (inclusive)
  *
- * @return {array} [description]
+ * @return {array} x and y values
  */
 const rgbToXy = (r, g, b) => {
   // The algorithm below can't handle #000000 so just set it to white instead
@@ -33,12 +46,23 @@ const rgbToXy = (r, g, b) => {
 };
 
 /**
+ * @param {number} 0-1 (inclusive)
+ * @param {number} 0-1 (inclusive)
+ *
+ * @return {string} Hexadecimal RGB string
+ */
+const xyToRgbHex = (x, y) => {
+  const rgb = xyToRgb(x, y);
+  return `#${rgb.map(x => x.toString(16).padStart(2, "0")).join("")}`
+}
+
+/**
  * https://developers.meethue.com/documentation/color-conversions-rgb-xy
  *
  * @param {number} x 0-1 (inclusive)
  * @param {number} y 0-1 (inclusive)
  *
- * @return {[type]} [description]
+ * @return {array} red, green and blue values
  */
 const xyToRgb = (x, y) => {
   const z = 1.0 - x - y;
@@ -105,4 +129,4 @@ const xyToRgb = (x, y) => {
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 };
 
-export { rgbToXy, xyToRgb };
+exports = module.exports = { rgbHexToXy, xyToRgbHex };

@@ -1,32 +1,34 @@
-import { rgbToXy, xyToRgb } from "./conversions";
+const conversions = require("./conversions");
 
-export default (RgbDecorator = hueLight => {
+const RgbDecorator = hueLight => {
   hueLight.rgb = "#000000";
 
+  const setState = hueLight.setState;
   hueLight.setState = state => {
-    huelight.setState(state);
+    setState.call(hueLight, state);
     if ("rgb" in state) hueLight.setRgb(state.rgb);
   };
 
+  const prepareLight = hueLight.prepareLight;
   hueLight.prepareLight = () => {
-    hueLight.prepareLight();
+    prepareLight.call(hueLight);
 
-    hueLight.light.xy = rgbToXy(
-      parseInt(hueLight.rgb.substring(1, 3), 16),
-      parseInt(hueLight.rgb.substring(3, 5), 16),
-      parseInt(hueLight.rgb.substring(5, 7), 16)
-    );
+    // Don't try to set xy if the light is off
+    if (!hueLight.power) return;
 
-    return hueLight.light;
+    // Don't try to set xy if the RGB value hasn't changed
+    if (hueLight.cache.rgb === hueLight.rgb) return;
+
+    hueLight.light.xy = conversions.rgbHexToXy(hueLight.rgb);
+
   };
 
+  const applyRemoteState = hueLight.applyRemoteState;
   hueLight.applyRemoteState = light => {
-    const rgb = xyToRgb(light.xy[0], light.xy[1]);
-    hueLight.setRgb(
-      `#${rgb.map(x => x.toString(16).padStart(2, "0")).join("")}`
-    );
+    const rgb = conversions.xyToRgbHex(light.xy[0], light.xy[1]);
+    hueLight.setRgb(rgb);
 
-    hueLight.applyRemoteState(light);
+    applyRemoteState.call(hueLight, light);
   };
 
   hueLight.setRgb = rgb => {
@@ -39,15 +41,19 @@ export default (RgbDecorator = hueLight => {
     hueLight.power = true;
   };
 
+  const toJSON = hueLight.toJSON;
   hueLight.toJSON = () => {
-    let json = hueLight.toJSON();
+    let json = toJSON.call(hueLight);
     json["rgb"] = hueLight.rgb;
     return json;
   };
 
+  const getProperties = hueLight.getProperties;
   hueLight.getProperties = () => {
-    let properties = hueLight.getProperties();
+    let properties = getProperties.call(hueLight);
     properties["rgb"] = { type: "rgb" };
     return properties;
   };
-});
+};
+
+exports = module.exports = RgbDecorator;

@@ -1,6 +1,6 @@
-import huejay from "huejay";
+const huejay = require("huejay");
 
-export default class HueBridgeClient {
+class HueBridgeClient {
   /**
    * @param {Object} config
    * @param {string} config.host Host of the Hue Bridge
@@ -16,34 +16,36 @@ export default class HueBridgeClient {
     return this.client;
   }
 
-  discover() {
-    return this.getClient().discover();
-  }
-
   connect() {
     console.log("Connecting to Hue Bridge");
     this.client = new huejay.Client(this.config);
   }
 
+  discover() {
+    return huejay.discover();
+  }
+
   createUser() {
     if (this.config.username) throw new Error("User is already set");
     let user = new this.client.users.User();
-    return this.client.users.create(user);
+    return this.getClient().users.create(user);
   }
 
   getAllUsers() {
-    return this.client.users.getAll();
+    return this.getClient().users.getAll();
   }
 
   getLightById(id) {
-    return this.client.lights.getById(id);
+    return this.getClient().lights.getById(id);
   }
 
   getAllLights() {
-    return this.client.lights.getAll();
+    return this.getClient().lights.getAll();
   }
 
   saveLight(light) {
-    return this.client.lights.save(light);
+    return this.getClient().lights.save(light);
   }
 }
+
+exports = module.exports = HueBridgeClient;
