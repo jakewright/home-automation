@@ -17,7 +17,7 @@ Vue.use(Vuex);
 
 Vue.config.productionTip = false;
 
-const apiGateway = (process.env.NODE_ENV === 'production') ? 'http://192.168.1.210:5005' : 'http://localhost:5005';
+const apiGateway = (process.env.NODE_ENV === 'production') ? 'http://192.168.1.100:7005' : 'http://localhost:5005';
 export const apiClient = new ApiClient(apiGateway);
 
 new Vue({

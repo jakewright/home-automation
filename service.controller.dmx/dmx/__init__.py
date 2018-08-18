@@ -139,7 +139,8 @@ class Device(Resource):
 
         # If the state has changed, publish a state-change event.
         if cache != self.hash():
-            self.service.publish('device-state-changed.{}'.format(self.identifier),
-                                 self.to_json())
+            self.service.publish(
+                'device-state-changed.{}'.format(self.identifier),
+                self.to_json())
 
         return self.to_json(), 200

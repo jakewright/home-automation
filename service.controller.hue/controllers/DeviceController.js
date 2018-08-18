@@ -24,7 +24,7 @@ class DeviceController {
 
     req.device
       .fetchRemoteState()
-      .then(req.device.applyRemoteState)
+      .then(req.device.applyRemoteState.bind(req.device))
       .then(next)
       .catch(next);
   }

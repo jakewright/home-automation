@@ -1,1 +1,1 @@
-DATABASE = 'devices.db'
+DATABASE = 'data/devices.db'

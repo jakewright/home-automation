@@ -65,7 +65,7 @@ class HueLight extends EventEmitter {
    */
   save() {
     this.prepareLight();
-    return this.client.saveLight(this.light).then(this.applyRemoteState);
+    return this.client.saveLight(this.light).then(this.applyRemoteState.bind(this));
   }
 
   /**
