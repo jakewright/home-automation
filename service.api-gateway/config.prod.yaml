@@ -2,7 +2,7 @@ apis:
   service.registry.device:
     name: Device Registry
     prefix: service.registry.device
-    upstream_url: http://192.168.1.210:5001
+    upstream_url: http://192.168.1.100:7001
     allow_cross_origin: true
 
   controller-1:
@@ -15,4 +15,10 @@ apis:
     name: DMX Controller
     prefix: service.controller.dmx
     upstream_url: http://192.168.1.213:5006
+    allow_cross_origin: true
+
+  service.controller.hue:
+    name: Hue Controller
+    prefix: service.controller.hue
+    upstream_url: http://192.168.1.100:7007
     allow_cross_origin: true

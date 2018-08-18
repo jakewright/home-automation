@@ -10,3 +10,9 @@ apis:
     prefix: service.controller.dmx
     upstream_url: http://service.controller.dmx:5006
     allow_cross_origin: true
+
+  service.controller.hue:
+    name: Hue Controller
+    prefix: service.controller.hue
+    upstream_url: http://service.controller.hue:5007
+    allow_cross_origin: true
