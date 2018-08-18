@@ -1,2 +1,2 @@
-const Service = require("./service");
+const Service = require("./Service");
 exports = module.exports = Service;
