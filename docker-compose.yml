@@ -46,6 +46,21 @@ services:
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
 
+  service.controller.hue:
+    build:
+      dockerfile: ./service.controller.hue/dev.dockerfile
+      context: .
+    image: home-automation-controller-hue
+    volumes:
+      - ./service.controller.hue:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./libraries/javascript:/usr/src/libraries/javascript
+      - /usr/src/libraries/javascript/node_modules
+    ports:
+      - 5007:5007
+    environment:
+      NODE_ENV: development
+
   redis:
     image: redis:latest
     ports:
