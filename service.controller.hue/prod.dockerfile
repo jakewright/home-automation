@@ -1,7 +1,5 @@
 FROM node:8.11
-
-# Install nodemon
-RUN npm install -g nodemon
+ENV NODE_ENV=production
 
 # Add the libraries
 RUN mkdir -p /usr/src/libraries/javascript
@@ -20,6 +18,6 @@ RUN npm install
 # Bundle app source
 COPY ./service.controller.hue .
 
-# Expose ports for web access and debugging
-EXPOSE 5007 9229
-CMD [ "npm", "run", "debug" ]
+# Expose ports for web access
+EXPOSE 5007
+CMD [ "npm", "run", "start" ]

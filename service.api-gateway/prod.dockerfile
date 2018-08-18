@@ -1,2 +1,2 @@
 FROM jakewright/drawbridge
-COPY ./config.prod.yaml /config/config.yaml
+COPY ./service.api-gateway/config.prod.yaml /config/config.yaml
