@@ -10,7 +10,7 @@ services:
       - ./web.client:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - 5000:8080
+      - 7000:8080
 
   service.registry.device:
     build:
@@ -21,7 +21,7 @@ services:
       - ./service.registry.device:/usr/src/app
       - ./libraries/python:/root/.local/lib/python3.5/site-packages
     ports:
-      - 5001:5001
+      - 7001:80
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
 
@@ -34,7 +34,7 @@ services:
       - ./service.event-bus:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - 5004:80
+      - 7004:80
     environment:
       NODE_ENV: development
 
@@ -43,7 +43,7 @@ services:
     volumes:
       - ./service.api-gateway/config.dev.yaml:/config/config.yaml
     ports:
-      - 5005:80
+      - 7005:80
 
   service.controller.dmx:
     build:
@@ -54,7 +54,7 @@ services:
       - ./service.controller.dmx:/usr/src/app
       - ./libraries/python:/root/.local/lib/python2.7/site-packages
     ports:
-      - 5006:5006
+      - 7006:80
       - 9090:9090
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
@@ -70,7 +70,7 @@ services:
       - ./libraries/javascript:/usr/src/libraries/javascript
       - /usr/src/libraries/javascript/node_modules
     ports:
-      - 5007:5007
+      - 7007:80
     environment:
       NODE_ENV: development
 

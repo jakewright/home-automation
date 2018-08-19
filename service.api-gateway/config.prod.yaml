@@ -14,7 +14,7 @@ apis:
   service.controller.dmx:
     name: DMX Controller
     prefix: service.controller.dmx
-    upstream_url: http://192.168.1.213:5006
+    upstream_url: http://192.168.1.213:7006
     allow_cross_origin: true
 
   service.controller.hue:

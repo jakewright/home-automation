@@ -2,17 +2,17 @@ apis:
   service.registry.device:
     name: Device Registry
     prefix: service.registry.device
-    upstream_url: http://service.registry.device:5001
+    upstream_url: http://service.registry.device
     allow_cross_origin: true
 
   service.controller.dmx:
     name: DMX Controller
     prefix: service.controller.dmx
-    upstream_url: http://service.controller.dmx:5006
+    upstream_url: http://service.controller.dmx
     allow_cross_origin: true
 
   service.controller.hue:
     name: Hue Controller
     prefix: service.controller.hue
-    upstream_url: http://service.controller.hue:5007
+    upstream_url: http://service.controller.hue
     allow_cross_origin: true

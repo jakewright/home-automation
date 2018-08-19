@@ -18,6 +18,4 @@ RUN npm install
 # Bundle app source
 COPY ./service.controller.hue .
 
-# Expose ports for web access
-EXPOSE 5007
 CMD [ "npm", "run", "start" ]

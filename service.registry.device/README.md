@@ -1,13 +1,5 @@
 # Home Automation Device Registry
 
-## Development
-
-### Running
-You can start the device registry by typing `make start`. The service will be available at port 5001.
-
-### Testing
-You can run the test suite by typing `make test`.
-
 ## Usage
 All responses will have the form:
 

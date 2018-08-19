@@ -21,5 +21,5 @@ RUN npm install
 COPY ./service.controller.hue .
 
 # Expose ports for web access and debugging
-EXPOSE 5007 9229
+EXPOSE 80 9229
 CMD [ "npm", "run", "debug" ]

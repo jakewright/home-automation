@@ -17,7 +17,7 @@ Vue.use(Vuex);
 
 Vue.config.productionTip = false;
 
-const apiGateway = (process.env.NODE_ENV === 'production') ? 'http://192.168.1.100:7005' : 'http://localhost:5005';
+const apiGateway = (process.env.NODE_ENV === 'production') ? 'http://192.168.1.100:7005' : 'http://localhost:7005';
 export const apiClient = new ApiClient(apiGateway);
 
 new Vue({
@@ -26,6 +26,6 @@ new Vue({
   router,
 }).$mount('#app');
 
-const eventBusUrl = (process.env.NODE_ENV === 'production') ? 'ws://192.168.1.210:5004' : 'ws://localhost:5004';
+const eventBusUrl = (process.env.NODE_ENV === 'production') ? 'ws://192.168.1.100:7004' : 'ws://localhost:7004';
 const eventConsumer = new EventConsumer(eventBusUrl, store);
 eventConsumer.listen();
