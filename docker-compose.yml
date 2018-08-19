@@ -16,7 +16,7 @@ services:
     build:
       dockerfile: ./service.registry.device/Dockerfile
       context: .
-    image: home-automation-device-registry
+    image: home-automation-service-device-registry
     volumes:
       - ./service.registry.device:/usr/src/app
       - ./libraries/python:/root/.local/lib/python3.5/site-packages
@@ -24,6 +24,17 @@ services:
       - 7001:80
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
+
+  service.config:
+    build:
+      dockerfile: ./service.config/dev.dockerfile
+      context: .
+    image: home-automation-service-config
+    volumes:
+      - .:/go/src/home-automation
+      - ./service.config/data/dev.yaml:/data/config.yaml
+    ports:
+     - 7002:80
 
   service.event-bus:
     build:
