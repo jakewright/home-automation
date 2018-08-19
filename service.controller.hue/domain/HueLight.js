@@ -32,7 +32,7 @@ class HueLight extends EventEmitter {
   startPolling(interval = 5000) {
     this.pollingTimer = setInterval(() => {
       this.fetchRemoteState()
-        .then(this.applyRemoteState)
+        .then(this.applyRemoteState.bind(this))
         .catch(err => {
           console.error(
             `An error occurred while refreshing state for device ${
@@ -119,7 +119,7 @@ class HueLight extends EventEmitter {
 
     // If the state has changed, emit an event
     if (JSON.stringify(oldCache) !== JSON.stringify(this.cache)) {
-      super.emit("state-change", this.toJSON());
+      super.emit("device-state-changed", this.toJSON());
     }
   }
 

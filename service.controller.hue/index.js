@@ -49,6 +49,13 @@ const HueDiscoveryController = require("./controllers/HueDiscoveryController");
         }
       }
 
+      light.on('device-state-changed', state => {
+        console.log(`State changed for device ${state.identifier}`);
+        service.redisClient.publish(`device-state-changed.${state.identifier}`, JSON.stringify(state));
+      });
+
+      light.startPolling();
+
       console.log(`Controlling light '${light.identifier}'`);
       lights[light.identifier] = light;
     }

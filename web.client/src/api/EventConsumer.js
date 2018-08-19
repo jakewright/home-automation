@@ -7,7 +7,6 @@ export default class EventConsumer {
   }
 
   listen() {
-    console.log('Connecting to web socket...');
     this.socket = new WebSocket(this.url);
     this.socket.onmessage = (event) => {
       try {
