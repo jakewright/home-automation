@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "service.controller.dmx"
+		}
+	],
+	"settings": {
+		"python.pythonPath": "/usr/local/bin/python3"
+	}
+}
