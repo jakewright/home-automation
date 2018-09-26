@@ -1,7 +1,4 @@
-const EventEmitter = require("events");
-const HueBridgeClient = require("../api/HueBridgeClient");
-
-class HueLight extends EventEmitter {
+class HueLight {
   /**
    * @param {Object} config Configuration for the device
    * @param {string} config.identifier The unique identifier for the device
@@ -9,139 +6,41 @@ class HueLight extends EventEmitter {
    * @param {string} config.type The type of the device
    * @param {string} config.controllerName The name of this controller
    * @param {number} config.hueId The ID of the lamp on the Hue bridge
-   * @param {HueBridgeClient} config.client An instance of the HueBridgeClient
    */
   constructor(config) {
-    super();
-
     this.identifier = config.identifier;
     this.name = config.name;
     this.type = config.type;
     this.controllerName = config.controllerName;
     this.hueId = config.hueId;
-    this.client = config.client;
-
-    this.power = false;
-    this.brightness = 0;
   }
 
-  /**
-   * Poll the device every `interval` milliseconds
-   * @param {number} interval ms
-   */
-  startPolling(interval = 5000) {
-    this.pollingTimer = setInterval(() => {
-      this.fetchRemoteState()
-        .then(this.applyRemoteState.bind(this))
-        .catch(err => {
-          console.error(
-            `An error occurred while refreshing state for device ${
-              this.identifier
-            }: ${err.message}`
-          );
-        });
-    }, interval);
-  }
+  transform(state) {
+    const t = {};
 
-  /**
-   * Stop polling for state changes
-   */
-  stopPolling() {
-    clearInterval(this.pollingTimer);
-    this.pollingTimer = null;
+    if ("power" in state) {
+      t.on = Boolean(state.power);
+    }
+
+    if ("brightness" in state) {
+      if (state.brightness < 0 || state.brightness > 254) {
+        throw new Error(`Invalid brightness '${state.brightness}'`);
+      }
+
+      t.brightness = state.brightness;
+      t.on = t.brightness > 0;
+    }
+
+    return t;
   }
 
   /**
    * Set the state of the device from the given object. An error will be thrown if validation fails.
    * @param {state} Object
    */
-  setState(state) {
-    if ("power" in state) this.setPower(state.power);
-    if ("brightness" in state) this.setBrightness(state.brightness);
-  }
-
-  /**
-   * Apply the local state to the remote bulb via the Hue Bridge
-   */
-  save() {
-    this.prepareLight();
-    return this.client.saveLight(this.light).then(this.applyRemoteState.bind(this));
-  }
-
-  /**
-   * Set all of the properties on this.light before sending to the hue bridge
-   */
-  prepareLight() {
-    // The light object is returned from the Huejay library and is needed to save changes, so
-    // fetchRemoteState() must be called before save() (and thus prepareLight()).
-    if (this.light === null) {
-      throw new Error("State must be fetched before saving is allowed");
-    }
-
-    if (this.light.on !== this.power) {
-      this.light.on = this.power;
-    }
-
-    if (!this.power) return;
-
-    const brightness = Math.floor(this.brightness * 2.54);
-    if (this.light.brightness !== brightness) {
-      this.light.brightness = brightness;
-    }
-  }
-
-  /**
-   * Get the up-to-date state of the light from the Hue bridge
-   */
-  fetchRemoteState() {
-    return Promise.resolve(this.client.getLightById(this.hueId));
-  }
-
-  /**
-   * Set the local properties based on the response from the Hue bridge
-   * @param light
-   */
-  applyRemoteState(light) {
-    // Save this for later when we want to update the light
-    this.light = light;
-
-    this.setPower(light.on);
-
-    // Don't use the setter for brightness because it will override
-    // the power state.
-    this.brightness = Math.ceil(light.brightness / 2.54);
-
-    const oldCache = this.cache;
-    this.cache = this.createCache();
-
-    // Return early if this is the first invocation of this function
-    if (oldCache === undefined) return;
-
-    // If the state has changed, emit an event
-    if (JSON.stringify(oldCache) !== JSON.stringify(this.cache)) {
-      super.emit("device-state-changed", this.toJSON());
-    }
-  }
-
-  /**
-   * Turn the light on or off
-   * @param {boolean} state
-   */
-  setPower(state) {
-    this.power = Boolean(state);
-  }
-
-  /**
-   * Set the brightness of the light
-   * @param {number} value Brightness value between 0-100
-   */
-  setBrightness(value) {
-    if (value < 0 || value > 100) {
-      throw new Error(`Invalid brightness '${value}'`);
-    }
-
-    this.brightness = value;
-    this.power = value > 0;
+  applyRemoteState(state) {
+    this.power = state.on;
+    this.brightness = state.brightness;
   }
 
   /**
@@ -149,15 +48,19 @@ class HueLight extends EventEmitter {
    * @return {Object}
    */
   toJSON() {
-    return {
+    let json = {
       identifier: this.identifier,
       name: this.name,
       type: this.type,
       controllerName: this.controllerName,
-      availableProperties: this.getProperties(),
-      power: this.power,
-      brightness: this.brightness
+      availableProperties: this.getProperties()
     };
+
+    for (let property in this.getProperties()) {
+      json[property] = this[property];
+    }
+
+    return json;
   }
 
   /**
@@ -170,22 +73,10 @@ class HueLight extends EventEmitter {
       brightness: {
         type: "int",
         min: 0,
-        max: 100,
+        max: 254,
         interpolation: "continuous"
       }
     };
-  }
-
-  /**
-   * Return an object representing the current state of the device.
-   */
-  createCache() {
-    let cache = {};
-    for (const property in this.getProperties()) {
-      cache[property] = this[property];
-    }
-
-    return cache;
   }
 }
 

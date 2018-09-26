@@ -1,14 +1,14 @@
 const huejay = require("huejay");
 
-class HueBridgeClient {
+class HueClient {
   /**
    * @param {Object} config
    * @param {string} config.host Host of the Hue Bridge
    * @param {string} config.username Optional: Hue Bridge username
    */
   constructor(config) {
-    this.client = null;
     this.config = config;
+    this.client = null;
   }
 
   getClient() {
@@ -27,7 +27,7 @@ class HueBridgeClient {
 
   createUser() {
     if (this.config.username) throw new Error("User is already set");
-    let user = new this.client.users.User();
+    let user = new this.getClient().users.User();
     return this.getClient().users.create(user);
   }
 
@@ -48,4 +48,4 @@ class HueBridgeClient {
   }
 }
 
-exports = module.exports = HueBridgeClient;
+exports = module.exports = HueClient;
