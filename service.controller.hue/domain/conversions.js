@@ -9,7 +9,7 @@ const rgbHexToXy = rgb => {
     parseInt(rgb.substring(3, 5), 16),
     parseInt(rgb.substring(5, 7), 16)
   );
-}
+};
 
 /**
  * https://developers.meethue.com/documentation/color-conversions-rgb-xy
@@ -53,8 +53,8 @@ const rgbToXy = (r, g, b) => {
  */
 const xyToRgbHex = (x, y) => {
   const rgb = xyToRgb(x, y);
-  return `#${rgb.map(x => x.toString(16).padStart(2, "0")).join("")}`
-}
+  return `#${rgb.map(x => x.toString(16).padStart(2, "0")).join("")}`;
+};
 
 /**
  * https://developers.meethue.com/documentation/color-conversions-rgb-xy
