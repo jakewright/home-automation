@@ -1,5 +1,5 @@
 {
-    "apiGateway": "http://service.api-gateway",
+    "apiGateway": "http://192.168.1.100:7005",
     "controllerName": "service.controller.hue",
     "hueBridge": {
         "host": "192.168.1.110",
@@ -7,7 +7,7 @@
     },
     "port": 80,
     "redis": {
-        "host": "redis",
+        "host": "192.168.1.100",
         "port": 6379
     }
 }
