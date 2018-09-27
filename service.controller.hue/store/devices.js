@@ -1,5 +1,5 @@
 const Store = require("../../libraries/javascript/store");
-const hueClient = require("../api/HueClient");
+const hueClient = require("../api/hueClient");
 
 const state = {};
 

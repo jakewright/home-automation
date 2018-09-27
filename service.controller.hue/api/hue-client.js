@@ -52,7 +52,7 @@ class HueClient {
   }
 }
 
-const client = new HueClient();
-client.HueClient = HueClient;
+const hueClient = new HueClient();
+hueClient.HueClient = HueClient;
 
-exports = module.exports = client;
+exports = module.exports = hueClient;
