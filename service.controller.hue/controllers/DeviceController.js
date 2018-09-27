@@ -46,7 +46,7 @@ class DeviceController {
     }
 
     this.store
-      .dispatch("saveDevice", { deviceId: req.device, state })
+      .dispatch("saveDevice", { device: req.device, state })
       .then(() => {
         res.json({ message: "Updated device", data: req.device });
       })

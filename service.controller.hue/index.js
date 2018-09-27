@@ -5,7 +5,6 @@ const colorDecorator = require("./domain/colorDecorator");
 const colorTempDecorator = require("./domain/colorTempDecorator");
 const rgbDecorator = require("./domain/rgbDecorator");
 const hueClient = require("./api/HueClient");
-const HueService = require("./service/HueService");
 const DeviceController = require("./controllers/DeviceController");
 const HueDiscoveryController = require("./controllers/HueDiscoveryController");
 const store = require("./store/devices");
