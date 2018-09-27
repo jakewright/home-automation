@@ -27,6 +27,14 @@ class HueLight {
         throw new Error(`Invalid brightness '${state.brightness}'`);
       }
 
+      // Brightness cannot be set unless the light is on. In most cases, we
+      // can just turn the light on as part of the same request, but this
+      // would be weird if you're trying to set the brightness to zero so
+      // disallow this edge case.
+      if (state.brightness == 0 && !this.power) {
+        throw new Error(`Cannot set brightness to zero while light is off`);
+      }
+
       t.brightness = state.brightness;
       t.on = t.brightness > 0;
     }
