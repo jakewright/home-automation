@@ -7,8 +7,12 @@ class HueClient {
    * @param {string} config.username Optional: Hue Bridge username
    */
   constructor(config) {
-    this.config = config;
+    this.setConfig(config);
     this.client = null;
+  }
+
+  setConfig(config) {
+    this.config = config;
   }
 
   getClient() {
@@ -48,4 +52,7 @@ class HueClient {
   }
 }
 
-exports = module.exports = HueClient;
+const client = new HueClient();
+client.HueClient = HueClient;
+
+exports = module.exports = client;
