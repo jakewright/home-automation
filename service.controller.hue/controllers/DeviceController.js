@@ -1,6 +1,6 @@
 class DeviceController {
-  constructor(express, hueService) {
-    this.hueService = hueService;
+  constructor(express, store) {
+    this.store = store;
 
     /* Middleware */
     express.use("/device/:deviceId", this.loadDevice.bind(this));
@@ -14,7 +14,7 @@ class DeviceController {
    * Middleware to load the device and update it's state
    */
   loadDevice(req, res, next) {
-    req.device = this.hueService.findById(req.params.deviceId);
+    req.device = this.store.get("device", req.params.deviceId);
 
     if (!req.device) {
       res.status(404);
@@ -45,8 +45,8 @@ class DeviceController {
       return;
     }
 
-    this.hueService
-      .save(req.device.identifier, state)
+    this.store
+      .dispatch("saveDevice", { deviceId: req.device, state })
       .then(() => {
         res.json({ message: "Updated device", data: req.device });
       })
