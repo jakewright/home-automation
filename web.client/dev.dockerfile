@@ -1,10 +1,10 @@
 FROM node:8.11
 
 # Add the libraries
-# RUN mkdir -p /usr/src/libraries/javascript
-# WORKDIR /usr/src/libraries/javascript
-# COPY ./libraries/javascript .
-# RUN yarn install
+RUN mkdir -p /usr/src/libraries/javascript
+WORKDIR /usr/src/libraries/javascript
+COPY ./libraries/javascript .
+RUN npm install
 
 # Create app directory
 RUN mkdir -p /usr/src/app
