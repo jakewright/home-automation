@@ -1,26 +1,36 @@
 const bodyParser = require("body-parser");
-const config = require("config");
-const ApiClient = require("./ApiClient");
+const ApiClient = require("../client");
 const express = require("express");
 const redis = require("redis");
+const Config = require("./Config");
 
 class Service {
-  constructor() {
-    this.config = config;
-    // Connect to Redis
-    if (config.has("redis.host")) {
+  constructor(controllerName) {
+    this.controllerName = controllerName;
+  }
+
+  async init() {
+    /* Create API client */
+    const apiGateway = process.env.API_GATEWAY;
+    if (!apiGateway) throw new Error("API_GATEWAY env var not set");
+    this.apiClient = new ApiClient(apiGateway);
+
+    /* Load config */
+    let config = await this.apiClient.get(`service.config/read/${this.controllerName}`);
+    this.config = new Config(config);
+
+    /* Connect to Redis */
+    if (this.config.has("redis.host")) {
       this.redisClient = redis.createClient({
-        host: config.get("redis.host"),
-        port: config.get("redis.port")
+        host: this.config.get("redis.host"),
+        port: this.config.get("redis.port"),
       });
       this.redisClient.on("error", err => {
         console.error(`Redis error: ${err}`);
       });
     }
 
-    this.controllerName = config.get("controllerName");
-    this.apiClient = new ApiClient(config.get("apiGateway"));
-
+    /* Create Express app */
     this.app = express();
 
     // JSON body parser
@@ -36,8 +46,9 @@ class Service {
   }
 
   listen() {
-    this.app.listen(config.get("port"), () => {
-      console.log(`Service running on port ${config.get("port")}`);
+    const port = this.config.get("port", 80);
+    this.app.listen(port, () => {
+      console.log(`Service running on port ${port}`);
     });
   }
 }
