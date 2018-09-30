@@ -3,7 +3,7 @@ version: '3'
 services:
   web.client:
     build:
-      dockerfile: ./web.client/Dockerfile
+      dockerfile: ./web.client/dev.dockerfile
       context: .
     image: home-automation-web-client
     volumes:
