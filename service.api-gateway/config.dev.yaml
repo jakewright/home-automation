@@ -1,4 +1,10 @@
 apis:
+  service.config:
+    name: Config Service
+    prefix: service.config
+    upstream_url: http://service.config
+    allow_cross_origin: true
+
   service.registry.device:
     name: Device Registry
     prefix: service.registry.device
