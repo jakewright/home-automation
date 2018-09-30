@@ -15,6 +15,10 @@ class HueLight {
     this.hueId = config.hueId;
   }
 
+  /**
+   * Transform validates and manipulates the state into a form that is
+   * ready to apply to the light.
+   */
   transform(state) {
     const t = {};
 
