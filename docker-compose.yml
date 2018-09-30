@@ -11,10 +11,12 @@ services:
       - /usr/src/app/node_modules
     ports:
       - 7000:8080
+    env_file:
+     - ./.env
 
   service.registry.device:
     build:
-      dockerfile: ./service.registry.device/Dockerfile
+      dockerfile: ./service.registry.device/dev.dockerfile
       context: .
     image: home-automation-service-device-registry
     volumes:
@@ -24,6 +26,8 @@ services:
       - 7001:80
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
+    env_file:
+     - ./.env
 
   service.config:
     build:
@@ -35,6 +39,8 @@ services:
       - ./service.config/data/dev.yaml:/data/config.yaml
     ports:
      - 7002:80
+    env_file:
+     - ./.env
 
   service.event-bus:
     build:
@@ -48,6 +54,8 @@ services:
       - 7004:80
     environment:
       NODE_ENV: development
+    env_file:
+     - ./.env
 
   service.api-gateway:
     image: jakewright/drawbridge
@@ -55,6 +63,8 @@ services:
       - ./service.api-gateway/config.dev.yaml:/config/config.yaml
     ports:
       - 7005:80
+    env_file:
+     - ./.env
 
   service.controller.dmx:
     build:
@@ -69,6 +79,8 @@ services:
       - 9090:9090
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
+    env_file:
+     - ./.env
 
   service.controller.hue:
     build:
@@ -84,8 +96,13 @@ services:
       - 7007:80
     environment:
       NODE_ENV: development
+    env_file:
+     - ./.env
 
   redis:
     image: redis:latest
     ports:
       - 6379:6379
+    env_file:
+     - ./.env
+
