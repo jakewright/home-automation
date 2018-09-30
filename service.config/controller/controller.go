@@ -2,12 +2,12 @@ package controller
 
 import (
 	"errors"
-	"fmt"
-	"github.com/gorilla/mux"
 	"home-automation/libraries/go/client"
+	"net/http"
+
+	"github.com/gorilla/mux"
 	"home-automation/service.config/domain"
 	"home-automation/service.config/service"
-	"net/http"
 )
 
 // Controller exports the handlers for the endpoints
@@ -32,7 +32,7 @@ func (c *Controller) ReadConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client.Respond(w, fmt.Sprintf("Config for %q", serviceName), config, http.StatusOK)
+	client.Respond(w, http.StatusOK, config)
 }
 
 // ReloadConfig reads the YAML file from disk and loads changes into memory
@@ -49,5 +49,5 @@ func (c *Controller) ReloadConfig(w http.ResponseWriter, r *http.Request) {
 		msg += " (no changes made)"
 	}
 
-	client.Respond(w, msg, nil, http.StatusOK)
+	client.Respond(w, http.StatusOK, msg)
 }

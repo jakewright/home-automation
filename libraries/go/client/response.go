@@ -8,8 +8,7 @@ import (
 )
 
 type response struct {
-	Message string      `json:"message"`
-	Value   interface{} `json:"data"`
+	Value interface{} `json:"data"`
 }
 
 type errorResponse struct {
@@ -18,8 +17,8 @@ type errorResponse struct {
 }
 
 // Respond returns a response to the client
-func Respond(w http.ResponseWriter, message string, data interface{}, status int) {
-	payload := response{Message: message, Value: data}
+func Respond(w http.ResponseWriter, status int, data interface{}) {
+	payload := response{Value: data}
 	writeResponse(w, status, payload)
 }
 
