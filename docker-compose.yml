@@ -101,6 +101,18 @@ services:
     env_file:
      - ./.env
 
+  service.controller.infrared:
+    build:
+      dockerfile: ./service.controller.infrared/dev.dockerfile
+      context: .
+    image: home-automation-controller-infrared
+    volumes:
+      - .:/go/src/home-automation
+    ports:
+      - 7008:80
+    env_file:
+      - ./.env
+
   redis:
     image: redis:latest
     ports:

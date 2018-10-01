@@ -3,8 +3,8 @@ class Config {
     this.config = config;
   }
 
-  has(key) {
-    const value = this.get(key);
+  has(path) {
+    const value = this.get(path);
     return value !== undefined
   }
 
