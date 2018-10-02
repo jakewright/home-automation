@@ -1,9 +1,8 @@
-package client
+package response
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -16,19 +15,16 @@ type errorResponse struct {
 	Error   string `json:"errors"`
 }
 
-// Respond returns a response to the client
-func Respond(w http.ResponseWriter, status int, data interface{}) {
+// Write returns a response to the client
+func Write(w http.ResponseWriter, status int, data interface{}) {
 	payload := response{Value: data}
 	writeResponse(w, status, payload)
 }
 
-// RespondError returns the given error to the client with an appropriate status code
-func RespondError(w http.ResponseWriter, et ErrorType, err error) {
-	log.Println(err)
-
+// WriteError returns the given error to the client with an appropriate status code
+func WriteError(w http.ResponseWriter, et ErrorType, err error) {
 	payload := errorResponse{
-		Message: et.Message,
-		Error:   err.Error(),
+		Message: fmt.Sprintf("%s: %s", et.Message, err.Error()),
 	}
 
 	writeResponse(w, et.Status, payload)

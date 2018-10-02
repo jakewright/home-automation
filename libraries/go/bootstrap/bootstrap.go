@@ -9,14 +9,16 @@ import (
 	"os"
 )
 
-type service struct{
+// Service gives access to common features
+type Service struct {
 	ControllerName string
-	Config *config.Config
-	Redis *redis.Client
+	Config         *config.Config
+	Redis          *redis.Client
 }
 
-func NewService(controllerName string) (*service, error) {
-	service := &service{
+// Boot performs standard Service startup tasks
+func Boot(controllerName string) (*Service, error) {
+	service := &Service{
 		ControllerName: controllerName,
 	}
 
@@ -32,7 +34,7 @@ func NewService(controllerName string) (*service, error) {
 
 	// Load config
 	var configRsp map[string]interface{}
-	_, err = apiClient.Get(fmt.Sprintf("service.config/read/%s", controllerName), &configRsp)
+	_, err = apiClient.Get(fmt.Sprintf("Service.config/read/%s", controllerName), &configRsp)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +49,9 @@ func NewService(controllerName string) (*service, error) {
 		addr := fmt.Sprintf("%s:%d", host, port)
 		log.Printf("Connecting to Redis at address %s\n", addr)
 		service.Redis = redis.NewClient(&redis.Options{
-			Addr: addr,
+			Addr:     addr,
 			Password: "",
-			DB: 0,
+			DB:       0,
 		})
 	}
 

@@ -1,25 +1,34 @@
 package config
 
 import (
+	"fmt"
+	"reflect"
+	"strconv"
 	"strings"
 )
 
+// Config holds a nested map of config values and provides
+// helper functions for easier access and type casting.
 type Config struct {
 	Map map[string]interface{}
 }
 
-type configValue struct {
-	value interface{}
+// Value is returned from Get and has
+// receiver methods for casting to various types.
+type Value struct {
+	raw interface{}
 }
 
+// Has returns whether the config has a raw at the given path e.g. "redis.host"
 func (c *Config) Has(path string) bool {
 	v := c.Get(path)
-	return v.value != nil
+	return v.raw != nil
 }
 
-func (c *Config) Get(path string) configValue {
-	return configValue{
-		value: reduce(strings.Split(path, "."), c.Map),
+// Get returns the raw at the given path e.g. "redis.host"
+func (c *Config) Get(path string) Value {
+	return Value{
+		raw: reduce(strings.Split(path, "."), c.Map),
 	}
 }
 
@@ -29,7 +38,7 @@ func reduce(parts []string, value interface{}) interface{} {
 		return value
 	}
 
-	// If value is not a map then we can't continue
+	// If raw is not a map then we can't continue
 	valueMap, ok := value.(map[string]interface{})
 	if !ok {
 		return nil
@@ -44,29 +53,42 @@ func reduce(parts []string, value interface{}) interface{} {
 	return reduce(parts[1:], value)
 }
 
-func (v configValue) Int(defaults ...int) int {
-	if len(defaults) == 0 {
+// Int converts the raw to an int and panics if it cannot be represented.
+// The first default is returned if raw is not defined.
+func (v Value) Int(defaults ...int) int {
+	// Return the default if the raw is undefined
+	if v.raw == nil {
+		// Make sure there's at least one thing in the list
 		defaults = append(defaults, 0)
+		return defaults[0]
 	}
 
-	switch t := v.value.(type) {
+	switch t := v.raw.(type) {
 	case int:
 		return t
 	case float64:
+		if t != float64(int(t)) {
+			panic(fmt.Sprintf("%v cannot be represented as an int", t))
+		}
+
 		return int(t)
+	case string:
+		i, err := strconv.Atoi(t)
+		if err != nil {
+			panic(err)
+		}
+		return i
 	default:
-		return defaults[0]
+		panic(fmt.Sprintf("%v is of unsupported type %v", t, reflect.TypeOf(t).String()))
 	}
 }
 
-func (v configValue) String(defaults ...string) string {
-	if len(defaults) == 0 {
+// String converts the raw to a string. The first default is returned if raw is not defined.
+func (v Value) String(defaults ...string) string {
+	if v.raw == nil {
 		defaults = append(defaults, "")
-	}
-
-	s, ok := v.value.(string)
-	if !ok {
 		return defaults[0]
 	}
-	return s
+
+	return fmt.Sprintf("%v", v)
 }
