@@ -69,6 +69,11 @@ func (c apiClient) Request(request *Request, rspData interface{}) (*http.Respons
 		return nil, err
 	}
 
+	// Validate the status
+	if rawRsp.StatusCode < 200 || rawRsp.StatusCode > 300 {
+		return rawRsp, fmt.Errorf("request failed with status %s", rawRsp.Status)
+	}
+
 	// Validate the content type
 	contentType := rawRsp.Header.Get("Content-Type")
 	if !strings.Contains(contentType, "json") {

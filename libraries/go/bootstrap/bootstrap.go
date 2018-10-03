@@ -9,16 +9,17 @@ import (
 	"os"
 )
 
-// Service gives access to common features
+// Service gives access to common features. Do not create directly; use Boot() instead.
 type Service struct {
 	ControllerName string
+	APIClient      client.Requester
 	Config         *config.Config
 	Redis          *redis.Client
 }
 
-// Boot performs standard Service startup tasks
+// Boot performs standard service startup tasks
 func Boot(controllerName string) (*Service, error) {
-	service := &Service{
+	svc := &Service{
 		ControllerName: controllerName,
 	}
 
@@ -31,6 +32,7 @@ func Boot(controllerName string) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	svc.APIClient = apiClient
 
 	// Load config
 	var configRsp map[string]interface{}
@@ -38,22 +40,22 @@ func Boot(controllerName string) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	service.Config = &config.Config{
+	svc.Config = &config.Config{
 		Map: configRsp,
 	}
 
 	// Connect to Redis
-	if service.Config.Has("redis.host") {
-		host := service.Config.Get("redis.host").String()
-		port := service.Config.Get("redis.port").Int()
+	if svc.Config.Has("redis.host") {
+		host := svc.Config.Get("redis.host").String()
+		port := svc.Config.Get("redis.port").Int()
 		addr := fmt.Sprintf("%s:%d", host, port)
 		log.Printf("Connecting to Redis at address %s\n", addr)
-		service.Redis = redis.NewClient(&redis.Options{
+		svc.Redis = redis.NewClient(&redis.Options{
 			Addr:     addr,
 			Password: "",
 			DB:       0,
 		})
 	}
 
-	return service, nil
+	return svc, nil
 }
