@@ -1,4 +1,5 @@
 const huejay = require("huejay");
+const { fromDomain, toDomain } = require("./marshaling");
 
 class HueClient {
   /**
@@ -7,12 +8,8 @@ class HueClient {
    * @param {string} config.username Optional: Hue Bridge username
    */
   constructor(config) {
-    this.setConfig(config);
-    this.client = null;
-  }
-
-  setConfig(config) {
     this.config = config;
+    this.client = null;
   }
 
   getClient() {
@@ -39,20 +36,28 @@ class HueClient {
     return this.getClient().users.getAll();
   }
 
-  getLightById(id) {
-    return this.getClient().lights.getById(id);
+  async getAllLights() {
+    const lights = await this.getClient().lights.getAll();
+
+    // Convert to a map where the keys are the Hue IDs
+    return lights.reduce((map, light) => {
+      map[light.id] = toDomain(light);
+      return map;
+    }, {});
   }
 
-  getAllLights() {
-    return this.getClient().lights.getAll();
-  }
+  async applyState(hueId, state) {
+    state = fromDomain(state);
+    let light = await this.getClient().lights.getById(hueId);
 
-  saveLight(light) {
-    return this.getClient().lights.save(light);
+    // Apply the state to the Huejay light object
+    for (let property in state) {
+      light[property] = state[property];
+    }
+
+    light = await this.getClient().lights.save(light);
+    return toDomain(light);
   }
 }
 
-const hueClient = new HueClient();
-hueClient.HueClient = HueClient;
-
-exports = module.exports = hueClient;
+exports = module.exports = HueClient;
