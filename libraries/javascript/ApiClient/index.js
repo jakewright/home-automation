@@ -5,7 +5,7 @@ class ApiClient {
   constructor(apiGateway) {
     this.client = axios.create({
       baseURL: `${apiGateway}/`,
-      validateStatus: status => true,
+      validateStatus: () => true,
     });
   }
 

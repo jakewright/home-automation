@@ -38,6 +38,6 @@ const toSnakeCase = input => {
   });
 
   return result;
-}
+};
 
 exports = module.exports = { toCamelCase, toSnakeCase };
