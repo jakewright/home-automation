@@ -1,10 +1,10 @@
 const Service = require("../libraries/javascript/bootstrap");
 const HueLight = require("./domain/HueLight");
-const decorate = require("./domain/decorate");
 const colorDecorator = require("./domain/colorDecorator");
 const colorTempDecorator = require("./domain/colorTempDecorator");
 const rgbDecorator = require("./domain/rgbDecorator");
 const hueClient = require("./api/hueClient");
+const decorateDevice = require("./domain/decorateDevice");
 const DeviceController = require("./controllers/DeviceController");
 const HueDiscoveryController = require("./controllers/HueBridgeController");
 const HueBridgeController = require("./controllers/HueBridgeController");
@@ -90,13 +90,13 @@ const instantiateDevice = header => {
   for (let feature of header.attributes.features) {
     switch (feature) {
       case "color":
-        decorate(device, colorDecorator);
+        decorateDevice(device, colorDecorator);
         break;
       case "color-temp":
-        decorate(device, colorTempDecorator);
+        decorateDevice(device, colorTempDecorator);
         break;
       case "rgb":
-        decorate(device, rgbDecorator);
+        decorateDevice(device, rgbDecorator);
         break;
       default:
         console.error(`Unknown light feature: ${feature}`);
