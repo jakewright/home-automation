@@ -1,80 +1,71 @@
 const Service = require("../libraries/javascript/bootstrap");
+const { DeviceStore } = require("../libraries/javascript/device");
+
+const LightService = require("./service/LightService");
+const HueClient = require("./api/HueClient");
+
 const HueLight = require("./domain/HueLight");
 const colorDecorator = require("./domain/colorDecorator");
 const colorTempDecorator = require("./domain/colorTempDecorator");
 const rgbDecorator = require("./domain/rgbDecorator");
-const hueClient = require("./api/hueClient");
 const decorateDevice = require("./domain/decorateDevice");
+
 const DeviceController = require("./controllers/DeviceController");
-const HueDiscoveryController = require("./controllers/HueBridgeController");
 const HueBridgeController = require("./controllers/HueBridgeController");
-const store = require("./store/devices");
 
-/* Use the bootstrap library to create a Service object */
+// Create and initialise a Service object
 const service = new Service("service.controller.hue");
-service.init()
+service
+  .init()
   .then(() => {
-    hueClient.setConfig({
-      host: service.config.get("hueBridge.host"),
-      username: service.config.get("hueBridge.username"),
+    // Get device headers
+    return service.apiClient.get("service.registry.device/devices", {
+      controllerName: service.controllerName
     });
+  })
+  .then(deviceHeaders => {
+    // Instantiate devices and create store
+    const devices = deviceHeaders.map(instantiateDevice);
+    const store = new DeviceStore(devices);
 
-    /* Subscribe to state changes from the store */
-    store.on("key-changed", key => {
-      const device = store.get("device", key);
-      console.log(`State changed for device ${device.identifier}`);
+    // Subscribe to state changes from the store
+    store.on("device-changed", (identifier, oldState, newState) => {
+      console.log(`State changed for device ${identifier}`);
       service.redisClient.publish(
-        `device-state-changed.${device.identifier}`,
-        JSON.stringify(device)
+        `device-state-changed.${identifier}`,
+        JSON.stringify({ oldState, newState })
       );
     });
 
-    /* Initialise the devices */
-    service.apiClient
-      .get("service.registry.device/devices", { controllerName: service.controllerName })
-      .then(deviceHeaders => {
-        for (header of deviceHeaders) {
-          const device = instantiateDevice(header);
-          console.log(`Controlling light '${device.identifier}'`);
-          store.commit("setDevice", device);
-        }
-      })
-      .catch(err => {
-        console.error("Failed to intialise devices:", err);
-      });
-
-    /* Initialise controller to add routes */
-    new DeviceController(service.app, store);
-    new HueBridgeController(service.app, hueClient);
-
-    /* Add an error handler that returns valid JSON */
-    service.app.use(function(err, req, res, next) {
-      console.error(err.stack);
-      res.status(500);
-      res.json({message: err.message});
+    const hueClient = new HueClient({
+      host: service.config.get("hueBridge.host"),
+      username: service.config.get("hueBridge.username")
     });
 
-    /* Start the server */
+    const lightService = new LightService(store, service.apiClient, hueClient);
+    lightService.fetchState().catch(err => {
+      console.error("Failed to fetch state", err);
+    });
+
+    // Initialise controller to add routes
+    new DeviceController(service.app, lightService);
+    new HueBridgeController(service.app, hueClient);
+
+    // Start the server
     service.listen();
 
-    /* Poll for state changes */
+    // Poll for state changes
     if (service.config.get("polling.enabled", false)) {
       console.log("Polling for state changes");
 
       let pollingTimer = setInterval(() => {
-        const devices = store.get("devices");
-        for (let id in devices) {
-          console.log(`Refreshing state for '${devices[id].identifier}'`);
-          store.dispatch("fetchDevice", devices[id]).catch(err => {
-            console.error(
-              `Failed to refresh state for '${devices[id].identifier}':`,
-              err
-            );
-          });
-        }
+        lightService.fetchState().catch(err => {
+          console.error("Failed to refresh state", err);
+        });
       }, service.config.get("polling.interval", 30000));
     }
-  }).catch(err => {
+  })
+  .catch(err => {
     console.error("Error initialising service", err);
   });
 

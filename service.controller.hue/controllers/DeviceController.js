@@ -1,6 +1,6 @@
 class DeviceController {
-  constructor(express, store) {
-    this.store = store;
+  constructor(express, lightService) {
+    this.lightService = lightService;
 
     /* Middleware */
     express.use("/device/:deviceId", this.loadDevice.bind(this));
@@ -10,9 +10,9 @@ class DeviceController {
     express.patch("/device/:deviceId", this.updateDevice.bind(this));
   }
 
-  /** Middleware to load the device and update it's state */
+  /** Middleware to load the device and update its state */
   loadDevice(req, res, next) {
-    req.device = this.store.get("device", req.params.deviceId);
+    req.device = this.lightService.findById(req.params.deviceId);
 
     if (!req.device) {
       res.status(404);
@@ -30,17 +30,17 @@ class DeviceController {
 
   /** Update a device. Only properties that are set will be updated. */
   async updateDevice(req, res, next) {
-    let state;
-    try {
-      state = req.device.transform(req.body);
-    } catch (err) {
+    let err = req.device.validate(req.body);
+    if (err !== undefined) {
       res.status(400);
-      res.json({ message: `Failed to transform state: ${err.message}` });
+      res.json({ message: `Invalid state: ${err}` });
       return;
     }
 
+    const state = req.device.transform(req.body);
+
     try {
-      await this.store.dispatch("saveDevice", { device: req.device, state });
+      await this.lightService.applyState(req.device, state);
       res.json({ data: req.device });
     } catch (err) {
       next(err);
