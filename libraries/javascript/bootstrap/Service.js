@@ -1,5 +1,5 @@
 const bodyParser = require("body-parser");
-const ApiClient = require("../client");
+const ApiClient = require("../ApiClient");
 const express = require("express");
 const redis = require("redis");
 const Config = require("./Config");
@@ -10,7 +10,7 @@ class Service {
   }
 
   async init() {
-    /* Create API client */
+    /* Initialise API ApiClient */
     const apiGateway = process.env.API_GATEWAY;
     if (!apiGateway) throw new Error("API_GATEWAY env var not set");
     this.apiClient = new ApiClient(apiGateway);
