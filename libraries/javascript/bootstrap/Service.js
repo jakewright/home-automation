@@ -46,6 +46,13 @@ class Service {
   }
 
   listen() {
+    // Add an error handler that returns valid JSON
+    this.app.use(function(err, req, res, next) {
+      console.error(err.stack);
+      res.status(500);
+      res.json({ message: err.message });
+    });
+
     const port = this.config.get("port", 80);
     this.app.listen(port, () => {
       console.log(`Service running on port ${port}`);
