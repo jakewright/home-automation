@@ -4,26 +4,24 @@ const SAT_MIN = 0;
 const SAT_MAX = 254;
 
 const colorDecorator = {
-  transform(state, t) {
+  validate(state) {
     if ("color" in state) {
       ({ hue, saturation } = state.color);
 
-      if (hue < HUE_MIN || hue > HUE_MAX)
-        throw new Error(`Invalid hue '${hue}'`);
+      if (hue < HUE_MIN || hue > HUE_MAX) return `Invalid hue '${hue}'`;
 
       if (saturation < SAT_MIN || saturation > SAT_MAX)
-        throw new Error(`Invalid saturation '${saturation}'`);
+        return `Invalid saturation '${saturation}'`;
+    }
+  },
 
-      t.hue = hue;
-      t.saturation = saturation;
-      t.on = true;
+  transform(state, t) {
+    if ("color" in state) {
+      t.color = state.color;
+      t.power = true;
     }
 
     return t;
-  },
-
-  applyRemoteState({ hue, saturation }) {
-    this.color = { hue, saturation };
   },
 
   getProperties(properties) {

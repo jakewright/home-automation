@@ -1,20 +1,17 @@
-const conversions = require("./conversions");
-
 const rgbDecorator = {
-  transform(state, t) {
+  validate(state) {
     if ("rgb" in state) {
       const ok = /^#[0-9A-F]{6}$/i.test(state.rgb);
-      if (!ok) throw new Error(`Invalid hex color '${state.rgb}'`);
-
-      t.xy = conversions.rgbHexToXy(state.rgb);
-      t.on = true;
+      if (!ok) return `Invalid hex color '${state.rgb}'`;
     }
-
-    return t;
   },
 
-  applyRemoteState({ xy }) {
-    this.rgb = conversions.xyToRgbHex(xy[0], xy[1]);
+  transform(state, t) {
+    if ("rgb" in state) {
+      t.rgb = state.rgb;
+      t.power = true;
+    }
+    return t;
   },
 
   getProperties(properties) {
