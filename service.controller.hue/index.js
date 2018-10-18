@@ -10,8 +10,8 @@ const colorTempDecorator = require("./domain/colorTempDecorator");
 const rgbDecorator = require("./domain/rgbDecorator");
 const decorateDevice = require("./domain/decorateDevice");
 
-const DeviceController = require("./controllers/DeviceController");
-const HueBridgeController = require("./controllers/HueBridgeController");
+const DeviceController = require("./controller/DeviceController");
+const HueBridgeController = require("./controller/HueBridgeController");
 
 // Create and initialise a Service object
 const service = new Service("service.controller.hue");
