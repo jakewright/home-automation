@@ -47,7 +47,7 @@ service
       console.error("Failed to fetch state", err);
     });
 
-    // Initialise controller to add routes
+    // Initialise controllers to add routes
     new DeviceController(service.app, lightService);
     new HueBridgeController(service.app, hueClient);
 

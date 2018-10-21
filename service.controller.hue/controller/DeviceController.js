@@ -2,10 +2,10 @@ class DeviceController {
   constructor(express, lightService) {
     this.lightService = lightService;
 
-    /* Middleware */
+    // Middleware
     express.use("/device/:deviceId", this.loadDevice.bind(this));
 
-    /* Routes */
+    // Routes
     express.get("/device/:deviceId", this.readDevice.bind(this));
     express.patch("/device/:deviceId", this.updateDevice.bind(this));
   }
@@ -32,7 +32,7 @@ class DeviceController {
   async updateDevice(req, res, next) {
     let err = req.device.validate(req.body);
     if (err !== undefined) {
-      res.status(400);
+      res.status(422);
       res.json({ message: `Invalid state: ${err}` });
       return;
     }
