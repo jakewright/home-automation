@@ -1,4 +1,4 @@
-FROM s1lvester/docker-ola
+FROM jakewright/docker-ola
 
 # Override the entrypoint because we want to wrap start.sh
 # in a script that also starts the DMX python service.
