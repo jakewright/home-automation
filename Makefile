@@ -12,6 +12,10 @@ help: ## Show this help message
 start: ## Start the system
 	$(DOCKER_COMPOSE) up -d --renew-anon-volumes ## This flag avoids the npm modules bug https://github.com/docker/compose/pull/5596
 
+.PHONY: start-platform
+start-platform: ## Start the core services
+	$(DOCKER_COMPOSE) up -d --renew-anon-volumes service.api-gateway service.config service.registry.device redis
+
 .PHONY: test-service.registry.device
 test-service.registry.device: ## Run tests for device registry
 	$(DOCKER_COMPOSE_RUN) service.registry.device python -m unittest
