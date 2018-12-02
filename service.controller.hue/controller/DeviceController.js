@@ -10,7 +10,7 @@ class DeviceController {
     express.patch("/device/:deviceId", this.updateDevice.bind(this));
   }
 
-  /** Middleware to load the device and update its state */
+  /** Middleware to load the device */
   loadDevice(req, res, next) {
     req.device = this.lightService.findById(req.params.deviceId);
 

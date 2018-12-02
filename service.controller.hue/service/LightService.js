@@ -15,7 +15,7 @@ class LightService {
     return this.store.findAll().find(device => device.hueId == hueId);
   }
 
-  fetchState() {
+  fetchAllState() {
     return this.hueClient.getAllLights().then(hueIdToState => {
       for (const hueId in hueIdToState) {
         const device = this.findByHueId(hueId);

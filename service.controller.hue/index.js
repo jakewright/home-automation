@@ -43,7 +43,7 @@ service
     });
 
     const lightService = new LightService(store, service.apiClient, hueClient);
-    lightService.fetchState().catch(err => {
+    lightService.fetchAllState().catch(err => {
       console.error("Failed to fetch state", err);
     });
 
@@ -59,7 +59,7 @@ service
       console.log("Polling for state changes");
 
       let pollingTimer = setInterval(() => {
-        lightService.fetchState().catch(err => {
+        lightService.fetchAllState().catch(err => {
           console.error("Failed to refresh state", err);
         });
       }, service.config.get("polling.interval", 30000));
