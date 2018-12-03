@@ -1,10 +1,25 @@
-FROM golang:latest
-RUN go get -u golang.org/x/lint/golint
+FROM node:8.11
 
-WORKDIR /go/src/home-automation
-COPY . .
+# Install nodemon
+RUN npm install -g nodemon
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+# Add the libraries
+RUN mkdir -p /usr/src/libraries/javascript
+COPY ./libraries/javascript /usr/src/libraries/javascript
+WORKDIR /usr/src/libraries/javascript
+RUN npm install
 
-CMD ["go", "run", "./service.controller.infrared/main.go"]
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY ./service.controller.infrared/package.json .
+RUN npm install
+
+# Bundle app source
+COPY ./service.controller.infrared.js .
+
+# Expose ports for web access and debugging
+EXPOSE 80 9229
+CMD [ "npm", "run", "debug" ]
