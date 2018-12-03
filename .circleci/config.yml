@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  static_analysis_go:
+    docker:
+      - image: golang:latest
+    working_directory: /go/src/home-automation
+    steps:
+      - checkout
+      - run: go get -u golang.org/x/lint/golint
+      - run: go get -u github.com/GeertJohan/fgt
+      - run: go get -d -v ./...
+      - run: fgt golint ./...
+      - run: go vet ./...
+workflows:
+  version: 2
+  test:
+    jobs:
+    - static_analysis_go
