@@ -1,16 +1,6 @@
 # Home Automation Device Registry
 
 ## Usage
-All responses will have the form:
-
-```json
-{
-    "message": "Description of what happened",
-    "data": "Mixed type holding the content of the response"
-}
-```
-
-Subsequent response definitions will only detail the expected value of the `data` field.
 
 ### List all devices
 **Definition**
@@ -58,13 +48,14 @@ Subsequent response definitions will only detail the expected value of the `data
 - `"device_type":string` the type of the device as understood by the client
 - `"room_identifier":string` the globally unique identifier of the room
 - `"controller_name":string` the name of the device's controller
-- `"attributes":object` controller specific information about the device
+- `"attributes":object` arbitrary controller-specific information about the device
 - `"depends_on":array` an array of dependencies for this device
     - `"local_property":string` the name of the local property that has a dependency
     - `"local_value":string` the value of the local property that has a dependency
-    - `"remote_device":string` the identifier of the device this property depends on
+    - `"remote_device_identifier":string` the identifier of the device this property depends on
     - `"remote_property":string` the remote property that must be set
     - `"remote_value":string` the value of the remote property
+- `"state_providers":array` names of external services that provide state
 
 If the identifier already exists, the existing device will be overwritten.
 
@@ -220,4 +211,3 @@ Returns the new room is created successfully.
 
 - 404: room not found
 - 204: success
-
