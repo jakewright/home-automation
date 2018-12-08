@@ -13,7 +13,7 @@ const decorateDevice = (device, decorator) => {
     device.transform = state => {
       let t = transform.call(device, state);
       return decorator.transform.call(device, state, t);
-    }
+    };
   }
 
   if (typeof decorator.getCommands === "function") {

@@ -5,7 +5,7 @@ class Config {
 
   has(path) {
     const value = this.get(path);
-    return value !== undefined
+    return value !== undefined;
   }
 
   get(path, def, config = this.config) {
@@ -17,7 +17,7 @@ class Config {
       }
 
       // If config is not an object then we can't continue
-      if (config == null || typeof config !== 'object') {
+      if (config == null || typeof config !== "object") {
         // Return the default
         return def;
       }

@@ -1,7 +1,7 @@
-import Device from './Device';
-import _ from 'lodash';
-import Room from './Room';
-import DeviceHeader from './DeviceHeader';
+import Device from "./Device";
+import _ from "lodash";
+import Room from "./Room";
+import DeviceHeader from "./DeviceHeader";
 
 /**
  * Converts a JSON API response into a domain object
@@ -10,9 +10,16 @@ import DeviceHeader from './DeviceHeader';
  * @param {Object} rsp
  * @returns {Device}
  */
-const apiToDevice = (rsp) => {
+const apiToDevice = rsp => {
   const properties = _.pick(rsp, Object.keys(rsp.availableProperties));
-  return new Device(rsp.identifier, rsp.name, rsp.type, rsp.controllerName, rsp.availableProperties, properties);
+  return new Device(
+    rsp.identifier,
+    rsp.name,
+    rsp.type,
+    rsp.controllerName,
+    rsp.availableProperties,
+    properties
+  );
 };
 
 /**
@@ -20,8 +27,10 @@ const apiToDevice = (rsp) => {
  * @param {Object} rsp
  * @returns {Room}
  */
-const apiToRoom = (rsp) => {
-  const deviceHeaders = rsp.devices.map(d => new DeviceHeader(d.identifier, d.name, d.deviceType, d.controllerName));
+const apiToRoom = rsp => {
+  const deviceHeaders = rsp.devices.map(
+    d => new DeviceHeader(d.identifier, d.name, d.deviceType, d.controllerName)
+  );
   return new Room(rsp.identifier, rsp.name, deviceHeaders);
 };
 

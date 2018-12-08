@@ -1,9 +1,9 @@
-import createLogger from 'vuex/dist/logger';
-import Vue from 'vue';
-import Vuex from 'vuex';
-import devices from './modules/devices';
-import errors from './modules/errors';
-import rooms from './modules/rooms';
+import createLogger from "vuex/dist/logger";
+import Vue from "vue";
+import Vuex from "vuex";
+import devices from "./modules/devices";
+import errors from "./modules/errors";
+import rooms from "./modules/rooms";
 
 Vue.use(Vuex);
 
@@ -13,8 +13,8 @@ export default new Vuex.Store({
   modules: {
     devices,
     errors,
-    rooms,
+    rooms
   },
   strict: debug,
-  plugins: debug ? [createLogger()] : [],
+  plugins: debug ? [createLogger()] : []
 });

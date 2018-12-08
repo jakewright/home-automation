@@ -13,7 +13,9 @@ const apiClient = require("../ApiClient");
  */
 const updateDependencies = (state, dependencies) => {
   // Filter the dependencies such that only ones that need updating are left
-  dependencies = dependencies.filter(d => state[d.localProperty] === d.localValue);
+  dependencies = dependencies.filter(
+    d => state[d.localProperty] === d.localValue
+  );
 
   // Execute all requests in parallel
   const promises = dependencies.map(updateDependency);
@@ -22,11 +24,10 @@ const updateDependencies = (state, dependencies) => {
 
 const updateDependency = async dependency => {
   const id = dependency.remoteDeviceIdentifier;
-  return apiClient.get(`service.registry.device/device/${id}`)
-    .then(header => {
-      const data = { [dependency.remoteProperty]: dependency.remoteValue };
-      return apiClient.patch(`${header.controllerName}/device/${id}`, data);
-    });
+  return apiClient.get(`service.registry.device/device/${id}`).then(header => {
+    const data = { [dependency.remoteProperty]: dependency.remoteValue };
+    return apiClient.patch(`${header.controllerName}/device/${id}`, data);
+  });
 };
 
 exports = module.exports = updateDependencies;

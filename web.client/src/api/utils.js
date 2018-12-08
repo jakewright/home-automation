@@ -1,9 +1,9 @@
-import _ from 'lodash';
+import _ from "lodash";
 
 /**
  * Recursively convert an object's property names to camel case using Lodash functions.
  */
-const toCamelCase = (input) => {
+const toCamelCase = input => {
   if (_.isArray(input)) {
     return input.map(toCamelCase);
   }

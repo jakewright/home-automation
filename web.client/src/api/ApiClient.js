@@ -1,5 +1,5 @@
 import Client from "../../../libraries/javascript/ApiClient/index";
-import { apiToDevice, apiToRoom, apiToRooms } from '../domain/marshalling';
+import { apiToDevice, apiToRoom, apiToRooms } from "../domain/marshalling";
 
 export default class ApiClient {
   constructor(apiGateway) {
@@ -13,7 +13,9 @@ export default class ApiClient {
    * @return {Device}
    */
   async fetchDevice(deviceHeader) {
-    const url = `${deviceHeader.controllerName}/device/${deviceHeader.identifier}`;
+    const url = `${deviceHeader.controllerName}/device/${
+      deviceHeader.identifier
+    }`;
     const rsp = await this.client.get(url);
     return apiToDevice(rsp);
   }
@@ -37,7 +39,7 @@ export default class ApiClient {
    * @returns {Array.<Room>}
    */
   async fetchRooms() {
-    const rsp = await this.client.get('service.registry.device/rooms');
+    const rsp = await this.client.get("service.registry.device/rooms");
     return apiToRooms(rsp);
   }
 
@@ -48,7 +50,9 @@ export default class ApiClient {
    * @returns {Room}
    */
   async fetchRoom(identifier) {
-    const rsp = await this.client.get(`service.registry.device/room/${identifier}`);
+    const rsp = await this.client.get(
+      `service.registry.device/room/${identifier}`
+    );
     return apiToRoom(rsp);
   }
 }

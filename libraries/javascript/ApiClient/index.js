@@ -5,12 +5,12 @@ class ApiClient {
   constructor(apiGateway) {
     this.client = axios.create({
       baseURL: `${apiGateway}/`,
-      validateStatus: () => true,
+      validateStatus: () => true
     });
   }
 
   async request(args) {
-    args.params = utils.toSnakeCase(args.params)
+    args.params = utils.toSnakeCase(args.params);
 
     // Make the request
     let rsp;
@@ -18,9 +18,9 @@ class ApiClient {
       rsp = await this.client.request.apply(this, arguments);
     } catch (err) {
       if (err.request) {
-        console.error('No response received', args.url);
+        console.error("No response received", args.url);
       } else {
-        console.log('Axios error: ', err.message);
+        console.log("Axios error: ", err.message);
       }
 
       throw err;
@@ -28,7 +28,13 @@ class ApiClient {
 
     // Validate the status
     if (!this.validStatus(rsp.status)) {
-      console.error('request failed with status', rsp.status, args.url, rsp.data, rsp.headers);
+      console.error(
+        "request failed with status",
+        rsp.status,
+        args.url,
+        rsp.data,
+        rsp.headers
+      );
       let msg = `request failed with status ${rsp.status} ${rsp.statusText}`;
 
       // Try to pull out a message if any JSON exists in the body
@@ -42,8 +48,8 @@ class ApiClient {
       throw new Error(msg);
     }
 
-    if (!('data' in rsp.data)) {
-      console.error('Invalid response', args.url, rsp.status, rsp.data);
+    if (!("data" in rsp.data)) {
+      console.error("Invalid response", args.url, rsp.status, rsp.data);
       throw new Error(`data not found in response: ${rsp.data}`);
     }
 
@@ -58,7 +64,7 @@ class ApiClient {
     return this.request({
       url,
       method: "get",
-      params,
+      params
     });
   }
 
@@ -66,7 +72,7 @@ class ApiClient {
     return this.request({
       url,
       method: "patch",
-      data,
+      data
     });
   }
 }

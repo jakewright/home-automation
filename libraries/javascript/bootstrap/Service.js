@@ -16,14 +16,16 @@ class Service {
     this.apiClient = new ApiClient(apiGateway);
 
     /* Load config */
-    let config = await this.apiClient.get(`service.config/read/${this.controllerName}`);
+    let config = await this.apiClient.get(
+      `service.config/read/${this.controllerName}`
+    );
     this.config = new Config(config);
 
     /* Connect to Redis */
     if (this.config.has("redis.host")) {
       this.redisClient = redis.createClient({
         host: this.config.get("redis.host"),
-        port: this.config.get("redis.port"),
+        port: this.config.get("redis.port")
       });
       this.redisClient.on("error", err => {
         console.error(`Redis error: ${err}`);
