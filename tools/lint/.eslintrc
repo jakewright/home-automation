@@ -1,0 +1,23 @@
+{
+  "root": true,
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "airbnb-base",
+    "plugin:vue/recommended"
+  ],
+  "rules": {
+    "import/no-unresolved": "off",
+    "no-restricted-syntax": [
+      "error",
+      "ForInStatement",
+      "LabeledStatement",
+      "WithStatement"
+    ],
+    "no-prototype-builtins": "off"
+  },
+  "parserOptions": {
+    "parser": "babel-eslint"
+  }
+}
