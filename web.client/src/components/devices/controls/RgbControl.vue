@@ -4,7 +4,8 @@
       ref="input"
       :value="value"
       type="color"
-      @click.prevent="focusColorCircle">
+      @click.prevent="focusColorCircle"
+    >
   </div>
 </template>
 

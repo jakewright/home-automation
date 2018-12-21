@@ -1,9 +1,9 @@
 <template>
   <form class="slider">
     <input
+      v-model="currentValue"
       :min="min"
       :max="max"
-      v-model="currentValue"
       :name="name"
 
       type="range"

@@ -1,19 +1,26 @@
 <template>
   <div
     id="room-selector"
-    class="room-selector">
+    class="room-selector"
+  >
     <h2>Rooms</h2>
 
-    <div v-if="loading">Loading…</div>
+    <div v-if="loading">
+      Loading…
+    </div>
 
     <ul
       v-if="rooms.length > 0"
-      class="rooms">
+      class="rooms"
+    >
       <li
         v-for="room in rooms"
         :key="room.identifier"
-        class="room">
-        <router-link :to="{ name: 'room', params: { roomId: room.identifier } }" >{{ room.name }}</router-link>
+        class="room"
+      >
+        <RouterLink :to="{ name: 'room', params: { roomId: room.identifier } }">
+          {{ room.name }}
+        </RouterLink>
       </li>
     </ul>
 

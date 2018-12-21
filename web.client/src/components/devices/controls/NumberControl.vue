@@ -5,7 +5,8 @@
       :max="max"
       :value="value"
       type="number"
-      @change="$emit('input', $event.target.value)">
+      @change="$emit('input', $event.target.value)"
+    >
   </div>
 </template>
 

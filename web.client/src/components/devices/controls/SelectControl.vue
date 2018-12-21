@@ -2,14 +2,19 @@
   <div>
     <select
       :value="value"
-      @change="$emit('input', $event.target.value)">
+      @change="$emit('input', $event.target.value)"
+    >
       <option
         disabled
-        value="">Please select one</option>
+        value=""
+      >
+        Please select one
+      </option>
       <option
         v-for="option in options"
+        :key="option.value"
         :value="option.value"
-        :key="option.value">
+      >
         {{ option.text }}
       </option>
     </select>
@@ -34,7 +39,6 @@ export default {
           if (!option.hasOwnProperty('value')) return false;
           if (!option.hasOwnProperty('text')) return false;
         }
-
         return true;
       },
     },

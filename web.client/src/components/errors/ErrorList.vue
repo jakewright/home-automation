@@ -1,19 +1,20 @@
 <template>
   <div :class="$style.errorList">
-    <transition-group name="error-item">
+    <TransitionGroup name="error-item">
       <BaseError
         v-for="err in errors"
         :key="err.id"
-        @close="removeError(err.id)">
+        @close="removeError(err.id)"
+      >
         {{ err.message }}
       </BaseError>
-    </transition-group>
+    </TransitionGroup>
   </div>
 </template>
 
 <script>
-import BaseError from './BaseError';
 import { mapGetters } from 'vuex';
+import BaseError from './BaseError';
 
 export default {
   name: 'ErrorList',

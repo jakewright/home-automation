@@ -3,8 +3,9 @@
     <input
       :checked="value"
       type="checkbox"
-      @change="$emit('input', $event.target.checked)">
-    <span :class="[$style.slider, $style.round]"/>
+      @change="$emit('input', $event.target.checked)"
+    >
+    <span :class="[$style.slider, $style.round]" />
   </label>
 </template>
 

@@ -5,7 +5,9 @@
     icon="lightbulb"
     class="color-picker"
   >
-    <template slot="heading">Colour</template>
+    <template slot="heading">
+      Colour
+    </template>
     <template slot="content">
       <ColorCircle
         :value="value"
@@ -17,8 +19,8 @@
 </template>
 
 <script>
-import ColorCircle from '../base/ColorCircle';
 import _ from 'lodash';
+import ColorCircle from '../base/ColorCircle';
 import SideColumn from '../layouts/SideColumn';
 import { isHexColor } from '../../utils/validators';
 

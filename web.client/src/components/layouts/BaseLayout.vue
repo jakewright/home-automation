@@ -5,7 +5,10 @@
         <div class="nav-bar__element nav-bar__element--right">
           <button
             v-if="done"
-            @click="goBack">Done</button>
+            @click="goBack"
+          >
+            Done
+          </button>
         </div>
       </div>
 
@@ -15,36 +18,43 @@
 
       <div
         v-else-if="loading"
-        class="loading">
+        class="loading"
+      >
         <FontAwesomeIcon
           class="loading__icon"
           icon="spinner-third"
           size="4x"
-          spin />
-        <h1 class="loading__heading">Loading</h1>
+          spin
+        />
+        <h1 class="loading__heading">
+          Loading
+        </h1>
       </div>
 
       <template v-else>
         <div
           :class="{ 'header--icon': icon }"
-          class="header">
+          class="header"
+        >
           <FontAwesomeIcon
             :icon="icon"
             class="header__icon"
-            size="4x" />
-          <h1 class="header__heading"><slot name="heading"/></h1>
+            size="4x"
+          />
+          <h1 class="header__heading">
+            <slot name="heading" />
+          </h1>
         </div>
 
         <div class="content">
-          <slot name="content"/>
+          <slot name="content" />
         </div>
       </template>
     </div>
 
-    <transition :name="childTransition">
-      <router-view class="extra-details grid-item"/>
-    </transition>
-
+    <Transition :name="childTransition">
+      <RouterView class="extra-details grid-item" />
+    </Transition>
   </div>
 </template>
 

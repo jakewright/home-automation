@@ -1,42 +1,38 @@
 <template>
-
   <BaseLayout
     :done="false"
     class="room grid-container"
   >
-    <template slot="heading">{{ name }}</template>
+    <template slot="heading">
+      {{ name }}
+    </template>
     <template slot="content">
-
-
       <div v-if="notFound">
         Not found
       </div>
       <template v-else>
-
-
-        <div v-if="!room && !fetchError">Loading…</div>
+        <div v-if="!room && !fetchError">
+          Loading…
+        </div>
 
         <div v-else-if="fetchError">
           <p>Failed to fetch room: {{ fetchError }}</p>
         </div>
 
         <div v-else-if="room">
-
           <div
             v-for="deviceHeader in room.deviceHeaders"
-            :key="deviceHeader.identifier">
+            :key="deviceHeader.identifier"
+          >
             <Component
               :is="getComponentForDeviceType(deviceHeader.type)"
-              :device-header="deviceHeader" />
+              :device-header="deviceHeader"
+            />
           </div>
-
         </div>
       </template>
-
     </template>
   </BaseLayout>
-
-
 </template>
 
 <script>

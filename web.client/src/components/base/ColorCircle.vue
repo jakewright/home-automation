@@ -6,17 +6,19 @@
       :value="value"
       type="color"
       @input="$emit('input', $event.target.value)"
-      @change="$emit('change', $event.target.value)">
+      @change="$emit('change', $event.target.value)"
+    >
 
     <div
       ref="target"
-      class="target"/>
+      class="target"
+    />
   </div>
 </template>
 
 <script>
-import { isHexColor } from '../../utils/validators';
 import ColorCircle from 'color-circle';
+import { isHexColor } from '../../utils/validators';
 
 
 export default {

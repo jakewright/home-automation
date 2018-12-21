@@ -1,6 +1,8 @@
 <template>
   <div class="device">
-    <h3 class="title">{{ deviceHeader.name }}</h3>
+    <h3 class="title">
+      {{ deviceHeader.name }}
+    </h3>
 
     <template v-if="fetchError">
       <p>Failed to fetch device: {{ fetchError }}</p>
@@ -15,15 +17,18 @@
       <ul>
         <li
           v-for="(property, propertyName) in device.properties"
+          :key="propertyName"
           :class="propertyName"
-          :key="propertyName">
-
-          <label class="property-name-label">{{ propertyName }}</label>
+        >
+          <label class="property-name-label">
+            {{ propertyName }}
+          </label>
 
           <template v-if="property.type === 'bool'">
             <ToggleControl
               :value="property.value"
-              @input="updateProperty(propertyName, $event)" />
+              @input="updateProperty(propertyName, $event)"
+            />
           </template>
 
           <template v-else-if="property.type === 'int' && property.interpolation === 'continuous'">
@@ -38,7 +43,8 @@
           <template v-else-if="property.type === 'int'">
             <NumberControl
               :value="property.value"
-              @input="updateProperty(propertyName, $event)" />
+              @input="updateProperty(propertyName, $event)"
+            />
           </template>
 
           <template v-else-if="property.options">
@@ -53,17 +59,16 @@
             <RgbControl
               :value="property.value"
               :device-id="device.identifier"
-              @input="updateProperty(propertyName, $event)" />
+              @input="updateProperty(propertyName, $event)"
+            />
           </template>
 
           <template v-else>
             {{ property.value }}
           </template>
-
         </li>
       </ul>
     </template>
-
   </div>
 </template>
 
