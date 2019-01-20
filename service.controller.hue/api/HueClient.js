@@ -5,7 +5,7 @@ class HueClient {
   /**
    * @param {Object} config
    * @param {string} config.host Host of the Hue Bridge
-   * @param {string} config.username Optional: Hue Bridge username
+   * @param {string} config.username Optional Hue Bridge username
    */
   constructor(config) {
     this.config = config;
