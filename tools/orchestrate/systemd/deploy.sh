@@ -21,7 +21,8 @@ ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNA
 
     sudo systemctl stop "$SERVICE".service
 
-    bash ./tools/orchestrate/systemd/$LANG.sh
+    cd $SERVICE
+    bash ../tools/orchestrate/systemd/$LANG.sh
 
     echo "Creating systemd service"
     # The quotes are needed around the variable to preserve the new lines

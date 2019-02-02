@@ -6,7 +6,7 @@ set -e
 UNDERSCORES=$(echo $SERVICE | tr "." "_" | tr "-" "_")
 DASHES=$(echo $SERVICE | tr "." "-")
 
-ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNAME"@"$DEPLOYMENT_TARGET" << EOF
+ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNAME"@"$DEPLOYMENT_TARGET" << EOF
     echo "Building $SERVICE..."
     cd $TARGET_DIRECTORY/src
     git pull
