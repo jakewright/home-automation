@@ -21,10 +21,8 @@
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.4",
-    "@vue/cli-plugin-eslint": "^3.0.4",
     "@vue/cli-service": "^3.0.4",
     "vue-template-compiler": "^2.5.17",
-    "@vue/eslint-config-airbnb": "^3.0.0-rc.5",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.1"
   },
