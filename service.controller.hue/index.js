@@ -1,7 +1,7 @@
 const Service = require("../libraries/javascript/bootstrap");
 const { DeviceStore } = require("../libraries/javascript/device");
 
-const LightService = require("./service/LightService");
+const LightRepository = require("./repository/LightRepository");
 const HueClient = require("./api/HueClient");
 
 const HueLight = require("./domain/HueLight");
@@ -42,13 +42,13 @@ service
       username: service.config.get("hueBridge.username")
     });
 
-    const lightService = new LightService(store, service.apiClient, hueClient);
-    lightService.fetchAllState().catch(err => {
+    const LightRepository = new LightRepository(store, hueClient);
+    LightRepository.fetchAllState().catch(err => {
       console.error("Failed to fetch state", err);
     });
 
     // Initialise controllers to add routes
-    new DeviceController(service.app, lightService);
+    new DeviceController(service.app, LightRepository);
     new HueBridgeController(service.app, hueClient);
 
     // Start the server
@@ -59,7 +59,7 @@ service
       console.log("Polling for state changes");
 
       let pollingTimer = setInterval(() => {
-        lightService.fetchAllState().catch(err => {
+        LightRepository.fetchAllState().catch(err => {
           console.error("Failed to refresh state", err);
         });
       }, service.config.get("polling.interval", 30000));

@@ -1,9 +1,8 @@
 const { updateDependencies } = require("../../libraries/javascript/device");
 
-class LightService {
-  constructor(store, apiClient, hueClient) {
+class LightRepository {
+  constructor(store, hueClient) {
     this.store = store;
-    this.apiClient = apiClient;
     this.hueClient = hueClient;
   }
 
@@ -12,7 +11,7 @@ class LightService {
   }
 
   findByHueId(hueId) {
-    return this.store.findAll().find(device => device.hueId == hueId);
+    return this.store.findAll().find(device => device.hueId === hueId);
   }
 
   fetchAllState() {
@@ -40,4 +39,4 @@ class LightService {
   }
 }
 
-exports = module.exports = LightService;
+exports = module.exports = LightRepository;
