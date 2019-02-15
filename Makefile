@@ -16,6 +16,10 @@ start: ## Start the system
 start-platform: ## Start the core services
 	$(DOCKER_COMPOSE) up -d --renew-anon-volumes service.api-gateway service.config service.registry.device redis
 
+.PHONY: stop
+stop: ## Stop the services
+	$(DOCKER_COMPOSE) stop
+
 .PHONY: test-service.registry.device
 test-service.registry.device: ## Run tests for device registry
 	$(DOCKER_COMPOSE_RUN) service.registry.device python -m unittest
