@@ -12,7 +12,7 @@ class HueClient {
     console.log("Connecting to Hue Bridge");
     this.client = new huejay.Client({
       host: config.get("hueBridge.host"),
-      username: config.get("hueBridge.username"),
+      username: config.get("hueBridge.username")
     });
   }
 

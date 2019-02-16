@@ -1,8 +1,11 @@
-const { deviceStore, updateDependencies } = require("../../libraries/javascript/device");
+const {
+  store,
+  updateDependencies
+} = require("../../libraries/javascript/device");
 const hueClient = require("../api/hueClient");
 
 const findById = identifier => {
-  return deviceStore.findById(identifier);
+  return store.findById(identifier);
 };
 
 const fetchAllState = () => {
@@ -26,11 +29,11 @@ const applyState = async (device, state) => {
   device.applyState(newState);
 
   // Emit state change events
-  deviceStore.flush();
+  store.flush();
 };
 
 const findByHueId = hueId => {
-  return deviceStore.findAll().find(device => device.hueId === hueId);
+  return store.findAll().find(device => device.hueId === hueId);
 };
 
 exports = module.exports = { findById, fetchAllState, applyState };

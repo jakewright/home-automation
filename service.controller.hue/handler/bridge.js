@@ -43,5 +43,4 @@ const getAllLights = async (req, res, next) => {
   }
 };
 
-
 exports = module.exports = { discover, createUser, getAllUsers, getAllLights };

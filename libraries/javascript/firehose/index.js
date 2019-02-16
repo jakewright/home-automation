@@ -14,7 +14,7 @@ class Firehose {
       });
       this.client.on("error", err => {
         console.error(`Redis error: ${err}`);
-      })
+      });
     }
 
     return this.client;

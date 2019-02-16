@@ -1,7 +1,7 @@
 const req = require("../request");
 const config = require("../config");
 
-exports = module.exports = async (serviceName) => {
+exports = module.exports = async serviceName => {
   // Initialise req for making requests to other services
   const apiGateway = process.env.API_GATEWAY;
   if (!apiGateway) throw new Error("API_GATEWAY env var not set");
