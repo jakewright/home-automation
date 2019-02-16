@@ -1,5 +1,5 @@
 class Config {
-  constructor(config) {
+  setContents(config) {
     this.config = config;
   }
 
@@ -8,7 +8,12 @@ class Config {
     return value !== undefined;
   }
 
-  get(path, def, config = this.config) {
+  get(path, def) {
+    // Throw an error if the config hasn't been loaded
+    if (this.config === undefined) {
+      throw new Error("Config not loaded");
+    }
+
     const reduce = (parts, config) => {
       // If this is the last part of the key
       if (parts.length === 0) {
@@ -39,4 +44,5 @@ class Config {
   }
 }
 
-exports = module.exports = Config;
+const config = new Config();
+exports = module.exports = config;
