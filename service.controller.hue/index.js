@@ -1,68 +1,56 @@
-const Service = require("../libraries/javascript/bootstrap");
-const { DeviceStore } = require("../libraries/javascript/device");
-
-const LightRepository = require("./repository/LightRepository");
-const HueClient = require("./api/HueClient");
+const bootstrap = require("../libraries/javascript/bootstrap");
+const config = require("../libraries/javascript/config");
+const firehose = require("../libraries/javascript/firehose");
+const req = require("../libraries/javascript/request");
+const router = require("../libraries/javascript/router");
+const { store } = require("../libraries/javascript/device");
 
 const HueLight = require("./domain/HueLight");
 const colorDecorator = require("./domain/colorDecorator");
 const colorTempDecorator = require("./domain/colorTempDecorator");
 const rgbDecorator = require("./domain/rgbDecorator");
 const decorateDevice = require("./domain/decorateDevice");
+const { fetchAllState } = require("./light");
+require("./handler/router");
 
-const DeviceController = require("./controller/DeviceController");
-const HueBridgeController = require("./controller/HueBridgeController");
-
-// Create and initialise a Service object
-const service = new Service("service.controller.hue");
-service
-  .init()
+const serviceName = "service.controller.hue";
+bootstrap(serviceName)
   .then(() => {
     // Get device headers
-    return service.apiClient.get("service.registry.device/devices", {
-      controllerName: service.controllerName
+    return req.get("service.registry.device/devices", {
+      controllerName: serviceName
     });
   })
   .then(deviceHeaders => {
-    // Instantiate devices and create store
+    // Instantiate devices and add to store
     const devices = deviceHeaders.map(instantiateDevice);
-    const store = new DeviceStore(devices);
+    store.addDevices(devices);
 
     // Subscribe to state changes from the store
     store.on("device-changed", (identifier, oldState, newState) => {
       console.log(`State changed for device ${identifier}`);
-      service.redisClient.publish(
+      firehose.publish(
         `device-state-changed.${identifier}`,
         JSON.stringify({ oldState, newState })
       );
     });
 
-    const hueClient = new HueClient({
-      host: service.config.get("hueBridge.host"),
-      username: service.config.get("hueBridge.username")
-    });
-
-    const LightRepository = new LightRepository(store, hueClient);
-    LightRepository.fetchAllState().catch(err => {
+    fetchAllState().catch(err => {
       console.error("Failed to fetch state", err);
     });
 
-    // Initialise controllers to add routes
-    new DeviceController(service.app, LightRepository);
-    new HueBridgeController(service.app, hueClient);
-
     // Start the server
-    service.listen();
+    router.listen();
 
     // Poll for state changes
-    if (service.config.get("polling.enabled", false)) {
+    if (config.get("polling.enabled", false)) {
       console.log("Polling for state changes");
 
       let pollingTimer = setInterval(() => {
-        LightRepository.fetchAllState().catch(err => {
+        fetchAllState().catch(err => {
           console.error("Failed to refresh state", err);
         });
-      }, service.config.get("polling.interval", 30000));
+      }, config.get("polling.interval", 30000));
     }
   })
   .catch(err => {
@@ -74,7 +62,7 @@ const instantiateDevice = header => {
     identifier: header.identifier,
     name: header.name,
     type: header.type,
-    controllerName: service.controllerName,
+    controllerName: serviceName,
     hueId: header.attributes.hueId
   });
 
