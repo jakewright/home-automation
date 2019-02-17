@@ -1,10 +1,9 @@
 const bootstrap = require("../libraries/javascript/bootstrap");
 const config = require("../libraries/javascript/config");
 const firehose = require("../libraries/javascript/firehose");
-const req = require("../libraries/javascript/request");
 const router = require("../libraries/javascript/router");
 const { store } = require("../libraries/javascript/device");
-const { fetchAllState } = require("./light");
+const light = require("./light");
 require("./handler/router");
 
 const serviceName = "service.controller.hue";
@@ -19,26 +18,16 @@ bootstrap(serviceName)
       );
     });
 
-    fetchAllState().catch(err => {
-      console.error("Failed to fetch state", err);
-    });
-
-    // Start the server
+    return light.fetchAllState();
+  })
+  .then(() => {
     router.listen();
 
     // Poll for state changes
     if (config.get("polling.enabled", false)) {
-      console.log("Polling for state changes");
-
-      let pollingTimer = setInterval(() => {
-        fetchAllState().catch(err => {
-          console.error("Failed to refresh state", err);
-        });
-      }, config.get("polling.interval", 30000));
+      light.watch(config.get("polling.interval", 30000));
     }
   })
   .catch(err => {
     console.error("Error initialising service", err);
   });
-
-

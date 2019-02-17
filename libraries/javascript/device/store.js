@@ -7,10 +7,9 @@ class Store extends EventEmitter {
     this.devices = {};
     this.cache = {};
   }
-  
+
   addDevice(device) {
-    if (device.identifier in this.devices)
-      return;
+    if (device.identifier in this.devices) return;
 
     this.devices[device.identifier] = device;
     this.updateCache();

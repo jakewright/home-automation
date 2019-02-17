@@ -4,7 +4,10 @@ const colorDecorator = require("../domain/colorDecorator");
 const colorTempDecorator = require("../domain/colorTempDecorator");
 const rgbDecorator = require("../domain/rgbDecorator");
 const decorateDevice = require("../domain/decorateDevice");
-const { store,  updateDependencies } = require("../../libraries/javascript/device");
+const {
+  store,
+  updateDependencies
+} = require("../../libraries/javascript/device");
 const hueClient = require("../api/hueClient");
 
 const findById = identifier => {
@@ -15,7 +18,9 @@ const fetchAllState = async () => {
   // Get all devices from the registry and add them to the store
   (await req.get("service.registry.device/devices", {
     controllerName: "service.controller.hue"
-  })).map(instantiateDevice).map(store.addDevice.bind(store));
+  }))
+    .map(instantiateDevice)
+    .map(store.addDevice.bind(store));
 
   // Get all light state and apply to local objects
   const hueIdToState = await hueClient.getAllLights();
@@ -24,6 +29,16 @@ const fetchAllState = async () => {
     if (!device) continue;
     device.applyState(hueIdToState[hueId]);
   }
+};
+
+const watch = interval => {
+  console.log("Polling for state changes");
+
+  setInterval(() => {
+    fetchAllState().catch(err => {
+      console.error("Failed to refresh state", err);
+    });
+  }, interval);
 };
 
 const applyState = async (device, state) => {
@@ -72,4 +87,4 @@ const instantiateDevice = header => {
   return device;
 };
 
-exports = module.exports = { findById, fetchAllState, applyState };
+exports = module.exports = { findById, fetchAllState, watch, applyState };
