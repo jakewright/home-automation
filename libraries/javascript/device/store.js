@@ -7,17 +7,13 @@ class Store extends EventEmitter {
     this.devices = {};
     this.cache = {};
   }
-
-  addDevices(devices) {
-    devices.forEach(this.addDevice.bind(this));
-    this.updateCache();
-  }
-
+  
   addDevice(device) {
     if (device.identifier in this.devices)
-      throw new Error(`Device ${device.identifier} already exists`);
+      return;
 
     this.devices[device.identifier] = device;
+    this.updateCache();
   }
 
   findById(identifier) {
