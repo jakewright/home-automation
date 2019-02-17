@@ -1,13 +1,17 @@
 const EventEmitter = require("events");
 
-class DeviceStore extends EventEmitter {
-  constructor(devices = []) {
+class Store extends EventEmitter {
+  constructor() {
     super();
 
     this.devices = {};
     this.cache = {};
+  }
 
-    devices.forEach(this.add.bind(this));
+  addDevice(device) {
+    if (device.identifier in this.devices) return;
+
+    this.devices[device.identifier] = device;
     this.updateCache();
   }
 
@@ -17,13 +21,6 @@ class DeviceStore extends EventEmitter {
 
   findAll() {
     return Object.values(this.devices);
-  }
-
-  add(device) {
-    if (device.identifier in this.devices)
-      throw new Error(`Device ${device.identifier} already exists`);
-
-    this.devices[device.identifier] = device;
   }
 
   flush() {
@@ -57,4 +54,5 @@ class DeviceStore extends EventEmitter {
   }
 }
 
-exports = module.exports = DeviceStore;
+const store = new Store();
+exports = module.exports = store;

@@ -1,4 +1,4 @@
-const apiClient = require("../ApiClient");
+const req = require("../request");
 
 /**
  * @param {Object} state
@@ -24,9 +24,9 @@ const updateDependencies = (state, dependencies) => {
 
 const updateDependency = async dependency => {
   const id = dependency.remoteDeviceIdentifier;
-  return apiClient.get(`service.registry.device/device/${id}`).then(header => {
+  return req.get(`service.registry.device/device/${id}`).then(header => {
     const data = { [dependency.remoteProperty]: dependency.remoteValue };
-    return apiClient.patch(`${header.controllerName}/device/${id}`, data);
+    return req.patch(`${header.controllerName}/device/${id}`, data);
   });
 };
 

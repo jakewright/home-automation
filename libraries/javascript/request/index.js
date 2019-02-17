@@ -2,11 +2,14 @@ const axios = require("axios");
 const utils = require("./utils");
 
 class ApiClient {
-  constructor(apiGateway) {
+  constructor() {
     this.client = axios.create({
-      baseURL: `${apiGateway}/`,
       validateStatus: () => true
     });
+  }
+
+  setApiGateway(apiGateway) {
+    this.client.defaults.baseURL = apiGateway;
   }
 
   async request(args) {
@@ -77,4 +80,5 @@ class ApiClient {
   }
 }
 
-exports = module.exports = ApiClient;
+const request = new ApiClient();
+exports = module.exports = request;

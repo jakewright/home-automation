@@ -1,25 +1,19 @@
+const config = require("../../libraries/javascript/config");
 const huejay = require("huejay");
 const { fromDomain, toDomain } = require("./marshaling");
 
 class HueClient {
-  /**
-   * @param {Object} config
-   * @param {string} config.host Host of the Hue Bridge
-   * @param {string} config.username Optional Hue Bridge username
-   */
-  constructor(config) {
-    this.config = config;
-    this.client = null;
-  }
-
   getClient() {
-    if (this.client === null) this.connect();
+    if (this.client === undefined) this.connect();
     return this.client;
   }
 
   connect() {
     console.log("Connecting to Hue Bridge");
-    this.client = new huejay.Client(this.config);
+    this.client = new huejay.Client({
+      host: config.get("hueBridge.host"),
+      username: config.get("hueBridge.username")
+    });
   }
 
   discover() {
@@ -60,4 +54,5 @@ class HueClient {
   }
 }
 
-exports = module.exports = HueClient;
+const hueClient = new HueClient();
+exports = module.exports = hueClient;
