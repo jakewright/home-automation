@@ -113,10 +113,26 @@ services:
     env_file:
       - ./.env
 
+  service.controller.plug:
+    build:
+      dockerfile: service.controller.plug/dev.dockerfile
+      context: .
+    image: home-automation-controller-plug
+    volumes:
+      - ./service.controller.plug:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./libraries/javascript:/usr/src/libraries/javascript
+      - /usr/src/libraries/javascript/node_modules
+    ports:
+      - 7009:80
+    environment:
+      NODE_ENV: development
+    env_file:
+      - ./.env
+
   redis:
     image: redis:latest
     ports:
       - 6379:6379
     env_file:
      - ./.env
-
