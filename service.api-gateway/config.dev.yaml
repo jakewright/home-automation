@@ -22,3 +22,9 @@ apis:
     prefix: service.controller.hue
     upstream_url: http://service.controller.hue
     allow_cross_origin: true
+
+  service.controller.plug:
+    name: TP-Link Plug Controller
+    prefix: service.controller.plug
+    upstream_url: http://service.controller.plug
+    allow_cross_origin: true
