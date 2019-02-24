@@ -1,11 +1,10 @@
 const bootstrap = require("../libraries/javascript/bootstrap");
 const firehose = require("../libraries/javascript/firehose");
 const { store } = require("../libraries/javascript/device");
-const plug = require("./plug");
+const dao = require("./dao");
 const router = require("../libraries/javascript/router");
 const config = require("../libraries/javascript/config");
-
-require("./handler/routes");
+require("./routes");
 
 // Create and initialise a Service object
 const serviceName = "service.controller.plug";
@@ -20,14 +19,14 @@ bootstrap(serviceName)
       );
     });
 
-    return plug.fetchAllState();
+    return dao.fetchAllState();
   })
   .then(() => {
     router.listen();
 
     // Poll for state changes
     if (config.get("polling.enabled", false)) {
-      plug.watch(config.get("polling.interval", 30000));
+      dao.watch(config.get("polling.interval", 30000));
     }
   })
   .catch(err => {

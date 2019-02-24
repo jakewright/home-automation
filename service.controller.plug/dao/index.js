@@ -13,7 +13,7 @@ const findById = identifier => {
   return store.findById(identifier);
 };
 
-const fetchAll = async () => {
+const fetchAllState = async () => {
   (await req.get("service.registry.device/devices", {
     controllerName: "service.controller.plug"
   }))
@@ -33,13 +33,13 @@ const watch = interval => {
   console.log("Polling for state changes");
 
   setInterval(() => {
-    fetchAll().catch(err => {
+    fetchAllState().catch(err => {
       console.error("Failed to refresh state", err);
     });
   }, interval);
 };
 
-const apply = async (device, state) => {
+const applyState = async (device, state) => {
   // Update dependencies
   await updateDependencies(state, device.dependsOn);
 
@@ -65,4 +65,4 @@ const instantiateDevice = header => {
   return device;
 };
 
-exports = module.exports = { findById, fetchAll, watch, apply };
+exports = module.exports = { findById, fetchAllState, watch, applyState };

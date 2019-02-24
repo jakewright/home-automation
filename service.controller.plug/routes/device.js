@@ -1,8 +1,8 @@
-const plug = require("../plug");
+const dao = require("../dao");
 
 /** Middleware to load the device */
 const load = (req, res, next) => {
-  req.device = plug.findById(req.params.deviceId);
+  req.device = dao.findById(req.params.deviceId);
 
   if (!req.device) {
     res.status(404);
@@ -23,7 +23,7 @@ const update = async (req, res, next) => {
   const state = req.device.transform(req.body);
 
   try {
-    await plug.applyState(req.device, state);
+    await dao.applyState(req.device, state);
     res.json({ data: req.device });
   } catch (err) {
     next(err);
