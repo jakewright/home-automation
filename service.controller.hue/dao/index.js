@@ -27,7 +27,7 @@ const fetchAllState = async () => {
   for (const hueId in hueIdToState) {
     const device = findByHueId(hueId);
     if (!device) continue;
-    device.applyState(hueIdToState[hueId]);
+    device.apply(hueIdToState[hueId]);
   }
 };
 
@@ -46,17 +46,17 @@ const applyState = async (device, state) => {
   await updateDependencies(state, device.dependsOn);
 
   // Update light
-  const newState = await hueClient.applyState(device.hueId, state);
+  const newState = await hueClient.applyState(device.attributes.hueId, state);
 
   // Apply new state to local device
-  device.applyState(newState);
+  device.apply(newState);
 
   // Emit state change events
   store.flush();
 };
 
 const findByHueId = hueId => {
-  return store.findAll().find(device => device.hueId === hueId);
+  return store.findAll().find(device => device.attributes.hueId === hueId);
 };
 
 const instantiateDevice = header => {
@@ -64,8 +64,7 @@ const instantiateDevice = header => {
     identifier: header.identifier,
     name: header.name,
     type: header.type,
-    controllerName: "service.controller.hue",
-    hueId: header.attributes.hueId
+    controllerName: "service.controller.hue"
   });
 
   for (let feature of header.attributes.features) {

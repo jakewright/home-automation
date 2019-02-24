@@ -1,6 +1,6 @@
 const req = require("../../libraries/javascript/request");
 const tpLinkClient = require("../api/tpLinkClient");
-const Plug = require("../domain/Plug");
+const Index = require("../domain/Plug");
 const energyDecorator = require("../domain/energyDecorator");
 const decorateDevice = require("../domain/decorateDevice");
 
@@ -13,7 +13,7 @@ const findById = identifier => {
   return store.findById(identifier);
 };
 
-const fetchAllState = async () => {
+const fetchAll = async () => {
   (await req.get("service.registry.device/devices", {
     controllerName: "service.controller.plug"
   }))
@@ -23,7 +23,7 @@ const fetchAllState = async () => {
   // Get all plug state and apply to local objects
   const promises = store.findAll().map(async device => {
     const state = await tpLinkClient.getStateByHost(device.attributes.host);
-    device.applyState(state);
+    device.apply(state);
   });
 
   return Promise.all(promises);
@@ -33,13 +33,13 @@ const watch = interval => {
   console.log("Polling for state changes");
 
   setInterval(() => {
-    fetchAllState().catch(err => {
+    fetchAll().catch(err => {
       console.error("Failed to refresh state", err);
     });
   }, interval);
 };
 
-const applyState = async (device, state) => {
+const apply = async (device, state) => {
   // Update dependencies
   await updateDependencies(state, device.dependsOn);
 
@@ -48,7 +48,7 @@ const applyState = async (device, state) => {
   if (!success) throw new Error("Failed to apply state");
 
   // Apply new state to local device
-  device.applyState(state);
+  device.apply(state);
 
   // Emit state change events
   store.flush();
@@ -56,7 +56,7 @@ const applyState = async (device, state) => {
 
 const instantiateDevice = header => {
   header.controllerName = "service.controller.plug";
-  let device = new Plug(header);
+  let device = new Index(header);
 
   if (header.attributes.energy) {
     decorateDevice(device, energyDecorator);
@@ -65,4 +65,4 @@ const instantiateDevice = header => {
   return device;
 };
 
-exports = module.exports = { findById, fetchAllState, watch, applyState };
+exports = module.exports = { findById, fetchAll, watch, apply };

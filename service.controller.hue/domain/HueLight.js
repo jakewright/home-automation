@@ -3,7 +3,6 @@ const { Device } = require("../../libraries/javascript/device");
 class HueLight extends Device {
   constructor(config) {
     super(config);
-    this.hueId = config.hueId;
   }
 
   validate(state) {

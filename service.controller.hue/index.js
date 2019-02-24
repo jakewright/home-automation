@@ -3,8 +3,8 @@ const config = require("../libraries/javascript/config");
 const firehose = require("../libraries/javascript/firehose");
 const router = require("../libraries/javascript/router");
 const { store } = require("../libraries/javascript/device");
-const light = require("./light");
-require("./handler/router");
+const dao = require("./dao");
+require("./routes");
 
 const serviceName = "service.controller.hue";
 bootstrap(serviceName)
@@ -18,14 +18,14 @@ bootstrap(serviceName)
       );
     });
 
-    return light.fetchAllState();
+    return dao.fetchAllState();
   })
   .then(() => {
     router.listen();
 
     // Poll for state changes
     if (config.get("polling.enabled", false)) {
-      light.watch(config.get("polling.interval", 30000));
+      dao.watch(config.get("polling.interval", 30000));
     }
   })
   .catch(err => {
