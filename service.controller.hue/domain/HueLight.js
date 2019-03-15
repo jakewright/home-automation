@@ -1,10 +1,6 @@
 const { Device } = require("../../libraries/javascript/device");
 
 class HueLight extends Device {
-  constructor(config) {
-    super(config);
-  }
-
   validate(state) {
     if ("brightness" in state) {
       if (state.brightness < 0 || state.brightness > 254) {

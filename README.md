@@ -29,7 +29,7 @@ An error will be indicated by a non-2xx status code. The response will include a
 
 ### Controllers
 
-Controllers must implement a standarised interface for fetching device state.
+Controllers must implement a standardised interface for fetching and updating device state.
 
 `GET service.controller.x/device/<device-identifier>`
 

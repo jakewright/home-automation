@@ -22,7 +22,7 @@ const get = (req, res) => {
 const update = async (req, res, next) => {
   let err = req.device.validate(req.body);
   if (err !== undefined) {
-    res.status(422);
+    res.status(400);
     res.json({ message: `Invalid state: ${err}` });
     return;
   }

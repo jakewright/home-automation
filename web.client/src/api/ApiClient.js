@@ -1,4 +1,4 @@
-import Client from "../../../libraries/javascript/ApiClient/index";
+import Client from "../../../libraries/javascript/request/index";
 import { apiToDevice, apiToRoom, apiToRooms } from "../domain/marshalling";
 
 export default class ApiClient {
