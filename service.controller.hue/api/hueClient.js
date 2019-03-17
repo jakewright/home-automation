@@ -1,56 +1,55 @@
-const config = require("../../libraries/javascript/config");
-const huejay = require("huejay");
+const axios = require("axios");
 const { fromDomain, toDomain } = require("./marshaling");
 
 class HueClient {
+  setHost(host) {
+    this.host = host;
+  }
+
+  setUsername(username) {
+    this.username = username;
+  }
+
   getClient() {
-    if (this.client === undefined) this.connect();
+    if (this.client === undefined) {
+      this.client = axios.create({
+        baseURL: `${this.host}/api/${this.username}`
+      });
+    }
+
     return this.client;
   }
 
-  connect() {
-    console.log("Connecting to Hue Bridge");
-    this.client = new huejay.Client({
-      host: config.get("hueBridge.host"),
-      username: config.get("hueBridge.username")
-    });
+  async request(method, url, data) {
+    const rsp = await this.getClient().request({ method, url, data });
+    if (JSON.stringify(rsp.data).includes("error")) {
+      throw new Error(`Hue response included errors:
+      ${method} ${url}
+      ${JSON.stringify(rsp.data)}`);
+    }
+    return rsp;
   }
 
-  discover() {
-    return huejay.discover();
+  async fetchAllState() {
+    const rsp = await this.request("get", "/lights");
+    const lights = {};
+
+    for (const hueId in rsp.data) {
+      lights[hueId] = toDomain(rsp.data[hueId]);
+    }
+
+    return lights;
   }
 
-  createUser() {
-    if (this.config.username) throw new Error("User is already set");
-    let user = new this.getClient().users.User();
-    return this.getClient().users.create(user);
-  }
-
-  getAllUsers() {
-    return this.getClient().users.getAll();
-  }
-
-  async getAllLights() {
-    const lights = await this.getClient().lights.getAll();
-
-    // Convert to a map where the keys are the Hue IDs
-    return lights.reduce((map, light) => {
-      map[light.id] = toDomain(light);
-      return map;
-    }, {});
+  async fetchState(hueId) {
+    const rsp = await this.request("get", `/lights/${hueId}`);
+    return toDomain(rsp.data);
   }
 
   async applyState(hueId, state) {
     state = fromDomain(state);
-    let light = await this.getClient().lights.getById(hueId);
-
-    // Apply the state to the Huejay light object
-    for (let property in state) {
-      light[property] = state[property];
-    }
-
-    light = await this.getClient().lights.save(light);
-    return toDomain(light);
+    await this.request("put", `/lights/${hueId}/state`, state);
+    return this.fetchState(hueId);
   }
 }
 

@@ -8,17 +8,17 @@ const fromDomain = domain => {
   }
 
   if ("brightness" in domain) {
-    api.brightness = domain.brightness;
+    api.bri = domain.brightness;
   }
 
   if ("color" in domain) {
     api.hue = domain.color.hue;
-    api.saturation = domain.color.saturation;
+    api.sat = domain.color.saturation;
   }
 
   if ("colorTemp" in domain) {
     // Convert from Kelvin to Mirek (Huejay wants a value between 153 and 500)
-    api.colorTemp = Math.floor(1000000 / domain.colorTemp);
+    api.ct = Math.floor(1000000 / domain.colorTemp);
   }
 
   if ("rgb" in domain) {
@@ -31,24 +31,24 @@ const fromDomain = domain => {
 const toDomain = api => {
   const domain = {};
 
-  if (api.on !== undefined) {
-    domain.power = api.on;
+  if (api.state.on !== undefined) {
+    domain.power = api.state.on;
   }
 
-  if (api.brightness !== undefined) {
-    domain.brightness = api.brightness;
+  if (api.state.bri !== undefined) {
+    domain.brightness = api.state.bri;
   }
 
-  if (api.hue !== undefined && api.saturation !== undefined) {
-    domain.color = { hue: api.hue, saturation: api.saturation };
+  if (api.state.hue !== undefined && api.state.saturation !== undefined) {
+    domain.color = { hue: api.state.hue, saturation: api.state.saturation };
   }
 
-  if (api.colorTemp !== undefined) {
-    domain.colorTemp = Math.ceil(1000000 / api.colorTemp);
+  if (api.state.ct !== undefined) {
+    domain.colorTemp = Math.ceil(1000000 / api.state.ct);
   }
 
-  if (api.xy !== undefined) {
-    domain.rgb = conversions.xyToRgbHex(api.xy[0], api.xy[1]);
+  if (api.state.xy !== undefined) {
+    domain.rgb = conversions.xyToRgbHex(api.state.xy[0], api.state.xy[1]);
   }
 
   return domain;

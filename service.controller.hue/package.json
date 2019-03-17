@@ -14,7 +14,7 @@
     "prettier": "^1.14.2"
   },
   "dependencies": {
-    "huejay": "^1.8.4",
+    "axios": "^0.18.0",
     "lodash": "^4.17.10"
   }
 }
