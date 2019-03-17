@@ -18,7 +18,7 @@ class ApiClient {
     // Make the request
     let rsp;
     try {
-      rsp = await this.client.request.apply(this, arguments);
+      rsp = await this.client.request(args);
     } catch (err) {
       if (err.request) {
         console.error("No response received", args.url);
