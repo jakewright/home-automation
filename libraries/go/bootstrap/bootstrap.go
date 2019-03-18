@@ -3,59 +3,46 @@ package bootstrap
 import (
 	"fmt"
 	"github.com/go-redis/redis"
-	"home-automation/libraries/go/client"
 	"home-automation/libraries/go/config"
+	"home-automation/libraries/go/firehose"
+	"home-automation/libraries/go/http"
 	"log"
 	"os"
 )
 
-// Service gives access to common features. Do not create directly; use Boot() instead.
-type Service struct {
-	ControllerName string
-	APIClient      client.Requester
-	Config         *config.Config
-	Redis          *redis.Client
-}
-
 // Boot performs standard service startup tasks
-func Boot(controllerName string) (*Service, error) {
-	svc := &Service{
-		ControllerName: controllerName,
-	}
-
-	// Create API Client
+func Init(serviceName string) error {
+	// Create default HTTP client
 	apiGateway := os.Getenv("API_GATEWAY")
 	if apiGateway == "" {
-		return nil, fmt.Errorf("API_GATEWAY env var not set")
+		return fmt.Errorf("API_GATEWAY env var not set")
 	}
-	apiClient, err := client.New(apiGateway)
+	httpClient, err := http.New(apiGateway, "data")
 	if err != nil {
-		return nil, err
+		return err
 	}
-	svc.APIClient = apiClient
+	http.DefaultClient = httpClient
 
 	// Load config
 	var configRsp map[string]interface{}
-	_, err = apiClient.Get(fmt.Sprintf("Service.config/read/%s", controllerName), &configRsp)
+	_, err = http.Get(fmt.Sprintf("service.config/read/%s", serviceName), &configRsp)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	svc.Config = &config.Config{
-		Map: configRsp,
-	}
+	config.DefaultProvider = config.New(configRsp)
 
 	// Connect to Redis
-	if svc.Config.Has("redis.host") {
-		host := svc.Config.Get("redis.host").String()
-		port := svc.Config.Get("redis.port").Int()
+	if config.Has("redis.host") {
+		host := config.Get("redis.host").String()
+		port := config.Get("redis.port").Int()
 		addr := fmt.Sprintf("%s:%d", host, port)
 		log.Printf("Connecting to Redis at address %s\n", addr)
-		svc.Redis = redis.NewClient(&redis.Options{
+		firehose.DefaultPublisher = firehose.New(redis.NewClient(&redis.Options{
 			Addr:     addr,
 			Password: "",
 			DB:       0,
-		})
+		}))
 	}
 
-	return svc, nil
+	return nil
 }

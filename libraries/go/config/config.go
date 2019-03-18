@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+type Provider interface {
+	Has(string) bool
+	Get(string) Value
+}
+
 // Config holds a nested map of config values and provides
 // helper functions for easier access and type casting.
 type Config struct {
@@ -17,6 +22,24 @@ type Config struct {
 // receiver methods for casting to various types.
 type Value struct {
 	raw interface{}
+}
+
+var DefaultProvider Provider
+func mustGetDefaultProvider() Provider {
+	if DefaultProvider == nil {
+		panic("Config read before default provider set")
+	}
+
+	return DefaultProvider
+}
+
+func Has(path string) bool { return mustGetDefaultProvider().Has(path) }
+func Get(path string) Value { return mustGetDefaultProvider().Get(path) }
+
+func New(content map[string]interface{}) Provider {
+	return &Config{
+		Map: content,
+	}
 }
 
 // Has returns whether the config has a raw at the given path e.g. "redis.host"
@@ -90,5 +113,5 @@ func (v Value) String(defaults ...string) string {
 		return defaults[0]
 	}
 
-	return fmt.Sprintf("%v", v)
+	return fmt.Sprintf("%s", v.raw)
 }
