@@ -1,7 +1,7 @@
 const axios = require("axios");
 const utils = require("./utils");
 
-class ApiClient {
+class HTTPClient {
   constructor() {
     this.client = axios.create({
       validateStatus: () => true
@@ -80,5 +80,5 @@ class ApiClient {
   }
 }
 
-const request = new ApiClient();
-exports = module.exports = request;
+const httpClient = new HTTPClient();
+exports = module.exports = httpClient;

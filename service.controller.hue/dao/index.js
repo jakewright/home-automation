@@ -1,4 +1,4 @@
-const req = require("../../libraries/javascript/request");
+const req = require("../../libraries/javascript/http");
 const HueLight = require("../domain/HueLight");
 const colorDecorator = require("../domain/colorDecorator");
 const colorTempDecorator = require("../domain/colorTempDecorator");

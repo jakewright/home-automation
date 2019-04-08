@@ -1,4 +1,4 @@
-const req = require("../../libraries/javascript/request");
+const req = require("../../libraries/javascript/http");
 const tpLinkClient = require("../api/tpLinkClient");
 const Index = require("../domain/Plug");
 const energyDecorator = require("../domain/energyDecorator");

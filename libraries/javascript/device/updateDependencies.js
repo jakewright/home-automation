@@ -1,4 +1,4 @@
-const req = require("../request");
+const req = require("../http");
 
 /**
  * @param {Object} state

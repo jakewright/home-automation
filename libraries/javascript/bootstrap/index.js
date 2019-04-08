@@ -1,4 +1,4 @@
-const req = require("../request");
+const req = require("../http");
 const config = require("../config");
 
 exports = module.exports = async serviceName => {
