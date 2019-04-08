@@ -19,7 +19,7 @@ ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNA
     git checkout master
     git pull
 
-    sudo systemctl stop "$SERVICE".service
+    sudo systemctl stop "$DASHES".service
 
     cd $SERVICE
     bash ../tools/orchestrate/systemd/$LANG.sh
@@ -30,7 +30,7 @@ ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNA
     sudo chmod 644 /lib/systemd/system/$DASHES.service
 
     sudo systemctl daemon-reload
-    sudo systemctl enable $DASHES.service
-    sudo systemctl start $DASHES.service
+    sudo systemctl enable "$DASHES".service
+    sudo systemctl start "$DASHES".service
 
 EOF
