@@ -1,4 +1,5 @@
 import array
+import json
 import re
 import sys
 
@@ -141,6 +142,6 @@ class Device(Resource):
         if cache != self.hash():
             self.service.publish(
                 'device-state-changed.{}'.format(self.identifier),
-                self.to_json())
+                json.dumps(self.to_json()))
 
         return self.to_json(), 200
