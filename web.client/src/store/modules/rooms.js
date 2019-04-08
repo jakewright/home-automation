@@ -1,4 +1,4 @@
-import { apiClient } from "../../main";
+import api from "../../api";
 import _ from "lodash";
 import Vue from "vue";
 
@@ -15,12 +15,12 @@ const getters = {
 
 const actions = {
   async fetchRooms({ commit }) {
-    const rooms = await apiClient.fetchRooms();
+    const rooms = await api.fetchRooms();
     commit("setRooms", rooms);
   },
 
   async fetchRoom({ commit }, roomId) {
-    const room = await apiClient.fetchRoom(roomId);
+    const room = await api.fetchRoom(roomId);
     commit("setRoom", room);
   }
 };

@@ -51,4 +51,4 @@ const fetchRoom = async (identifier) => {
   return apiToRoom(rsp);
 };
 
-exports = module.exports = { fetchDevice, updateDevice, fetchRooms, fetchRoom };
+export default { fetchDevice, updateDevice, fetchRooms, fetchRoom };

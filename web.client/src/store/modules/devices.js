@@ -1,4 +1,4 @@
-import { apiClient } from "../../main";
+import api from "../../api";
 import Vue from "vue";
 
 const state = {
@@ -11,14 +11,14 @@ const getters = {
 
 const actions = {
   async fetchDevice({ commit }, deviceId) {
-    const device = await apiClient.fetchDevice(deviceId);
+    const device = await api.fetchDevice(deviceId);
     commit("setDevice", device);
   },
 
   async updateDevice({ commit, getters }, { deviceId, properties }) {
     const header = getters.device(deviceId);
     console.log("controllerName", header.controllerName);
-    const device = await apiClient.updateDevice(header, properties);
+    const device = await api.updateDevice(header, properties);
     commit("setDevice", device);
   },
 
