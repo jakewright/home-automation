@@ -7,12 +7,12 @@ import subprocess
 
 def docker(service, status, config):
     script = dir_path + '/docker/status.sh' if status else dir_path + '/docker/deploy.sh'
-    return subprocess.run(script, shell=True, env={
-        'SERVICE': service,
-        'DEPLOYMENT_TARGET': config['DeploymentTarget'],
-        'TARGET_USERNAME': config['TargetUsername'],
-        'TARGET_DIRECTORY': config['TargetDirectory'],
-    }).returncode
+    new_env = os.environ.copy()
+    new_env["SERVICE"] = service
+    new_env["DEPLOYMENT_TARGET"] = config["DeploymentTarget"]
+    new_env["TARGET_USERNAME"] = config["TargetUsername"]
+    new_env["TARGET_DIRECTORY"] = config["TargetDirectory"]
+    return subprocess.run(script, shell=True, env=new_env).returncode
 
 
 def systemd(service, status, config):
@@ -22,14 +22,15 @@ def systemd(service, status, config):
         print('Unsupported language')
         return 1
 
-    return subprocess.run(script, shell=True, env={
-        "SERVICE": service,
-        "DEPLOYMENT_TARGET": config['DeploymentTarget'],
-        "TARGET_USERNAME": config['TargetUsername'],
-        "TARGET_DIRECTORY": config['TargetDirectory'],
-        "SYSTEMD_SERVICE": get_python_systemd(service, config),
-        "LANG": config['Language']
-    }).returncode
+    new_env = os.environ.copy()
+    new_env["SERVICE"] = service
+    new_env["DEPLOYMENT_TARGET"] = config["DeploymentTarget"]
+    new_env["TARGET_USERNAME"] = config["TargetUsername"]
+    new_env["TARGET_DIRECTORY"] = config["TargetDirectory"]
+    new_env["SYSTEMD_SERVICE"] = get_python_systemd(service, config)
+    new_env["LANG"] = config["Language"]
+
+    return subprocess.run(script, shell=True, env=new_env).returncode
 
 
 def get_python_systemd(service, config):
