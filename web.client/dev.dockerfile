@@ -11,9 +11,9 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Install app dependencies
-RUN npm install -g @vue/cli@3.0.3
-COPY ./web.client/.npmrc /usr/src/app
-COPY ./web.client/package.json /usr/src/app
+RUN npm install -g @vue/cli@3.5.5
+COPY ./web.client/.npmrc .
+COPY ./web.client/package.json .
 RUN npm install
 
 # Expose ports for web access and debugging
