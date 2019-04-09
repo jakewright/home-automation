@@ -23,7 +23,7 @@ const fetchAllState = async () => {
   // Get all plug state and apply to local objects
   const promises = store.findAll().map(async device => {
     const state = await tpLinkClient.getStateByHost(device.attributes.host);
-    device.apply(state);
+    device.applyState(state);
   });
 
   return Promise.all(promises);
@@ -48,7 +48,7 @@ const applyState = async (device, state) => {
   if (!success) throw new Error("Failed to apply state");
 
   // Apply new state to local device
-  device.apply(state);
+  device.applyState(state);
 
   // Emit state change events
   store.flush();
