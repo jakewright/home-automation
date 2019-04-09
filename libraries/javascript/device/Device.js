@@ -17,13 +17,11 @@ class Device {
     this.attributes = config.attributes || {};
     this.dependsOn = config.dependsOn || [];
     this.stateProviders = config.stateProviders || [];
+
+    this.state = {};
   }
 
   getCommands() {
-    return {};
-  }
-
-  getProperties() {
     return {};
   }
 
@@ -32,28 +30,22 @@ class Device {
   }
 
   applyState(state) {
-    for (const property in this.getProperties()) {
+    for (const property in this.state) {
       if (property in state) {
-        this[property] = state[property];
+        this.state[property].value = state[property];
       }
     }
   }
 
   toJSON() {
-    let json = {
+    return {
       identifier: this.identifier,
       name: this.name,
       type: this.type,
       controllerName: this.controllerName,
-      availableProperties: this.getProperties(),
+      state: this.state,
       commands: this.getCommands()
     };
-
-    for (let property in this.getProperties()) {
-      json[property] = this[property];
-    }
-
-    return json;
   }
 }
 
