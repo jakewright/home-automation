@@ -58,26 +58,26 @@ class Device(Resource):
                 'name': self.name,
                 'type': 'dmx',
                 'controller_name': self.controller_name,
-                'available_properties': {
+                'state': {
                     'rgb': {
-                        'type': 'rgb'
+                        'type': 'rgb',
+                        'value': rgb
                     },
                     'brightness': {
                         'type': 'int',
                         'min': 0,
                         'max': 255,
-                        'interpolation': 'continuous'
+                        'interpolation': 'continuous',
+                        'value': brightness
                     },
                     'strobe': {
                         'type': 'int',
                         'min': 0,
                         'max': 240,
-                        'interpolation': 'continuous'
+                        'interpolation': 'continuous',
+                        'value': strobe
                     },
-                },
-                'rgb': rgb,
-                'brightness': brightness,
-                'strobe': strobe,
+                }
             }
         }
 
