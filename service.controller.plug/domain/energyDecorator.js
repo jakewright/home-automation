@@ -1,7 +1,6 @@
 const energyDecorator = {
-  getProperties(properties) {
-    properties.watts = { type: "int", immutable: true };
-    return properties;
+  state: {
+    watts: { type: "int", immutable: true }
   }
 };
 

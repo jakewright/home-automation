@@ -24,9 +24,8 @@ const colorDecorator = {
     return t;
   },
 
-  getProperties(properties) {
-    properties.color = { type: "color" };
-    return properties;
+  state: {
+    color: { type: "color" }
   }
 };
 

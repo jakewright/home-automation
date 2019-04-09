@@ -14,9 +14,8 @@ const rgbDecorator = {
     return t;
   },
 
-  getProperties(properties) {
-    properties.rgb = { type: "rgb" };
-    return properties;
+  state: {
+    rgb: { type: "rgb" }
   }
 };
 

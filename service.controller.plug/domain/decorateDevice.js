@@ -7,12 +7,8 @@ const decorateDevice = (device, decorator) => {
     };
   }
 
-  if (typeof decorator.getProperties === "function") {
-    const getProperties = device.getProperties;
-    device.getProperties = () => {
-      let properties = getProperties.call(device);
-      return decorator.getProperties.call(device, properties);
-    };
+  if (typeof decorator.state === "object") {
+    Object.assign(device.state, decorator.state);
   }
 };
 

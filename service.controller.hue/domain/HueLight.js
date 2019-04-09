@@ -1,6 +1,20 @@
 const { Device } = require("../../libraries/javascript/device");
 
 class HueLight extends Device {
+  constructor(config) {
+    super(config);
+
+    this.state = {
+      power: { type: "bool" },
+      brightness: {
+        type: "int",
+        min: 0,
+        max: 254,
+        interpolation: "continuous"
+      }
+    };
+  }
+
   validate(state) {
     if ("brightness" in state) {
       if (state.brightness < 0 || state.brightness > 254) {
@@ -11,7 +25,7 @@ class HueLight extends Device {
       // can just turn the light on as part of the same request, but this
       // would be weird if you're trying to set the brightness to zero so
       // disallow this edge case.
-      if (state.brightness === 0 && !this.power) {
+      if (state.brightness === 0 && !this.state.power.value) {
         return "Cannot set brightness to zero while light is off";
       }
     }
@@ -30,18 +44,6 @@ class HueLight extends Device {
     }
 
     return t;
-  }
-
-  getProperties() {
-    return {
-      power: { type: "bool" },
-      brightness: {
-        type: "int",
-        min: 0,
-        max: 254,
-        interpolation: "continuous"
-      }
-    };
   }
 }
 
