@@ -1,4 +1,4 @@
-FROM node:8.11
+FROM node:11
 
 # Add the libraries
 RUN mkdir -p /usr/src/libraries/javascript
@@ -15,6 +15,9 @@ RUN npm install -g @vue/cli@3.5.5
 COPY ./web.client/.npmrc .
 COPY ./web.client/package.json .
 RUN npm install
+
+# Move one level up so node_modules is not overwritten by a mounted directory
+RUN mv node_modules /usr/src/node_modules
 
 # Expose ports for web access and debugging
 EXPOSE 8080 9229
