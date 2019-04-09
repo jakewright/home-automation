@@ -18,14 +18,13 @@ const colorTempDecorator = {
     return t;
   },
 
-  getProperties(properties) {
-    properties.colorTemp = {
+  state: {
+    colorTemp: {
       type: "int",
       min: CT_MIN,
       max: CT_MAX,
       interpolation: "continuous"
-    };
-    return properties;
+    }
   }
 };
 
