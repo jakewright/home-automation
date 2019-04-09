@@ -16,7 +16,7 @@
     <template v-else>
       <ul>
         <li
-          v-for="(property, propertyName) in device.properties"
+          v-for="(property, propertyName) in device.state"
           :key="propertyName"
           :class="propertyName"
         >

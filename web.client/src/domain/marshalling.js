@@ -6,19 +6,16 @@ import DeviceHeader from "./DeviceHeader";
 /**
  * Converts a JSON API response into a domain object
  *
- * @param {Object} header
  * @param {Object} rsp
  * @returns {Device}
  */
 const apiToDevice = rsp => {
-  const properties = _.pick(rsp, Object.keys(rsp.availableProperties));
   return new Device(
     rsp.identifier,
     rsp.name,
     rsp.type,
     rsp.controllerName,
-    rsp.availableProperties,
-    properties
+    rsp.state,
   );
 };
 
