@@ -25,7 +25,8 @@ const decorateDevice = (device, decorator) => {
   }
 
   if (typeof decorator.state === "object") {
-    Object.assign(device.state, decorator.state);
+    // Deep clone the extra state and merge it with the device's existing state
+    Object.assign(device.state, JSON.parse(JSON.stringify(decorator.state)));
   }
 };
 
