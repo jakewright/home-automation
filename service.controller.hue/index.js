@@ -1,9 +1,7 @@
 const bootstrap = require("../libraries/javascript/bootstrap");
 const config = require("../libraries/javascript/config");
 const hueClient = require("./api/hueClient");
-const firehose = require("../libraries/javascript/firehose");
 const router = require("../libraries/javascript/router");
-const { store } = require("../libraries/javascript/device");
 const dao = require("./dao");
 require("./routes");
 
@@ -16,15 +14,6 @@ bootstrap(serviceName)
     }
     hueClient.setHost(config.get("hueBridge.host"));
     hueClient.setUsername(config.get("hueBridge.username"));
-
-    // Subscribe to state changes from the store
-    store.on("device-changed", (identifier, oldState, newState) => {
-      console.log(`State changed for device ${identifier}`);
-      firehose.publish(
-        `device-state-changed.${identifier}`,
-        JSON.stringify({ oldState, newState })
-      );
-    });
 
     return dao.fetchAllState();
   })

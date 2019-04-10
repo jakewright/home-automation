@@ -1,4 +1,5 @@
 const EventEmitter = require("events");
+const firehose = require("../firehose");
 
 class Store extends EventEmitter {
   constructor() {
@@ -57,4 +58,14 @@ class Store extends EventEmitter {
 }
 
 const store = new Store();
+
+// Emit firehose events when device state is changed
+store.on("device-changed", (identifier, newState) => {
+  console.log(`State changed for device ${identifier}`);
+  firehose.publish(
+    `device-state-changed.${identifier}`,
+    JSON.stringify(newState)
+  );
+});
+
 exports = module.exports = store;
