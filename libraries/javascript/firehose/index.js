@@ -1,28 +1,64 @@
 const redis = require("redis");
 const config = require("../config");
 
-let client;
+// Redis needs separate clients for publishing and subscribing (I think)
+// https://github.com/NodeRedis/node_redis#publish--subscribe
+let pubClient;
+let subClient;
 
-const getClient = () => {
-  if (client === undefined) {
-    if (!config.has("redis.host")) {
-      throw new Error("No redis host defined in config");
-    }
+// A map of pattern to array of handlers
+let handlers = {};
 
-    client = redis.createClient({
-      host: config.get("redis.host"),
-      port: config.get("redis.port")
-    });
-    client.on("error", err => {
-      console.error(`Redis error: ${err}`);
-    });
+const newClient = () => {
+  if (!config.has("redis.host")) {
+    throw new Error("No redis host defined in config");
   }
+
+  const client = redis.createClient({
+    host: config.get("redis.host"),
+    port: config.get("redis.port")
+  });
+
+  client.on("error", err => {
+    console.error(`Redis error: ${err}`);
+  });
 
   return client;
 };
 
-const publish = (name, msg) => {
-  getClient().publish(name, msg);
+const getPubClient = () => {
+  if (pubClient === undefined) pubClient = newClient();
+  return pubClient;
 };
 
-exports = module.exports = { publish };
+const getSubClient = () => {
+  if (subClient === undefined) {
+    subClient = newClient();
+
+    // Every time we get a message on a channel that matches an active
+    // pattern subscription, call all of the handlers for that pattern.
+    subClient.on("pmessage", (pattern, channel, message) => {
+      for (const handler of handlers[pattern]) {
+        handler(channel, message);
+      }
+    });
+  }
+
+  return subClient;
+};
+
+const publish = (name, msg) => {
+  getPubClient().publish(name, msg);
+};
+
+const subscribe = (pattern, handler) => {
+  getSubClient().psubscribe(pattern);
+
+  if (pattern in handlers) {
+    handlers[pattern].push(handler);
+  } else {
+    handlers[pattern] = [handler];
+  }
+};
+
+exports = module.exports = { publish, subscribe };

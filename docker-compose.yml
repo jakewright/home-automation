@@ -52,6 +52,8 @@ services:
     volumes:
       - ./service.event-bus:/usr/src/app
       - /usr/src/app/node_modules
+      - ./libraries/javascript:/usr/src/libraries/javascript
+      - /usr/src/libraries/javascript/node_modules
     ports:
       - 7004:80
     environment:
