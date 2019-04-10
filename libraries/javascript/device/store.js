@@ -30,17 +30,17 @@ class Store extends EventEmitter {
 
       if (oldState === undefined) {
         super.emit("device-added", key, oldState, newState);
-      } else if (JSON.stringify(oldState) !== JSON.stringify(newState)) {
-        super.emit("device-changed", key, oldState, newState);
+      } else if (oldState !== JSON.stringify(newState)) {
+        console.log("Device state changed");
+        super.emit("device-changed", key, newState);
       }
     }
 
     for (let key in this.cache) {
-      const oldState = this.cache[key];
       const newState = this.devices[key];
 
       if (newState === undefined) {
-        super.emit("device-removed", key, oldState, newState);
+        super.emit("device-removed", key, newState);
       }
     }
 
@@ -49,7 +49,9 @@ class Store extends EventEmitter {
 
   updateCache() {
     for (let key in this.devices) {
-      this.cache[key] = this.devices[key].toJSON();
+      // The object needs to be stringified otherwise you get
+      // shallow copy where the state mutates with the real device.
+      this.cache[key] = JSON.stringify(this.devices[key].toJSON());
     }
   }
 }
