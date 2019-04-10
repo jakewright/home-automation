@@ -41,14 +41,14 @@ Controllers must implement a standardised interface for fetching and updating de
     "name": "Table Lamp",
     "type": "light",
     "controller_name": "service.controller.hue",
-    "availableProperties": {
+    "state": {
         "brightness": {
             "type": "int",
             "min": 0,
             "max": 254,
             "interpolation": "continuous",
+            "value": 100
         }
-    },
-    "brightness": 100
+    }
 }
 ```
