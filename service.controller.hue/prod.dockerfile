@@ -1,4 +1,4 @@
-FROM node:8.11
+FROM node:11
 ENV NODE_ENV=production
 
 # Add the libraries

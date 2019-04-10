@@ -1,4 +1,5 @@
-FROM node:8.11
+FROM node:11
+ENV NODE_ENV=development
 
 # Install nodemon
 RUN npm install -g nodemon
