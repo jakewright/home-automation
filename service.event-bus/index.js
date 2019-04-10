@@ -2,7 +2,6 @@ const config = require("config");
 const express = require("express");
 const http = require("http");
 const redis = require("redis");
-const url = require("url");
 const WebSocket = require("ws");
 
 // Connect to the Redis instance
