@@ -5,8 +5,7 @@ const router = require("../libraries/javascript/router");
 const dao = require("./dao");
 require("./routes");
 
-const serviceName = "service.controller.hue";
-bootstrap(serviceName)
+bootstrap("service.controller.hue")
   .then(() => {
     // Get Hue Bridge info
     if (!config.has("hueBridge.host") || !config.has("hueBridge.username")) {
