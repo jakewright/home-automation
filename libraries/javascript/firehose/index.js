@@ -1,29 +1,28 @@
 const redis = require("redis");
 const config = require("../config");
 
-class Firehose {
-  getClient() {
-    if (this.client === undefined) {
-      if (!config.has("redis.host")) {
-        throw new Error("No redis host defined in config");
-      }
+let client;
 
-      this.client = redis.createClient({
-        host: config.get("redis.host"),
-        port: config.get("redis.port")
-      });
-      this.client.on("error", err => {
-        console.error(`Redis error: ${err}`);
-      });
+const getClient = () => {
+  if (client === undefined) {
+    if (!config.has("redis.host")) {
+      throw new Error("No redis host defined in config");
     }
 
-    return this.client;
+    client = redis.createClient({
+      host: config.get("redis.host"),
+      port: config.get("redis.port")
+    });
+    client.on("error", err => {
+      console.error(`Redis error: ${err}`);
+    });
   }
 
-  publish(name, msg) {
-    this.getClient().publish(name, msg);
-  }
-}
+  return client;
+};
 
-const firehose = new Firehose();
-exports = module.exports = firehose;
+const publish = (name, msg) => {
+  getClient().publish(name, msg);
+};
+
+exports = module.exports = { publish };
