@@ -24,9 +24,13 @@ const fetchAllState = async () => {
 
   // Get all light state and apply to local objects
   const hueIdToState = await hueClient.fetchAllState();
+  console.log("All state from Hue bridge");
   console.log(hueIdToState);
+  console.log("Devices");
+  console.log(store.findAll());
   for (const hueId in hueIdToState) {
     const device = findByHueId(hueId);
+    console.log(device);
     if (!device) continue;
     device.applyState(hueIdToState[hueId]);
   }
