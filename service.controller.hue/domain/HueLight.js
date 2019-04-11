@@ -4,6 +4,11 @@ class HueLight extends Device {
   constructor(config) {
     super(config);
 
+    const hueId = this.attributes.hueId;
+    if (typeof hueId !== "string") {
+      throw new Error(`Hue ID '${hueId}' is not a string`);
+    }
+
     this.state = {
       power: { type: "bool" },
       brightness: {

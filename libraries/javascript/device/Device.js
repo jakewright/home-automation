@@ -30,8 +30,6 @@ class Device {
   }
 
   applyState(state) {
-    console.log("Applying state");
-    console.log(state);
     for (const property in this.state) {
       if (property in state) {
         this.state[property].value = state[property];
