@@ -6,6 +6,8 @@ set -e
 DASHES=$(echo $SERVICE | tr "." "-")
 
 ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNAME"@"$DEPLOYMENT_TARGET" << EOF
+    # Abort if anything fails
+    set -e
 
     cd $TARGET_DIRECTORY/src
 

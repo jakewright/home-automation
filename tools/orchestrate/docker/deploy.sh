@@ -7,6 +7,9 @@ UNDERSCORES=$(echo $SERVICE | tr "." "_" | tr "-" "_")
 DASHES=$(echo $SERVICE | tr "." "-")
 
 ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNAME"@"$DEPLOYMENT_TARGET" << EOF
+    # Abort if anything fails
+    set -e
+
     echo "Building $SERVICE..."
     cd $TARGET_DIRECTORY/src
     git pull
