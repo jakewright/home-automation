@@ -24,6 +24,7 @@ const fetchAllState = async () => {
 
   // Get all light state and apply to local objects
   const hueIdToState = await hueClient.fetchAllState();
+  console.log(hueIdToState);
   for (const hueId in hueIdToState) {
     const device = findByHueId(hueId);
     if (!device) continue;
