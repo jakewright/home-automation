@@ -19,9 +19,14 @@ const newClient = () => {
     port: config.get("redis.port")
   });
 
-  client.on("error", err => {
-    console.error(`Redis error: ${err}`);
-  });
+  client.on("ready", () => console.log("Redis connection is ready"));
+  client.on("connect", () => console.log("Redis connected"));
+  client.on("reconnecting", o =>
+    console.log(`Reconnecting to Redis [attempt ${o.attempt}]...`)
+  );
+  client.on("error", err => console.error(`Redis error: ${err}`));
+  client.on("end", () => console.log(`Redis connection closed`));
+  client.on("warning", warn => console.error(`Redis warning: ${warn}`));
 
   return client;
 };
