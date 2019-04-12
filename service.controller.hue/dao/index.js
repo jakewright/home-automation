@@ -68,7 +68,7 @@ const instantiateDevice = header => {
     name: header.name,
     type: header.type,
     controllerName: "service.controller.hue",
-    attributes: header.attributes,
+    attributes: header.attributes
   });
 
   for (let feature of header.attributes.features) {

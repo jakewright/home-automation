@@ -6,7 +6,7 @@ class Plug extends Device {
 
     this.state = {
       power: { type: "bool" }
-    }
+    };
   }
 
   transform(state) {

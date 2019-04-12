@@ -1,11 +1,5 @@
 export default class Device {
-  constructor(
-    identifier,
-    name,
-    deviceType,
-    controllerName,
-    state
-  ) {
+  constructor(identifier, name, deviceType, controllerName, state) {
     this.identifier = identifier;
     this.name = name;
     this.deviceType = deviceType;

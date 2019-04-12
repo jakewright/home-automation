@@ -15,7 +15,7 @@ const apiToDevice = rsp => {
     rsp.name,
     rsp.type,
     rsp.controllerName,
-    rsp.state,
+    rsp.state
   );
 };
 

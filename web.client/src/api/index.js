@@ -7,10 +7,10 @@ import { apiToDevice, apiToRoom, apiToRooms } from "../domain/marshalling";
  * @param {DeviceHeader} deviceHeader Metadata about the device
  * @return {Device}
  */
-const fetchDevice = async (deviceHeader) => {
+const fetchDevice = async deviceHeader => {
   const url = `${deviceHeader.controllerName}/device/${
     deviceHeader.identifier
-    }`;
+  }`;
   const rsp = await http.get(url);
   return apiToDevice(rsp);
 };
@@ -44,10 +44,8 @@ const fetchRooms = async () => {
  * @param identifier
  * @returns {Room}
  */
-const fetchRoom = async (identifier) => {
-  const rsp = await http.get(
-    `service.registry.device/room/${identifier}`
-  );
+const fetchRoom = async identifier => {
+  const rsp = await http.get(`service.registry.device/room/${identifier}`);
   return apiToRoom(rsp);
 };
 

@@ -8,7 +8,6 @@ const firehose = require("../libraries/javascript/firehose");
 
 bootstrap("service.event-bus")
   .then(() => {
-
     // Create an express app
     const app = express();
 
