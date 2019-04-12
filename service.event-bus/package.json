@@ -1,13 +1,13 @@
 {
     "name": "home-automation-event-bus",
     "version": "1.0.0",
-    "description": "",
+    "description": "Listens to redis pubsub messages and relays them over web sockets",
     "main": "index.js",
     "scripts": {
       "start": "node index.js"
     },
-    "author": "",
-    "license": "ISC",
+    "author": "Jake Wright",
+    "license": "MIT",
     "dependencies": {
       "express": "^4.16.2",
       "ws": "^3.2.0"
