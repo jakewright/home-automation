@@ -7,6 +7,6 @@ RUN  apk add --update rsyslog \
 
 EXPOSE 514
 COPY ./service.rsyslog/rsyslog.conf /etc/rsyslog.conf
-COPY ./service.rsyslog/log_rotation.sh /log_rotation.sh
+COPY ./service.rsyslog/log-rotation.sh /log-rotation.sh
 
 CMD [ "rsyslogd", "-n" ]
