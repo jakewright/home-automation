@@ -34,6 +34,7 @@ def systemd(service, status, config):
 
 
 def get_python_systemd(service, config):
+    service_dashes = service.replace(".", "-")
     project_root = config['TargetDirectory'] + '/src'
     service_root =  project_root + '/' + service
     return '''\
@@ -41,6 +42,7 @@ def get_python_systemd(service, config):
 Description={service}
 
 [Service]
+SyslogIdentifier=ha-{service-dashes}
 Environment=APP_CONFIG_FILE={service_root}/config/production.py
 Environment=PYTHONPATH=$PYTHONPATH:{project_root}/libraries/python:/usr/lib/python2.7/dist-packages
 Environment=FLASK_APP={service_root}/{flask_app_name}
@@ -52,7 +54,7 @@ ExecStart={service_root}/env/bin/flask run
 
 [Install]
 WantedBy=multi-user.target
-'''.format(service=service, project_root=project_root, service_root=service_root, flask_app_name=config['FlaskAppName'], port=config['Port'])
+'''.format(service=service, service_dashes=service_dashes, project_root=project_root, service_root=service_root, flask_app_name=config['FlaskAppName'], port=config['Port'])
 
 
 def run():
