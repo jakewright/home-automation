@@ -8,9 +8,9 @@ import (
 
 // Error is a custom error type that implements Go's error interface
 type Error struct {
-	Code    string            `json:"code"`
-	Message string            `json:"message"`
-	Params  map[string]string `json:"params"`
+	Code     string            `json:"code"`
+	Message  string            `json:"message"`
+	Metadata map[string]string `json:"metadata"`
 }
 
 // Error returns a string message of the error
@@ -25,6 +25,10 @@ func (e *Error) Error() string {
 	default:
 		return fmt.Sprintf("%s: %s", e.Code, e.Message)
 	}
+}
+
+func (e *Error) GetMetadata() map[string]string {
+	return e.Metadata
 }
 
 // HTTPStatus returns an appropriate HTTP status code to use when returning the error in a response
@@ -108,23 +112,23 @@ func Unauthorized(format string, a ...interface{}) *Error {
 
 // newError returns a new Error with the given code. The message is formatted using Sprintf.
 // If the last parameter is a map[string]string, it is assumed to be the error params.
-func newError(code, format string, a ...interface{}) *Error {
+func newError(code, format string, params ...interface{}) *Error {
 	// Take the last parameter
-	last := a[len(a)-1]
+	last := params[len(params)-1]
 
-	// Try to cast it to a map[string]string. If it fails, params will be an empty map.
-	params, ok := last.(map[string]string)
+	// Try to cast it to a map[string]string. If it fails, metadata will be an empty map.
+	metadata, ok := last.(map[string]string)
 
 	var message string
 
 	// If the last parameter was a map[string]string
 	if ok {
-		// Format the message using all but the last parameter
-		message = fmt.Sprintf(format, a[:len(a)-1])
+		// Format the string using all but the last parameter
+		message = fmt.Sprintf(format, params[:len(params)-1]...)
 	} else {
 		// Format the string using all parameters
-		message = fmt.Sprintf(format, a)
+		message = fmt.Sprintf(format, params...)
 	}
 
-	return &Error{code, message, params}
+	return &Error{code, message, metadata}
 }
