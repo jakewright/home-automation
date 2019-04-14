@@ -2,9 +2,11 @@ package domain
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
+	"home-automation/libraries/go/errors"
 	"reflect"
 	"sync"
+
+	"gopkg.in/yaml.v2"
 )
 
 // Config is an abstraction around the map that holds config values
@@ -47,9 +49,11 @@ func (c *Config) Get(serviceName string) (map[string]interface{}, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
+	errParams := map[string]string{"serviceName": serviceName}
+
 	a, ok := c.config["base"].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("base config is not a map")
+		return nil, errors.InternalService("base config is not a map", errParams)
 	}
 
 	// If no config is defined for the service
@@ -60,7 +64,7 @@ func (c *Config) Get(serviceName string) (map[string]interface{}, error) {
 
 	b, ok := c.config[serviceName].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("service %q config is not a map", serviceName)
+		return nil, errors.InternalService("service %q config is not a map", errParams)
 	}
 
 	// Merge the maps with service config taking precedence
