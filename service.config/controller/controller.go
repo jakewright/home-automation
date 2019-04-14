@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"errors"
+	"home-automation/libraries/go/errors"
 	"home-automation/libraries/go/response"
 	"net/http"
 
@@ -21,25 +21,25 @@ func (c *Controller) ReadConfig(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	serviceName, ok := vars["serviceName"]
 	if !ok {
-		err := errors.New("service name not provided")
-		response.WriteError(w, response.ErrInternalService, err)
+		err := errors.InternalService("service name not provided", nil)
+		response.WriteJSON(w, err)
 		return
 	}
 
 	config, err := c.Config.Get(serviceName)
 	if err != nil {
-		response.WriteError(w, response.ErrInternalService, err)
+		response.WriteJSON(w, err)
 		return
 	}
 
-	response.Write(w, http.StatusOK, config)
+	response.WriteJSON(w, config)
 }
 
 // ReloadConfig reads the YAML file from disk and loads changes into memory
 func (c *Controller) ReloadConfig(w http.ResponseWriter, r *http.Request) {
 	reloaded, err := c.ConfigService.Reload()
 	if err != nil {
-		response.WriteError(w, response.ErrInternalService, err)
+		response.WriteJSON(w, err)
 		return
 	}
 
@@ -49,5 +49,5 @@ func (c *Controller) ReloadConfig(w http.ResponseWriter, r *http.Request) {
 		msg += " (no changes made)"
 	}
 
-	response.Write(w, http.StatusOK, msg)
+	response.WriteJSON(w, msg)
 }
