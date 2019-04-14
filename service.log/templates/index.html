@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <title>Home Automation Logs</title>
+        <style>
+            body {
+                padding: 20px;
+            }
+            .line {
+                margin-bottom: 10px;
+            }
+            .raw {
+                display: none;
+            }
+            .show-raw:checked + .raw {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        {{range .Lines}}
+            <article class="line">
+                {{.Summary}}
+                <input type="checkbox" class="show-raw" name="show-raw">
+                <pre class="raw">{{.Raw}}</pre>
+            </article>
+        {{end}}
+    </body>
+</html>

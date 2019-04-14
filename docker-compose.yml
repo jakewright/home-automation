@@ -132,9 +132,35 @@ services:
     env_file:
       - ./.env
 
+  service.log:
+    build:
+      dockerfile: service.log/dev.dockerfile
+      context: .
+    image: home-automation-log
+    volumes:
+      - .:/go/src/home-automation
+      - ./log/:/var/log:ro
+    ports:
+      - 7020:80
+    env_file:
+      - ./.env
+
   redis:
     image: redis:latest
     ports:
       - 6379:6379
     env_file:
      - ./.env
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.0.0
+    volumes:
+      - ./elastic/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 7514:7514
+    environment:
+      - "strict.perms:false"
+    user: root
