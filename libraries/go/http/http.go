@@ -39,9 +39,15 @@ func mustGetDefaultClient() Requester {
 	return DefaultClient
 }
 
-func Get(url string, response interface{}) (*Response, error)                                { return mustGetDefaultClient().Get(url, response) }
-func Put(url string, body map[string]interface{}, response interface{}) (*Response, error)   { return mustGetDefaultClient().Put(url, body, response) }
-func Patch(url string, body map[string]interface{}, response interface{}) (*Response, error) { return mustGetDefaultClient().Patch(url, body, response) }
+func Get(url string, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Get(url, response)
+}
+func Put(url string, body map[string]interface{}, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Put(url, body, response)
+}
+func Patch(url string, body map[string]interface{}, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Patch(url, body, response)
+}
 
 // New returns a new API Client
 func New(base string, envelope string) (Requester, error) {
@@ -148,7 +154,9 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 		}
 
 		// Allow the unmarshal function to deal with reflection and set the value of &response
-		json.Unmarshal(innerBytes, &v)
+		if err = json.Unmarshal(innerBytes, &v); err != nil {
+			return rsp, err
+		}
 	} else {
 		if err = json.Unmarshal(body, &v); err != nil {
 			return rsp, err
