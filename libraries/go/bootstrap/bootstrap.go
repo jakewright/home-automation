@@ -2,16 +2,20 @@ package bootstrap
 
 import (
 	"fmt"
-	"github.com/go-redis/redis"
 	"home-automation/libraries/go/config"
 	"home-automation/libraries/go/firehose"
 	"home-automation/libraries/go/http"
-	"log"
+	"home-automation/libraries/go/slog"
 	"os"
+
+	"github.com/go-redis/redis"
 )
 
 // Boot performs standard service startup tasks
 func Init(serviceName string) error {
+	// Set default logger
+	slog.DefaultLogger = slog.New(serviceName)
+
 	// Create default HTTP client
 	apiGateway := os.Getenv("API_GATEWAY")
 	if apiGateway == "" {
@@ -36,7 +40,7 @@ func Init(serviceName string) error {
 		host := config.Get("redis.host").String()
 		port := config.Get("redis.port").Int()
 		addr := fmt.Sprintf("%s:%d", host, port)
-		log.Printf("Connecting to Redis at address %s\n", addr)
+		slog.Info("Connecting to Redis at address %s", addr)
 		firehose.DefaultPublisher = firehose.New(redis.NewClient(&redis.Options{
 			Addr:     addr,
 			Password: "",
