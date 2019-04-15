@@ -1,81 +1,33 @@
 package slog
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
+	"strings"
 	"time"
 )
-
-type Logger interface {
-	Log(Severity, string, ...interface{})
-}
-
-type StdoutLogger struct {
-	Service string
-}
 
 type metadataProvider interface {
 	GetMetadata() map[string]string
 }
 
-type Severity string
-
-const (
-	DebugSeverity Severity = "debug"
-	InfoSeverity  Severity = "info"
-	WarnSeverity  Severity = "warning"
-	ErrorSeverity Severity = "err"
-)
-
+// Log represents a single log event
 type Log struct {
-	Timestamp time.Time         `json:"timestamp"`
-	Service   string            `json:"service"`
-	Severity  Severity          `json:"severity"`
-	Message   string            `json:"message"`
-	Metadata  map[string]string `json:"metadata,omitempty"`
+	Timestamp time.Time
+	Severity  Severity
+	Message   string
+	Metadata  map[string]string
 }
 
-var DefaultLogger Logger
-
-func mustGetDefaultLogger() Logger {
-	if DefaultLogger == nil {
-		panic("Default logger not set")
-	}
-
-	return DefaultLogger
-}
-
-func New(service string) Logger {
-	return &StdoutLogger{
-		Service: service,
-	}
-}
-
-func Debug(format string, params ...interface{}) {
-	mustGetDefaultLogger().Log(DebugSeverity, format, params...)
-}
-
-func Info(format string, params ...interface{}) {
-	mustGetDefaultLogger().Log(InfoSeverity, format, params...)
-}
-
-func Warn(format string, params ...interface{}) {
-	mustGetDefaultLogger().Log(WarnSeverity, format, params...)
-}
-
-func Error(format string, params ...interface{}) {
-	mustGetDefaultLogger().Log(ErrorSeverity, format, params...)
-}
-
-func Fatal(format string, params ...interface{}) {
-	Error(format, params...)
-	os.Exit(1)
-}
-
-func (l *StdoutLogger) Log(severity Severity, format string, params ...interface{}) {
+func newFromFormat(severity Severity, format string, params ...interface{}) *Log {
 	// Take the last parameter
-	last := params[len(params)-1]
+	var last interface{}
+	if len(params) > 0 {
+		last = params[len(params)-1]
+	} else {
+		last = nil
+	}
 
 	// Try to cast it to a map[string]string. If it fails, metadata will be an empty map.
 	metadata, ok := last.(map[string]string)
@@ -99,23 +51,27 @@ func (l *StdoutLogger) Log(severity Severity, format string, params ...interface
 		}
 	}
 
-	l.log(&Log{
+	return &Log{
 		Timestamp: time.Now(),
-		Service:   l.Service,
 		Severity:  Severity(severity),
 		Message:   message,
 		Metadata:  metadata,
-	})
+	}
 }
 
-func (l *StdoutLogger) log(log *Log) {
-	b, err := json.Marshal(log)
+func (l *Log) String() string {
+	metadata, err := json.Marshal(l.Metadata)
 	if err != nil {
-		fmt.Println("Failed to marshal log line")
-		return
+		fmt.Println("Failed to marshal metadata")
 	}
 
-	fmt.Println(string(b))
+	// If the JSON came out as "null", don't bother writing anything.
+	if bytes.Equal(metadata, []byte("null")) {
+		metadata = nil
+	}
+
+	timestamp := l.Timestamp.Format(time.RFC3339)
+	return strings.Join([]string{timestamp, string(l.Severity), l.Message, string(metadata)}, " ")
 }
 
 // mergeMetadata merges the metadata but preserves existing entries
