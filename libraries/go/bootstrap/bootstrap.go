@@ -13,9 +13,6 @@ import (
 
 // Boot performs standard service startup tasks
 func Init(serviceName string) error {
-	// Set default logger
-	slog.DefaultLogger = slog.New(serviceName)
-
 	// Create default HTTP client
 	apiGateway := os.Getenv("API_GATEWAY")
 	if apiGateway == "" {
