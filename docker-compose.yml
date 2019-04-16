@@ -144,6 +144,15 @@ services:
       - 7514:7514 # Syslog
       - 5044:5044 # Beats
 
+  service.filebeat:
+    build:
+      dockerfile: service.filebeat/dev.dockerfile
+      context: .
+    volumes:
+      - ./elastic/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
   service.log:
     build:
       dockerfile: service.log/dev.dockerfile
@@ -164,15 +173,4 @@ services:
     env_file:
      - ./.env
 
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:7.0.0
-    volumes:
-      - ./elastic/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./log:/var/log
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports:
-      - 7514:7514
-    environment:
-      - "strict.perms:false"
-    user: root
+
