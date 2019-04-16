@@ -14,7 +14,7 @@ start: ## Start the system
 
 .PHONY: start-platform
 start-platform: ## Start the core services
-	$(DOCKER_COMPOSE) up -d --renew-anon-volumes service.api-gateway service.config service.registry.device redis
+	$(DOCKER_COMPOSE) up -d --renew-anon-volumes --remove-orphans filebeat logstash redis service.api-gateway service.config service.registry.device service.log
 
 .PHONY: stop
 stop: ## Stop the services

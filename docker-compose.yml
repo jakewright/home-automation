@@ -1,14 +1,38 @@
 version: '3'
 
 services:
+  filebeat:
+    build:
+      dockerfile: filebeat/Dockerfile
+      context: .
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  logstash:
+    build:
+      dockerfile: logstash/Dockerfile
+      context: .
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./log:/var/log
+    ports:
+      - 7514:7514 # Syslog
+      - 5044:5044 # Beats
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
   service.api-gateway:
     image: jakewright/drawbridge
     volumes:
       - ./service.api-gateway/config.dev.yaml:/config/config.yaml
     ports:
       - 7005:80
-    env_file:
-      - ./.env
 
   service.config:
     build:
@@ -102,15 +126,6 @@ services:
     env_file:
       - ./.env
 
-  service.filebeat:
-    build:
-      dockerfile: service.filebeat/dev.dockerfile
-      context: .
-    volumes:
-      - ./elastic/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
   service.log:
     build:
       dockerfile: service.log/dev.dockerfile
@@ -121,25 +136,6 @@ services:
       - ./log/:/var/log:ro
     ports:
       - 7020:80
-    env_file:
-      - ./.env
-
-  service.logstash:
-    build:
-      dockerfile: service.logstash/dev.dockerfile
-      context: .
-    volumes:
-      - ./elastic/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./elastic/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./log:/var/log
-    ports:
-      - 7514:7514 # Syslog
-      - 5044:5044 # Beats
-
-  redis:
-    image: redis:latest
-    ports:
-      - 6379:6379
     env_file:
       - ./.env
 
