@@ -1,35 +1,14 @@
 version: '3'
 
 services:
-  web.client:
-    build:
-      dockerfile: ./web.client/dev.dockerfile
-      context: .
-    image: home-automation-web-client
+  service.api-gateway:
+    image: jakewright/drawbridge
     volumes:
-      - ./web.client:/usr/src/app
-      - /usr/src/app/node_modules
-      - ./libraries/javascript:/usr/src/libraries/javascript
-      - /usr/src/libraries/javascript/node_modules
+      - ./service.api-gateway/config.dev.yaml:/config/config.yaml
     ports:
-      - 7000:8080
+      - 7005:80
     env_file:
-     - ./.env
-
-  service.registry.device:
-    build:
-      dockerfile: ./service.registry.device/dev.dockerfile
-      context: .
-    image: home-automation-service-device-registry
-    volumes:
-      - ./service.registry.device:/usr/src/app
-      - ./libraries/python:/root/.local/lib/python3.5/site-packages
-    ports:
-      - 7001:80
-    environment:
-      APP_CONFIG_FILE: /usr/src/app/config/development.py
-    env_file:
-     - ./.env
+      - ./.env
 
   service.config:
     build:
@@ -40,35 +19,9 @@ services:
       - .:/go/src/home-automation
       - ./service.config/data/dev.yaml:/data/config.yaml
     ports:
-     - 7002:80
+      - 7002:80
     env_file:
-     - ./.env
-
-  service.event-bus:
-    build:
-      dockerfile: ./service.event-bus/dev.dockerfile
-      context: .
-    image: home-automation-service-event-bus
-    volumes:
-      - ./service.event-bus:/usr/src/app
-      - /usr/src/app/node_modules
-      - ./libraries/javascript:/usr/src/libraries/javascript
-      - /usr/src/libraries/javascript/node_modules
-    ports:
-      - 7004:80
-    environment:
-      NODE_ENV: development
-    env_file:
-     - ./.env
-
-  service.api-gateway:
-    image: jakewright/drawbridge
-    volumes:
-      - ./service.api-gateway/config.dev.yaml:/config/config.yaml
-    ports:
-      - 7005:80
-    env_file:
-     - ./.env
+      - ./.env
 
   service.controller.dmx:
     build:
@@ -84,7 +37,7 @@ services:
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
     env_file:
-     - ./.env
+      - ./.env
 
   service.controller.hue:
     build:
@@ -101,7 +54,7 @@ services:
     environment:
       NODE_ENV: development
     env_file:
-     - ./.env
+      - ./.env
 
   service.controller.infrared:
     build:
@@ -132,17 +85,22 @@ services:
     env_file:
       - ./.env
 
-  service.logstash:
+  service.event-bus:
     build:
-      dockerfile: service.logstash/dev.dockerfile
+      dockerfile: ./service.event-bus/dev.dockerfile
       context: .
+    image: home-automation-service-event-bus
     volumes:
-      - ./elastic/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./elastic/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./log:/var/log
+      - ./service.event-bus:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./libraries/javascript:/usr/src/libraries/javascript
+      - /usr/src/libraries/javascript/node_modules
     ports:
-      - 7514:7514 # Syslog
-      - 5044:5044 # Beats
+      - 7004:80
+    environment:
+      NODE_ENV: development
+    env_file:
+      - ./.env
 
   service.filebeat:
     build:
@@ -166,11 +124,51 @@ services:
     env_file:
       - ./.env
 
+  service.logstash:
+    build:
+      dockerfile: service.logstash/dev.dockerfile
+      context: .
+    volumes:
+      - ./elastic/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./elastic/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./log:/var/log
+    ports:
+      - 7514:7514 # Syslog
+      - 5044:5044 # Beats
+
   redis:
     image: redis:latest
     ports:
       - 6379:6379
     env_file:
+      - ./.env
+
+  service.registry.device:
+    build:
+      dockerfile: ./service.registry.device/dev.dockerfile
+      context: .
+    image: home-automation-service-device-registry
+    volumes:
+      - ./service.registry.device:/usr/src/app
+      - ./libraries/python:/root/.local/lib/python3.5/site-packages
+    ports:
+      - 7001:80
+    environment:
+      APP_CONFIG_FILE: /usr/src/app/config/development.py
+    env_file:
+      - ./.env
+
+  web.client:
+    build:
+      dockerfile: ./web.client/dev.dockerfile
+      context: .
+    image: home-automation-web-client
+    volumes:
+      - ./web.client:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./libraries/javascript:/usr/src/libraries/javascript
+      - /usr/src/libraries/javascript/node_modules
+    ports:
+      - 7000:8080
+    env_file:
      - ./.env
-
-
