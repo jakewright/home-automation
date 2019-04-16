@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"home-automation/libraries/go/slog"
 	"reflect"
 	"strconv"
 	"strings"
@@ -25,6 +26,7 @@ type Value struct {
 }
 
 var DefaultProvider Provider
+
 func mustGetDefaultProvider() Provider {
 	if DefaultProvider == nil {
 		panic("Config read before default provider set")
@@ -33,7 +35,7 @@ func mustGetDefaultProvider() Provider {
 	return DefaultProvider
 }
 
-func Has(path string) bool { return mustGetDefaultProvider().Has(path) }
+func Has(path string) bool  { return mustGetDefaultProvider().Has(path) }
 func Get(path string) Value { return mustGetDefaultProvider().Get(path) }
 
 func New(content map[string]interface{}) Provider {
@@ -114,4 +116,32 @@ func (v Value) String(defaults ...string) string {
 	}
 
 	return fmt.Sprintf("%s", v.raw)
+}
+
+// Bool converts the raw to a bool and panics if it cannot be represented.
+// The first default is returned if raw is not defined.
+func (v Value) Bool(defaults ...bool) bool {
+	// Return the first default raw is undefined
+	if v.raw == nil {
+		// Make sure there's at least one thing in the list
+		defaults = append(defaults, false)
+		return defaults[0]
+	}
+
+	switch t := v.raw.(type) {
+	case string:
+		b, err := strconv.ParseBool(t)
+		if err != nil {
+			panic(err)
+		}
+		return b
+
+	case bool:
+		return t
+
+	default:
+		slog.Panic("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
+	}
+
+	return false
 }
