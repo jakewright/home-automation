@@ -17,9 +17,10 @@
         </style>
     </head>
     <body>
-        {{range .Lines}}
+        {{range .FormattedLines}}
             <article class="line">
-                {{.Summary}}
+                {{.Timestamp}} {{.Service}} {{.Severity}} {{.Message}}
+                <pre>{{.Metadata}}</pre>
                 <input type="checkbox" class="show-raw" name="show-raw">
                 <pre class="raw">{{.Raw}}</pre>
             </article>
