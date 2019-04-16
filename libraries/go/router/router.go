@@ -20,7 +20,7 @@ func ListenAndServe() {
 	slog.Info("Listening on port %d", port)
 	err := router.ListenAndServe(fmt.Sprintf(":%d", port))
 	if err != nil {
-		slog.Fatal("Failed to start server: %v", err)
+		slog.Panic("Failed to start server: %v", err)
 	}
 }
 

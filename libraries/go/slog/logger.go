@@ -1,7 +1,5 @@
 package slog
 
-import "os"
-
 // Logger logs logs
 type Logger interface {
 	//Log(severity Severity, format string, params ...interface{})
@@ -39,8 +37,8 @@ func Error(format string, params ...interface{}) {
 	mustGetDefaultLogger().Log(newFromFormat(ErrorSeverity, format, params...))
 }
 
-// Fatal logs with ERR severity and terminates the program
-func Fatal(format string, params ...interface{}) {
+// Panic logs with ERR severity and then panics
+func Panic(format string, params ...interface{}) {
 	Error(format, params...)
-	os.Exit(1)
+	panic(newFromFormat(ErrorSeverity, format, params...))
 }
