@@ -1,6 +1,7 @@
 package response
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"home-automation/libraries/go/errors"
@@ -13,8 +14,8 @@ type response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func Write(w http.ResponseWriter, body string) {
-	if _, err := fmt.Fprint(w, body); err != nil {
+func Write(w http.ResponseWriter, buf bytes.Buffer) {
+	if _, err := buf.WriteTo(w); err != nil {
 		log.Println("Failed to write response", err)
 	}
 }
