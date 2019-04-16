@@ -132,6 +132,18 @@ services:
     env_file:
       - ./.env
 
+  service.logstash:
+    build:
+      dockerfile: service.logstash/dev.dockerfile
+      context: .
+    volumes:
+      - ./elastic/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./elastic/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./log:/var/log
+    ports:
+      - 7514:7514 # Syslog
+      - 5044:5044 # Beats
+
   service.log:
     build:
       dockerfile: service.log/dev.dockerfile

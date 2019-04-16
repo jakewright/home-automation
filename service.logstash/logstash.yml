@@ -1,0 +1,5 @@
+http.host: 0.0.0.0
+config:
+  reload:
+    automatic: true
+    interval: 5s
