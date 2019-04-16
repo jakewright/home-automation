@@ -1,11 +1,12 @@
 package service
 
 import (
-	"fmt"
-	"home-automation/service.config/domain"
+	"home-automation/libraries/go/errors"
+	"home-automation/libraries/go/slog"
 	"io/ioutil"
-	"log"
 	"time"
+
+	"home-automation/service.config/domain"
 )
 
 // ConfigService handles loading of the config
@@ -20,9 +21,8 @@ type ConfigService struct {
 // Watch reads the config file every d duration and applies changes
 func (s *ConfigService) Watch(d time.Duration) {
 	for {
-		_, err := s.Reload()
-		if err != nil {
-			log.Print(err)
+		if _, err := s.Reload(); err != nil {
+			slog.Error("Failed to reload config: %v", err)
 		}
 
 		time.Sleep(d)
@@ -38,11 +38,11 @@ func (s *ConfigService) Reload() (bool, error) {
 
 	reloaded, err := s.Config.SetFromBytes(data)
 	if err != nil {
-		return false, fmt.Errorf("failed to set config: %v", err)
+		return false, errors.InternalService("failed to set config from bytes: %v", err)
 	}
 
 	if reloaded {
-		log.Print("Config reloaded")
+		slog.Info("Config reloaded")
 	}
 
 	return reloaded, nil

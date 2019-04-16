@@ -1,57 +1,49 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"home-automation/libraries/go/config"
+	"home-automation/libraries/go/router"
+	"home-automation/libraries/go/slog"
 	"time"
 
-	"github.com/jakewright/muxinator"
 	"home-automation/service.config/controller"
 	"home-automation/service.config/domain"
 	"home-automation/service.config/service"
 )
 
 func main() {
-	config := domain.Config{}
+	c := domain.Config{}
 
 	configService := service.ConfigService{
 		Location: "/data/config.yaml",
-		Config:   &config,
+		Config:   &c,
 	}
 
-	c := controller.Controller{
-		Config:        &config,
+	controller := controller.Controller{
+		Config:        &c,
 		ConfigService: &configService,
 	}
 
 	_, err := configService.Reload()
 	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
+		slog.Panic("Failed to load config: %v", err)
 	}
 
-	selfConfig, err := config.Get("service.config")
+	selfConfig, err := c.Get("service.config")
 	if err != nil {
-		log.Fatalf("Error reading own config: %v", err)
+		slog.Panic("Error reading own config: %v", err)
 	}
 
-	if polling, ok := selfConfig["polling"].(map[string]interface{}); ok {
-		if enabled, ok := polling["enabled"]; ok && enabled.(bool) {
-			if interval, ok := polling["interval"].(int); ok {
-				log.Printf("Polling for config changes every %d milliseconds", interval)
-				go configService.Watch(time.Millisecond * time.Duration(interval))
-			}
-		}
+	config.DefaultProvider = config.New(selfConfig)
+
+	if config.Get("polling.enabled").Bool(false) {
+		interval := config.Get("polling.interval").Int(30000)
+		slog.Info("Polling for config changes every %d milliseconds", interval)
+		go configService.Watch(time.Millisecond * time.Duration(interval))
 	}
 
-	router := muxinator.NewRouter()
-	router.Get("/read/{serviceName}", c.ReadConfig)
-	router.Patch("/reload", c.ReloadConfig)
+	router.Get("/read/{serviceName}", controller.ReadConfig)
+	router.Patch("/reload", controller.ReloadConfig)
 
-	port, ok := selfConfig["port"].(int)
-	if !ok {
-		port = 80
-	}
-
-	log.Printf("Listening on port %d\n", port)
-	log.Fatal(router.ListenAndServe(fmt.Sprintf(":%d", port)))
+	router.ListenAndServe()
 }
