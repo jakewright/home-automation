@@ -110,6 +110,10 @@ func Unauthorized(format string, a ...interface{}) *Error {
 	return newError(ErrUnauthorized, format, a)
 }
 
+func Wrap(err error, metadata map[string]string) *Error {
+	return &Error{ErrInternalService, err.Error(), metadata}
+}
+
 // newError returns a new Error with the given code. The message is formatted using Sprintf.
 // If the last parameter is a map[string]string, it is assumed to be the error params.
 func newError(code, format string, params ...interface{}) *Error {
