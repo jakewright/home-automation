@@ -2,9 +2,9 @@ package bootstrap
 
 import (
 	"fmt"
+	"home-automation/libraries/go/api"
 	"home-automation/libraries/go/config"
 	"home-automation/libraries/go/firehose"
-	"home-automation/libraries/go/http"
 	"home-automation/libraries/go/slog"
 	"os"
 
@@ -13,20 +13,20 @@ import (
 
 // Boot performs standard service startup tasks
 func Init(serviceName string) error {
-	// Create default HTTP client
+	// Create default API client
 	apiGateway := os.Getenv("API_GATEWAY")
 	if apiGateway == "" {
 		return fmt.Errorf("API_GATEWAY env var not set")
 	}
-	httpClient, err := http.New(apiGateway, "data")
+	apiClient, err := api.New(apiGateway, "data")
 	if err != nil {
 		return err
 	}
-	http.DefaultClient = httpClient
+	api.DefaultClient = apiClient
 
 	// Load config
 	var configRsp map[string]interface{}
-	_, err = http.Get(fmt.Sprintf("service.config/read/%s", serviceName), &configRsp)
+	_, err = api.Get(fmt.Sprintf("service.config/read/%s", serviceName), &configRsp)
 	if err != nil {
 		return err
 	}
