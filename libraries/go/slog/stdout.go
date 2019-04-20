@@ -10,6 +10,6 @@ func NewStdoutLogger() Logger {
 	return &StdoutLogger{}
 }
 
-func (l *StdoutLogger) Log(log *Log) {
-	fmt.Println(log.String())
+func (l *StdoutLogger) Log(event *Event) {
+	fmt.Println(event.String())
 }

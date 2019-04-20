@@ -12,15 +12,15 @@ type metadataProvider interface {
 	GetMetadata() map[string]string
 }
 
-// Log represents a single log event
-type Log struct {
+// Event represents a single log event
+type Event struct {
 	Timestamp time.Time
 	Severity  Severity
 	Message   string
 	Metadata  map[string]string
 }
 
-func newFromFormat(severity Severity, format string, a ...interface{}) *Log {
+func newEventFromFormat(severity Severity, format string, a ...interface{}) *Event {
 	var metadata map[string]string
 
 	if len(a) > 0 {
@@ -47,7 +47,7 @@ func newFromFormat(severity Severity, format string, a ...interface{}) *Log {
 		}
 	}
 
-	return &Log{
+	return &Event{
 		Timestamp: time.Now(),
 		Severity:  Severity(severity),
 		Message:   message,
@@ -55,8 +55,8 @@ func newFromFormat(severity Severity, format string, a ...interface{}) *Log {
 	}
 }
 
-func (l *Log) String() string {
-	metadata, err := json.Marshal(l.Metadata)
+func (e *Event) String() string {
+	metadata, err := json.Marshal(e.Metadata)
 	if err != nil {
 		fmt.Println("Failed to marshal metadata")
 	}
@@ -66,8 +66,8 @@ func (l *Log) String() string {
 		metadata = nil
 	}
 
-	timestamp := l.Timestamp.Format(time.RFC3339)
-	return strings.Join([]string{timestamp, l.Severity.String(), l.Message, string(metadata)}, " ")
+	timestamp := e.Timestamp.Format(time.RFC3339)
+	return strings.Join([]string{timestamp, e.Severity.String(), e.Message, string(metadata)}, " ")
 }
 
 // mergeMetadata merges the metadata but preserves existing entries
