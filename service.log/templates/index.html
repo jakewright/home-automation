@@ -4,26 +4,78 @@
         <style>
             body {
                 padding: 20px;
+                font-family: monospace;
             }
-            .line {
-                margin-bottom: 10px;
+
+            table {
+                width: 100%;
+                word-break: break-all;
             }
+
             .raw {
                 display: none;
             }
+
+            .raw div {
+                background-color: #F9F9F9;
+                padding: 10px;
+            }
+
+            .raw pre {
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+
             .show-raw:checked + .raw {
                 display: block;
             }
         </style>
     </head>
     <body>
-        {{range .FormattedLines}}
-            <article class="line">
-                {{.Timestamp}} {{.Service}} {{.Severity}} {{.Message}}
-                <pre>{{.Metadata}}</pre>
-                <input type="checkbox" class="show-raw" name="show-raw">
-                <pre class="raw">{{.Raw}}</pre>
-            </article>
-        {{end}}
+        <form>
+            <label for="services">Services</label>
+            <input type="text" name="services">
+        </form>
+
+        <table width="100%">
+            <tr>
+                <td nowrap>Timestamp</td>
+                <td nowrap>Service</td>
+                <td nowrap>Severity</td>
+                <td nowrap>Message</td>
+                <td nowrap>Metadata</td>
+            </tr>
+            {{range .FormattedLines}}
+                <tr>
+                    <td nowrap>{{.Timestamp}}</td>
+                    <td nowrap>{{.Service}}</td>
+                    <td nowrap>{{.Severity}}</td>
+                    <td>
+                        {{.Message}}
+                        <input type="checkbox" data-id="{{.ID}}" class="show-raw" name="show-raw" onclick="showRaw(event)">
+                    </td>
+                    <td nowrap><pre>{{.Metadata}}</pre></td>
+                </tr>
+
+                <tr class="raw" id="raw-{{.ID}}">
+                    <td colspan="5">
+                        <div>
+                            <pre>{{.Raw}}</pre>
+                        </div>
+                    </td>
+                </tr>
+
+            {{end}}
+        </table>
+
+        <script>
+            function showRaw(e) {
+              const td = document.getElementById("raw-" + e.target.dataset.id);
+              td.style.display = e.target.checked ? "table-row" : "none";
+
+              console.log("Show raw ID: " + e.target.dataset.id);
+            }
+        </script>
     </body>
 </html>
