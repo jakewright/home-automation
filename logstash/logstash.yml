@@ -3,3 +3,5 @@ config:
   reload:
     automatic: true
     interval: 5s
+pipeline:
+  workers: 1
