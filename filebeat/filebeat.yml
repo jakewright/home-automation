@@ -10,5 +10,7 @@ filebeat.autodiscover:
 
 output.logstash:
   hosts: ["logstash:5044"]
+  worker: 1
+  pipelining: 0
 
 logging.metrics.enabled: false
