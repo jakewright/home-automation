@@ -31,10 +31,6 @@ type FormattedEvent struct {
 	Raw            template.HTML
 }
 
-type Log struct {
-	FormattedEvents []*FormattedEvent
-}
-
 func NewEventFromBytes(id int, b []byte) *Event {
 	// Set some defaults in case they can't be parsed from the log
 	e := Event{

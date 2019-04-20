@@ -12,6 +12,33 @@
                 word-break: break-all;
             }
 
+            table td {
+                vertical-align: top;
+            }
+
+            .severity {
+                width: 10px;
+                height: 10px;
+                border-radius: 10px;
+                display: inline-block;
+            }
+
+            .severity.DEBUG {
+                background-color: #CCC;
+            }
+
+            .severity.INFO {
+                background-color: #25d0ff;
+            }
+
+            .severity.WARN {
+                background-color: #ffd32d
+            }
+
+            .severity.ERROR {
+                background-color: #ff694b;
+            }
+
             .raw {
                 display: none;
             }
@@ -35,7 +62,26 @@
     <body>
         <form>
             <label for="services">Services</label>
-            <input type="text" name="services">
+            <input type="text" name="services" value="{{.Services}}">
+
+            <label for="severity">Severity</label>
+            <select name="severity">
+                <option value="2" {{if eq .Severity 2}}selected{{end}}>Debug</option>
+                <option value="3" {{if eq .Severity 3}}selected{{end}}>Info</option>
+                <option value="5" {{if eq .Severity 5}}selected{{end}}>Warning</option>
+                <option value="6" {{if eq .Severity 6}}selected{{end}}>Error</option>
+            </select>
+
+            <label for="since">Since</label>
+            <input type="datetime-local" name="since" value="{{.Since}}">
+
+            <label for="until">Until</label>
+            <input type="datetime-local" name="until" value="{{.Until}}">
+
+            <label for="reverse">Reverse</label>
+            <input type="checkbox" name="reverse" value="true" {{if .Reverse}}checked{{end}}>
+
+            <input type="submit" value="Filter">
         </form>
 
         <table width="100%">
@@ -50,7 +96,10 @@
                 <tr>
                     <td nowrap>{{.Timestamp}}</td>
                     <td nowrap>{{.Service}}</td>
-                    <td nowrap>{{.Severity}}</td>
+                    <td nowrap>
+                        <div class="severity {{.Severity}}"></div>
+                        {{.Severity}}
+                    </td>
                     <td>
                         {{.Message}}
                         <input type="checkbox" data-id="{{.ID}}" class="show-raw" name="show-raw" onclick="showRaw(event)">

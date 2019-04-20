@@ -15,32 +15,56 @@ import (
 )
 
 type readLogsRequest struct {
-	Since    time.Time
-	Until    time.Time
-	Severity int
 	Services string
+	Severity int
+	Since    string // The HTML datetime-local element formats time weirdly so we need to unmarshal to a string
+	Until    string
+	Reverse  bool
 }
 
-func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
-	body := readLogsRequest{
-		// Default to logs from the last hour
-		Since: time.Now().Add(-1 * time.Hour),
-		Until: time.Now(),
-	}
+type readLogsResponse struct {
+	FormattedEvents []*domain.FormattedEvent
+	Services        string
+	Severity        int
+	Since           string
+	Until           string
+	Reverse         bool
+}
 
+const htmlTimeFormat = "2006-01-02T15:04"
+
+func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
+	body := readLogsRequest{}
 	if err := request.Decode(r, &body); err != nil {
-		slog.Error("Failed to decode request: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
 
-	var services []string
-	if body.Services != "" {
-		services = strings.Split(body.Services, ",")
+	// Default to logs from the last hour
+	var err error
+	since := time.Now().Add(-1 * time.Hour)
+	until := time.Now()
+
+	if body.Since != "" {
+		since, err = time.Parse(htmlTimeFormat, body.Since)
+		if err != nil {
+			response.WriteJSON(w, err)
+			return
+		}
 	}
 
-	slog.Info("Since: %v", body.Since.String())
-	slog.Info("Services: %v", services)
+	if body.Until != "" {
+		until, err = time.Parse(htmlTimeFormat, body.Until)
+		if err != nil {
+			response.WriteJSON(w, err)
+			return
+		}
+	}
+
+	var services []string
+	if body.Services != "" {
+		services = strings.Split(strings.Replace(body.Services, " ", "", -1), ",")
+	}
 
 	// Read all log messages
 	data, err := ioutil.ReadFile("/var/log/messages")
@@ -64,26 +88,34 @@ func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 
 		// Filter by services
 		if len(services) > 0 {
-			if !contains(services, event.Service) {
+			if !containsService(services, event.Service) {
 				continue
 			}
 		}
 
 		// Filter by time
-		if event.Timestamp.After(body.Until) {
+		if event.Timestamp.After(until) {
 			continue
 		}
-		if event.Timestamp.Before(body.Since) {
+		if event.Timestamp.Before(since) {
 			break
 		}
 
 		formattedEvents = append(formattedEvents, event.Format())
 	}
 
-	reverse(formattedEvents)
+	// This is counter-intuitive but it is correct
+	if !body.Reverse {
+		reverse(formattedEvents)
+	}
 
-	log := domain.Log{
+	rsp := readLogsResponse{
 		FormattedEvents: formattedEvents,
+		Services:        body.Services,
+		Severity:        body.Severity,
+		Since:           since.Format(htmlTimeFormat),
+		Until:           until.Format(htmlTimeFormat),
+		Reverse:         body.Reverse,
 	}
 
 	t, err := template.ParseFiles("service.log/templates/index.html")
@@ -94,7 +126,7 @@ func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var buf bytes.Buffer
-	err = t.Execute(&buf, log)
+	err = t.Execute(&buf, rsp)
 	if err != nil {
 		slog.Error("Failed to execute template: %v", err)
 		response.WriteJSON(w, err)
@@ -105,9 +137,13 @@ func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
+func containsService(patterns []string, service string) bool {
+	for _, p := range patterns {
+		if p == service {
+			return true
+		}
+
+		if p[len(p)-1:] == "*" && strings.HasPrefix(service, p[:len(p)-1]) {
 			return true
 		}
 	}
