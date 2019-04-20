@@ -17,16 +17,15 @@ import (
 type readLogsRequest struct {
 	Since    time.Time
 	Until    time.Time
-	Severity slog.Severity
+	Severity int
 	Services string
 }
 
 func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 	body := readLogsRequest{
 		// Default to logs from the last hour
-		Since:    time.Now().Add(-1 * time.Hour),
-		Until:    time.Now(),
-		Severity: slog.DebugSeverity,
+		Since: time.Now().Add(-1 * time.Hour),
+		Until: time.Now(),
 	}
 
 	if err := request.Decode(r, &body); err != nil {
@@ -51,40 +50,40 @@ func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rawLines := bytes.Split(data, []byte("\n"))
-	var formattedLines []*domain.FormattedLine
+	lines := bytes.Split(data, []byte("\n"))
+	var formattedEvents []*domain.FormattedEvent
 
 	// Start at len - 2 because the last line is always an empty line
-	for i := len(rawLines) - 2; i >= 0; i-- {
-		line := domain.NewLineFromBytes(i, rawLines[i])
+	for i := len(lines) - 2; i >= 0; i-- {
+		event := domain.NewEventFromBytes(i, lines[i])
 
 		// Filter by severity
-		if line.Severity < body.Severity {
+		if int(event.Severity) < body.Severity {
 			continue
 		}
 
 		// Filter by services
 		if len(services) > 0 {
-			if !contains(services, line.Service) {
+			if !contains(services, event.Service) {
 				continue
 			}
 		}
 
 		// Filter by time
-		if line.Timestamp.After(body.Until) {
+		if event.Timestamp.After(body.Until) {
 			continue
 		}
-		if line.Timestamp.Before(body.Since) {
+		if event.Timestamp.Before(body.Since) {
 			break
 		}
 
-		formattedLines = append(formattedLines, line.Format())
+		formattedEvents = append(formattedEvents, event.Format())
 	}
 
-	reverse(formattedLines)
+	reverse(formattedEvents)
 
 	log := domain.Log{
-		FormattedLines: formattedLines,
+		FormattedEvents: formattedEvents,
 	}
 
 	t, err := template.ParseFiles("service.log/templates/index.html")
@@ -115,7 +114,7 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func reverse(a []*domain.FormattedLine) {
+func reverse(a []*domain.FormattedEvent) {
 	for left, right := 0, len(a)-1; left < right; left, right = left+1, right-1 {
 		a[left], a[right] = a[right], a[left]
 	}

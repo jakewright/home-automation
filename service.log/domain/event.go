@@ -10,7 +10,7 @@ import (
 
 const jsonIndent = "    "
 
-type Line struct {
+type Event struct {
 	ID        int
 	Timestamp time.Time     `json:"@timestamp"`
 	Severity  slog.Severity `json:"severity"`
@@ -20,7 +20,7 @@ type Line struct {
 	Raw       []byte        `json:"-"`
 }
 
-type FormattedLine struct {
+type FormattedEvent struct {
 	ID             int
 	Timestamp      string
 	Severity       string
@@ -32,33 +32,33 @@ type FormattedLine struct {
 }
 
 type Log struct {
-	FormattedLines []*FormattedLine
+	FormattedEvents []*FormattedEvent
 }
 
-func NewLineFromBytes(id int, b []byte) *Line {
+func NewEventFromBytes(id int, b []byte) *Event {
 	// Set some defaults in case they can't be parsed from the log
-	l := Line{
-		ID:       id,
-		Severity: slog.InfoSeverity,
-		Message:  string(b),
-		Raw:      b,
+	e := Event{
+		ID: id,
+		//Severity: slog.InfoSeverity,
+		Message: string(b),
+		Raw:     b,
 	}
 
-	if err := json.Unmarshal(b, &l); err != nil {
+	if err := json.Unmarshal(b, &e); err != nil {
 		// Ignore errors because there's no guarantee it's even JSON
-		slog.Warn("Failed to unmarshal log line: %v", err)
+		slog.Warn("Failed to unmarshal event: %v", err)
 	}
 
-	if l.Timestamp.IsZero() {
-		slog.Error("Log timestamp was zero: %v", string(l.Raw))
+	if e.Timestamp.IsZero() {
+		slog.Error("Event timestamp was zero: %v", string(e.Raw))
 	}
 
-	return &l
+	return &e
 }
 
-func (l *Line) Format() *FormattedLine {
+func (e *Event) Format() *FormattedEvent {
 	var metadataPretty []byte
-	metadata, err := json.Marshal(l.Metadata)
+	metadata, err := json.Marshal(e.Metadata)
 	if err == nil {
 		var buf bytes.Buffer
 		err := json.Indent(&buf, metadata, "", jsonIndent)
@@ -67,14 +67,14 @@ func (l *Line) Format() *FormattedLine {
 		}
 	}
 
-	raw := template.HTML(formatRaw(l.Raw))
+	raw := template.HTML(formatRaw(e.Raw))
 
-	return &FormattedLine{
-		ID:             l.ID,
-		Timestamp:      l.Timestamp.Format(time.Stamp),
-		Severity:       string(l.Severity),
-		Service:        l.Service,
-		Message:        template.HTML(l.Message),
+	return &FormattedEvent{
+		ID:             e.ID,
+		Timestamp:      e.Timestamp.Format(time.Stamp),
+		Severity:       e.Severity.String(),
+		Service:        e.Service,
+		Message:        template.HTML(e.Message),
 		Metadata:       template.HTML(metadata),
 		MetadataPretty: template.HTML(metadataPretty),
 		Raw:            raw,

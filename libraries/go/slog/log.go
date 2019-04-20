@@ -67,7 +67,7 @@ func (l *Log) String() string {
 	}
 
 	timestamp := l.Timestamp.Format(time.RFC3339)
-	return strings.Join([]string{timestamp, string(l.Severity), l.Message, string(metadata)}, " ")
+	return strings.Join([]string{timestamp, l.Severity.String(), l.Message, string(metadata)}, " ")
 }
 
 // mergeMetadata merges the metadata but preserves existing entries
