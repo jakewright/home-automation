@@ -42,7 +42,7 @@ services:
     volumes:
       - .:/go/src/home-automation
       - ./service.config/data/dev.yaml:/data/config.yaml
-      - - /go/src/home-automation/vendor
+      - /go/src/home-automation/vendor
     ports:
       - 7002:80
     env_file:
