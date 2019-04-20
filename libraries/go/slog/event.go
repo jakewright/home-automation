@@ -27,7 +27,7 @@ func newEventFromFormat(severity Severity, format string, a ...interface{}) *Eve
 		// If we have too many parameters for the formatting directive,
 		// the last parameter should be a metadata map.
 		operandCount := countFmtOperands(format)
-		if operandCount > len(a) {
+		if len(a) > operandCount {
 			var ok bool
 			metadata, ok = a[len(a)-1].(map[string]string)
 			if !ok {
