@@ -1,9 +1,10 @@
 FROM golang:latest
+RUN go get github.com/golang/dep/cmd/dep
 
 WORKDIR /go/src/home-automation
 COPY . .
 
-RUN go get -d -v ./...
+RUN dep ensure
 RUN CGO_ENABLED=0 GOOS=linux go install ./service.log
 
 FROM alpine:latest

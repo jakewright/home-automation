@@ -1,11 +1,10 @@
 FROM golang:latest
-RUN go get -u golang.org/x/lint/golint
 RUN go get github.com/githubnemo/CompileDaemon
+RUN go get github.com/golang/dep/cmd/dep
 
 WORKDIR /go/src/home-automation
 COPY . .
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+RUN dep ensure
 
 CMD CompileDaemon -build="go install ./service.config" -command="/go/bin/service.config" -log-prefix=false
