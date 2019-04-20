@@ -20,32 +20,28 @@ type Log struct {
 	Metadata  map[string]string
 }
 
-func newFromFormat(severity Severity, format string, params ...interface{}) *Log {
-	// Take the last parameter
-	var last interface{}
-	if len(params) > 0 {
-		last = params[len(params)-1]
-	} else {
-		last = nil
+func newFromFormat(severity Severity, format string, a ...interface{}) *Log {
+	var metadata map[string]string
+
+	if len(a) > 0 {
+		// If we have too many parameters for the formatting directive,
+		// the last parameter should be a metadata map.
+		operandCount := countFmtOperands(format)
+		if operandCount > len(a) {
+			var ok bool
+			metadata, ok = a[len(a)-1].(map[string]string)
+			if !ok {
+				Panic("Failed to assert metadata type")
+			}
+			a = a[:operandCount]
+		}
 	}
 
-	// Try to cast it to a map[string]string. If it fails, metadata will be an empty map.
-	metadata, ok := last.(map[string]string)
-
-	var message string
-
-	// If the last parameter was a map[string]string
-	if ok {
-		// Format the string using all but the last parameter
-		message = fmt.Sprintf(format, params[:len(params)-1]...)
-	} else {
-		// Format the string using all parameters
-		message = fmt.Sprintf(format, params...)
-	}
+	message := fmt.Sprintf(format, a...)
 
 	// If any of the parameters have their own metadata (e.g. an Error),
 	// merge it with the existing metadata.
-	for _, param := range params {
+	for _, param := range a {
 		if param, ok := param.(metadataProvider); ok {
 			metadata = mergeMetadata(metadata, param.GetMetadata())
 		}
