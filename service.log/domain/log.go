@@ -11,6 +11,7 @@ import (
 const jsonIndent = "    "
 
 type Line struct {
+	ID        int
 	Timestamp time.Time     `json:"@timestamp"`
 	Severity  slog.Severity `json:"severity"`
 	Service   string        `json:"service"`
@@ -20,6 +21,7 @@ type Line struct {
 }
 
 type FormattedLine struct {
+	ID             int
 	Timestamp      string
 	Severity       string
 	Service        string
@@ -33,10 +35,10 @@ type Log struct {
 	FormattedLines []*FormattedLine
 }
 
-func NewLineFromBytes(b []byte) *Line {
+func NewLineFromBytes(id int, b []byte) *Line {
 	// Set some defaults in case they can't be parsed from the log
 	l := Line{
-		//timestamp: time.Now(),
+		ID:       id,
 		Severity: slog.InfoSeverity,
 		Message:  string(b),
 		Raw:      b,
@@ -47,10 +49,14 @@ func NewLineFromBytes(b []byte) *Line {
 		slog.Warn("Failed to unmarshal log line: %v", err)
 	}
 
+	if l.Timestamp.IsZero() {
+		slog.Error("Log timestamp was zero: %v", string(l.Raw))
+	}
+
 	return &l
 }
 
-func (l *Line) FormatLine() *FormattedLine {
+func (l *Line) Format() *FormattedLine {
 	var metadataPretty []byte
 	metadata, err := json.Marshal(l.Metadata)
 	if err == nil {
@@ -64,7 +70,8 @@ func (l *Line) FormatLine() *FormattedLine {
 	raw := template.HTML(formatRaw(l.Raw))
 
 	return &FormattedLine{
-		Timestamp:      l.Timestamp.Format(time.RFC822),
+		ID:             l.ID,
+		Timestamp:      l.Timestamp.Format(time.Stamp),
 		Severity:       string(l.Severity),
 		Service:        l.Service,
 		Message:        template.HTML(l.Message),
