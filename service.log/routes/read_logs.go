@@ -6,13 +6,18 @@ import (
 	"home-automation/libraries/go/response"
 	"home-automation/libraries/go/slog"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	"home-automation/service.log/dao"
+
 	"home-automation/service.log/domain"
 )
+
+type Controller struct {
+	Repository *dao.LogRepository
+}
 
 type readLogsRequest struct {
 	Services string
@@ -33,12 +38,19 @@ type readLogsResponse struct {
 
 const htmlTimeFormat = "2006-01-02T15:04"
 
-func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 	body := readLogsRequest{}
 	if err := request.Decode(r, &body); err != nil {
 		response.WriteJSON(w, err)
 		return
 	}
+
+	var services []string
+	if body.Services != "" {
+		services = strings.Split(strings.Replace(body.Services, " ", "", -1), ",")
+	}
+
+	severity := slog.Severity(body.Severity)
 
 	// Default to logs from the last hour
 	var err error
@@ -61,47 +73,23 @@ func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var services []string
-	if body.Services != "" {
-		services = strings.Split(strings.Replace(body.Services, " ", "", -1), ",")
+	metadata := map[string]string{
+		"services": body.Services,
+		"severity": severity.String(),
+		"since":    since.Format(time.RFC3339),
+		"until":    since.Format(time.RFC3339),
 	}
 
-	// Read all log messages
-	data, err := ioutil.ReadFile("/var/log/messages")
+	events, err := c.Repository.Find(services, severity, since, until)
 	if err != nil {
-		slog.Error("Failed to read logs: %v", err)
+		slog.Error("Failed to find events: %v", err, metadata)
 		response.WriteJSON(w, err)
 		return
 	}
 
-	lines := bytes.Split(data, []byte("\n"))
-	var formattedEvents []*domain.FormattedEvent
-
-	// Start at len - 2 because the last line is always an empty line
-	for i := len(lines) - 2; i >= 0; i-- {
-		event := domain.NewEventFromBytes(i, lines[i])
-
-		// Filter by severity
-		if int(event.Severity) < body.Severity {
-			continue
-		}
-
-		// Filter by services
-		if len(services) > 0 {
-			if !containsService(services, event.Service) {
-				continue
-			}
-		}
-
-		// Filter by time
-		if event.Timestamp.After(until) {
-			continue
-		}
-		if event.Timestamp.Before(since) {
-			break
-		}
-
-		formattedEvents = append(formattedEvents, event.Format())
+	formattedEvents := make([]*domain.FormattedEvent, len(events))
+	for i, event := range events {
+		formattedEvents[i] = event.Format()
 	}
 
 	// This is counter-intuitive but it is correct
@@ -135,19 +123,6 @@ func HandleReadLogs(w http.ResponseWriter, r *http.Request) {
 
 	response.Write(w, buf)
 
-}
-
-func containsService(patterns []string, service string) bool {
-	for _, p := range patterns {
-		if p == service {
-			return true
-		}
-
-		if p[len(p)-1:] == "*" && strings.HasPrefix(service, p[:len(p)-1]) {
-			return true
-		}
-	}
-	return false
 }
 
 func reverse(a []*domain.FormattedEvent) {
