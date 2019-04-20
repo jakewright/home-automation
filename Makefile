@@ -40,3 +40,7 @@ clean: ## Clean up any containers and images
 	$(DOCKER_COMPOSE) stop
 	$(DOCKER_COMPOSE) rm -f
 	$(DOCKER_COMPOSE) down --rmi all --volumes --remove-orphans
+
+.PHONY: loc
+loc: ## Count lines of code
+	cloc --exclude-dir=vendor,dist,.idea,.vscode --not-match-f="package-lock.json" .
