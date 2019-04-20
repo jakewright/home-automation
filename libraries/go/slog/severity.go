@@ -1,5 +1,10 @@
 package slog
 
+import (
+	"encoding/json"
+	"strings"
+)
+
 // Severity is a subset of the syslog severity levels
 type Severity int
 
@@ -15,6 +20,8 @@ const (
 
 	// ErrorSeverity is the severity used for error conditions
 	ErrorSeverity Severity = 6
+
+	UnknownSeverity Severity = 10
 )
 
 func (s Severity) String() string {
@@ -30,4 +37,26 @@ func (s Severity) String() string {
 	}
 
 	return "UNKNOWN"
+}
+
+func (s *Severity) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch strings.ToLower(str) {
+	case "dbg", "debug":
+		*s = DebugSeverity
+	case "inf", "info", "information":
+		*s = InfoSeverity
+	case "warn", "warning":
+		*s = WarnSeverity
+	case "err", "error":
+		*s = ErrorSeverity
+	default:
+		*s = UnknownSeverity
+	}
+
+	return nil
 }
