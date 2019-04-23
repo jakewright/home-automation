@@ -14,24 +14,26 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-type LogRepository struct {
+type LogDAO struct {
 	// Location is the path to the log file
 	Location string
 
+	// Events is a channel over which all new log events are sent
 	Events chan *domain.Event
 
 	// lineCount is the number of lines in the log file so the watcher knows what has changed
 	lineCount int
 }
 
-func NewLogRepository(location string) *LogRepository {
-	return &LogRepository{
+func NewLogRepository(location string) *LogDAO {
+	return &LogDAO{
 		Location: location,
+		Events:   make(chan *domain.Event, 100),
 	}
 }
 
-func (r *LogRepository) Find(services []string, severity slog.Severity, since, until time.Time) ([]*domain.Event, error) {
-	lines, err := r.readLines()
+func (d *LogDAO) Find(services []string, severity slog.Severity, since, until time.Time) ([]*domain.Event, error) {
+	lines, err := d.readLines()
 	if err != nil {
 		return nil, err
 	}
@@ -68,59 +70,57 @@ func (r *LogRepository) Find(services []string, severity slog.Severity, since, u
 	return events, nil
 }
 
-func (r *LogRepository) Watch() error {
+func (d *LogDAO) Watch() {
 	metadata := map[string]string{
-		"location": r.Location,
+		"location": d.Location,
 	}
 
 	// To only emit events for new log lines, we need to store
 	// how many lines currently exist in the log file.
-	lines, err := r.readLines()
+	lines, err := d.readLines()
 	if err != nil {
-		return err
+		slog.Panic("Failed to read log lines: %v", err, metadata)
 	}
-	r.lineCount = len(lines)
+	d.lineCount = len(lines)
 
 	// Create a file watcher
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return errors.Wrap(err, nil)
+		slog.Panic("Failed to create file watcher: %v", err, metadata)
 	}
 	defer watcher.Close()
 
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					if err := r.sendNewLines(); err != nil {
-						slog.Error("Failed to send new lines: %v", err)
-					}
-				}
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
-				slog.Error("Error watching log file: %v", err, metadata)
-			}
-		}
-	}()
-
-	err = watcher.Add(r.Location)
+	err = watcher.Add(d.Location)
 	if err != nil {
-		slog.Panic("Failed to add log to watcher: %v", err)
+		slog.Panic("Failed to add log file to watcher: %v", err, metadata)
 	}
 
-	<-done
-	return nil
+	slog.Debug("Watching log file for changes", metadata)
+
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				slog.Debug("Watcher events channel closed", metadata)
+				return
+			}
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				if err := d.readNewEvents(); err != nil {
+					slog.Error("Failed to read new events: %v", err, metadata)
+				}
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				slog.Debug("Watcher errors channel closed", metadata)
+				return
+			}
+			slog.Panic("Received error from file watcher: %v", err, metadata)
+		}
+	}
 }
 
-func (r *LogRepository) readLines() ([][]byte, error) {
-	data, err := ioutil.ReadFile(r.Location)
+func (d *LogDAO) readLines() ([][]byte, error) {
+	data, err := ioutil.ReadFile(d.Location)
 	if err != nil {
 		return nil, errors.Wrap(err, nil)
 	}
@@ -128,8 +128,9 @@ func (r *LogRepository) readLines() ([][]byte, error) {
 	return bytes.Split(data, []byte("\n")), nil
 }
 
-func (r *LogRepository) sendNewLines() error {
-	lines, err := r.readLines()
+// readNewEvents reads new events in the log file and sends each one over the Events channel
+func (d *LogDAO) readNewEvents() error {
+	lines, err := d.readLines()
 	if err != nil {
 		return err
 	}
@@ -140,21 +141,21 @@ func (r *LogRepository) sendNewLines() error {
 	switch {
 	// File is empty
 	case lineCount == 0:
-		r.lineCount = 0
+		d.lineCount = 0
 		return nil
 
 	// Nothing has changed
-	case lineCount == r.lineCount:
+	case lineCount == d.lineCount:
 		return nil
 
 	// Probably started a new log file
-	case lineCount < r.lineCount:
+	case lineCount < d.lineCount:
 		start = 0
 		end = lineCount - 1
 
 	// New log lines
-	case lineCount > r.lineCount:
-		start = int(math.Max(float64(r.lineCount-1), 0))
+	case lineCount > d.lineCount:
+		start = int(math.Max(float64(d.lineCount-1), 0))
 		end = lineCount
 	}
 
@@ -164,10 +165,10 @@ func (r *LogRepository) sendNewLines() error {
 			continue
 		}
 
-		r.Events <- domain.NewEventFromBytes(i, lines[i])
+		d.Events <- domain.NewEventFromBytes(i, lines[i])
 	}
 
-	r.lineCount = lineCount
+	d.lineCount = lineCount
 	return nil
 }
 

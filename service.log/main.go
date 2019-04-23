@@ -2,12 +2,9 @@ package main
 
 import (
 	"home-automation/libraries/go/bootstrap"
-	"home-automation/libraries/go/router"
 	"home-automation/libraries/go/slog"
-	"time"
 
 	"home-automation/service.log/dao"
-
 	"home-automation/service.log/routes"
 )
 
@@ -17,14 +14,11 @@ func main() {
 	}
 
 	logRepository := dao.NewLogRepository("/var/log/messages")
-	if err := logRepository.Watch(); err != nil {
-		slog.Panic("Failed to start watching log file: %v", err)
-	}
+	go logRepository.Watch()
 
-	controller := routes.Controller{
+	(&routes.Controller{
 		Repository: logRepository,
-	}
+	}).RegisterRoutes()
 
-	router.Get("/read", controller.HandleReadLogs)
 	bootstrap.Run()
 }

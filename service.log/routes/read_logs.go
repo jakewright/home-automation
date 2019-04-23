@@ -10,14 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"home-automation/service.log/dao"
-
 	"home-automation/service.log/domain"
 )
-
-type Controller struct {
-	Repository *dao.LogRepository
-}
 
 type readLogsRequest struct {
 	Services string
@@ -38,7 +32,7 @@ type readLogsResponse struct {
 
 const htmlTimeFormat = "2006-01-02T15:04"
 
-func (c *Controller) HandleReadLogs(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) handleReadLogs(w http.ResponseWriter, r *http.Request) {
 	body := readLogsRequest{}
 	if err := request.Decode(r, &body); err != nil {
 		response.WriteJSON(w, err)

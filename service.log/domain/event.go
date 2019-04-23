@@ -46,7 +46,7 @@ func NewEventFromBytes(id int, b []byte) *Event {
 	}
 
 	if e.Timestamp.IsZero() {
-		slog.Error("Event timestamp was zero: %v", string(e.Raw))
+		slog.Warn("Event timestamp was zero: %v", string(e.Raw))
 	}
 
 	return &e

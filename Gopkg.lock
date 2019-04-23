@@ -40,28 +40,28 @@
   version = "v0.2.0"
 
 [[projects]]
-  digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
-  name = "github.com/gorilla/context"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
-  version = "v1.1.1"
-
-[[projects]]
-  digest = "1:e73f5b0152105f18bc131fba127d9949305c8693f8a762588a82a48f61756f5f"
+  digest = "1:d5f97fc268267ec1b61c3453058c738246fc3e746f14b1ae25161513b7367b0c"
   name = "github.com/gorilla/mux"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
-  version = "v1.6.2"
+  revision = "c5c6c98bc25355028a63748a498942a6398ccd22"
+  version = "v1.7.1"
+
+[[projects]]
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:d19bfdd2bd60beb2a4d72e1556b626b60b45f2ddf4f00c036f6cce8d13f78daa"
+  digest = "1:7a86812556162b6092cd6d7514a86b38e115f19e75d14aa87c0406c2942882e0"
   name = "github.com/jakewright/muxinator"
   packages = ["."]
   pruneopts = "UT"
-  revision = "72b6eb36214d780727ee965c65f8b91a597960ad"
+  revision = "fc7d9e347bbf39e37e343662f9a981d7f4b0c0a5"
 
 [[projects]]
   digest = "1:53bc4cd4914cd7cd52139990d5170d6dc99067ae31c56530621b18b35fc30318"
@@ -124,6 +124,7 @@
     "github.com/fsnotify/fsnotify",
     "github.com/go-redis/redis",
     "github.com/gorilla/mux",
+    "github.com/gorilla/websocket",
     "github.com/jakewright/muxinator",
     "github.com/mitchellh/mapstructure",
     "gopkg.in/yaml.v2",
