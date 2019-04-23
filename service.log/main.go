@@ -26,5 +26,5 @@ func main() {
 	}
 
 	router.Get("/read", controller.HandleReadLogs)
-	router.ListenAndServe()
+	bootstrap.Run()
 }

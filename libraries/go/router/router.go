@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"home-automation/libraries/go/config"
 	"home-automation/libraries/go/slog"
@@ -15,13 +16,17 @@ func init() {
 	router = muxinator.NewRouter()
 }
 
-func ListenAndServe() {
+// ListenAndServe listens for TCP connections on the port defined in config
+func ListenAndServe() error {
+	//return errors.InternalService("testing something")
 	port := config.Get("port").Int(80)
 	slog.Info("Listening on port %d", port)
-	err := router.ListenAndServe(fmt.Sprintf(":%d", port))
-	if err != nil {
-		slog.Panic("Failed to start server: %v", err)
-	}
+	return router.ListenAndServe(fmt.Sprintf(":%d", port))
+}
+
+// Shutdown gracefully shuts down the server
+func Shutdown(ctx context.Context) error {
+	return router.Shutdown(ctx)
 }
 
 // Get is a helper function to add a GET route

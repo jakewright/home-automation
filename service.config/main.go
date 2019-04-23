@@ -1,6 +1,7 @@
 package main
 
 import (
+	"home-automation/libraries/go/bootstrap"
 	"home-automation/libraries/go/config"
 	"home-automation/libraries/go/router"
 	"home-automation/libraries/go/slog"
@@ -45,5 +46,5 @@ func main() {
 	router.Get("/read/{serviceName}", controller.ReadConfig)
 	router.Patch("/reload", controller.ReloadConfig)
 
-	router.ListenAndServe()
+	bootstrap.Run()
 }
