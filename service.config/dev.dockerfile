@@ -7,4 +7,5 @@ COPY . .
 
 RUN dep ensure
 
-CMD CompileDaemon -build="go install ./service.config" -command="/go/bin/service.config" -log-prefix=false
+# Must use exec form so that CompileDaemon receives signals. The graceful-kill option then forwards them to the go binary.
+CMD ["CompileDaemon", "-build=go install ./service.config", "-command=/go/bin/service.config", "-log-prefix=false", "-graceful-kill=true"]
