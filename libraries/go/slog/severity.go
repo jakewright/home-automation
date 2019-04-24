@@ -21,6 +21,7 @@ const (
 	// ErrorSeverity is the severity used for error conditions
 	ErrorSeverity Severity = 6
 
+	// UnknownSeverity is the value used when the severity cannot be derived
 	UnknownSeverity Severity = 10
 )
 
