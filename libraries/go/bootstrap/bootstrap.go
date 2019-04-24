@@ -6,15 +6,27 @@ import (
 	"home-automation/libraries/go/api"
 	"home-automation/libraries/go/config"
 	"home-automation/libraries/go/firehose"
-	"home-automation/libraries/go/router"
 	"home-automation/libraries/go/slog"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/go-redis/redis"
 )
+
+// Process is a long-running task that provides service functionality
+type Process interface {
+	// GetName returns a friendly name for the process for use in logs
+	GetName() string
+
+	// Start kicks off the task and only returns when the task has finished
+	Start() error
+
+	// Stop will try to gracefully end the task and should be safe to run regardless of whether the process is currently running
+	Stop(context.Context) error
+}
 
 // Boot performs standard service startup tasks
 func Init(serviceName string) error {
@@ -53,30 +65,69 @@ func Init(serviceName string) error {
 	return nil
 }
 
-func Run() {
+// Run takes a number of processes and concurrently runs them all. It will stop if all processes
+// terminate or if a signal (SIGINT or SIGTERM) is received.
+func Run(processes ...Process) {
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 
-	errs := make(chan error)
+	wg := sync.WaitGroup{}
+
+	// Start all of the processes in goroutines
+	for _, process := range processes {
+		process := process
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := process.Start(); err != nil {
+				slog.Error("Process %s stopped with error: %v", process.GetName(), err)
+			} else {
+				slog.Debug("Process %s stopped", process.GetName())
+			}
+		}()
+	}
+
+	// Close the done channel when all processes return
+	done := make(chan struct{})
 	go func() {
-		errs <- router.ListenAndServe()
+		wg.Wait()
+		close(done)
 	}()
 
+	// Wait for all processes to return or for a signal
 	select {
-	case err := <-errs:
-		slog.Error("Router unexpectedly stopped: %v", err)
+	case <-done:
+		slog.Warn("All processes stopped prematurely")
 		os.Exit(1)
 	case s := <-sig:
-		slog.Info("Received signal %v; exiting...", s)
+		slog.Info("Received %v signal", s)
 	}
 
 	// A short timeout because Docker will kill us after 10 seconds anyway
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := router.Shutdown(ctx); err != nil {
-		slog.Error("Failed to shutdown gracefully: %v", err)
+	// Simultaneously stop all processes
+	for _, process := range processes {
+		process := process
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := process.Stop(ctx); err != nil {
+				slog.Error("Failed to stop %s gracefully: %v", process.GetName(), err)
+			}
+		}()
 	}
 
-	slog.Info("Service stopped")
+	// Wait for everything to finish or a timeout to be hit
+	select {
+	case <-time.After(time.Second * 9):
+		slog.Error("Failed to stop processes in time")
+		os.Exit(1)
+	case <-done:
+		slog.Info("All processes stopped")
+		os.Exit(0)
+	}
 }
