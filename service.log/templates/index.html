@@ -23,60 +23,52 @@
                 display: inline-block;
             }
 
-            .severity.DEBUG {
-                background-color: #CCC;
+            .severity.DEBUG { background-color: #CCC; }
+            .severity.INFO { background-color: #25d0ff; }
+            .severity.WARN { background-color: #ffd32d; }
+            .severity.ERROR { background-color: #ff694b; }
+
+            table .metadata {
+                max-width: 200px;
             }
 
-            .severity.INFO {
-                background-color: #25d0ff;
+            table .metadata pre {
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
-            .severity.WARN {
-                background-color: #ffd32d
-            }
-
-            .severity.ERROR {
-                background-color: #ff694b;
-            }
-
-            .raw {
+            table .raw {
                 display: none;
             }
 
-            .raw div {
+            table .raw pre {
                 background-color: #F9F9F9;
                 padding: 10px;
-            }
-
-            .raw pre {
                 overflow-x: auto;
                 white-space: pre-wrap;
                 word-wrap: break-word;
             }
-
-            .show-raw:checked + .raw {
-                display: block;
-            }
         </style>
     </head>
     <body>
-        <form>
+        <form id="filter-form">
             <label for="services">Services</label>
             <input type="text" name="services" value="{{.Services}}">
 
             <label for="severity">Severity</label>
             <select name="severity">
+                <option value="0" {{if eq .Severity 0}}selected{{end}}></option>
                 <option value="2" {{if eq .Severity 2}}selected{{end}}>Debug</option>
                 <option value="3" {{if eq .Severity 3}}selected{{end}}>Info</option>
                 <option value="5" {{if eq .Severity 5}}selected{{end}}>Warning</option>
                 <option value="6" {{if eq .Severity 6}}selected{{end}}>Error</option>
             </select>
 
-            <label for="since">Since</label>
-            <input type="datetime-local" name="since" value="{{.Since}}">
+            <label for="since_time">Since</label>
+            <input type="datetime-local" name="since_time" id="since_time" value="{{.SinceTime}}">
 
-            <label for="until">Until</label>
-            <input type="datetime-local" name="until" value="{{.Until}}">
+            <label for="until_time">Until</label>
+            <input type="datetime-local" name="until_time" id="until_time" value="{{.UntilTime}}">
 
             <label for="reverse">Reverse</label>
             <input type="checkbox" name="reverse" value="true" {{if .Reverse}}checked{{end}}>
@@ -85,45 +77,96 @@
         </form>
 
         <table width="100%">
-            <tr>
-                <td nowrap>Timestamp</td>
-                <td nowrap>Service</td>
-                <td nowrap>Severity</td>
-                <td nowrap>Message</td>
-                <td nowrap>Metadata</td>
-            </tr>
-            {{range .FormattedEvents}}
+            <thead>
                 <tr>
-                    <td nowrap>{{.Timestamp}}</td>
-                    <td nowrap>{{.Service}}</td>
-                    <td nowrap>
-                        <div class="severity {{.Severity}}"></div>
-                        {{.Severity}}
-                    </td>
-                    <td>
-                        {{.Message}}
-                        <input type="checkbox" data-id="{{.ID}}" class="show-raw" name="show-raw" onclick="showRaw(event)">
-                    </td>
-                    <td nowrap><pre>{{.Metadata}}</pre></td>
+                    <td nowrap>Timestamp</td>
+                    <td nowrap>Service</td>
+                    <td nowrap>Severity</td>
+                    <td nowrap>Message</td>
+                    <td class="metadata">Metadata</td>
                 </tr>
+            </thead>
+            <tbody id="logs-tbody">
+                {{range .FormattedEvents}}
+                    <tr>
+                        <td nowrap>{{.Timestamp}}</td>
+                        <td nowrap>{{.Service}}</td>
+                        <td nowrap>
+                            <div class="severity {{.Severity}}"></div>
+                            {{.Severity}}
+                        </td>
+                        <td>
+                            {{.Message}}
+                            <input type="checkbox" data-uuid="{{.UUID}}" class="show-raw" name="show-raw" onclick="showRaw(event)">
+                        </td>
+                        <td class="metadata"><pre>{{.Metadata}}</pre></td>
+                    </tr>
 
-                <tr class="raw" id="raw-{{.ID}}">
-                    <td colspan="5">
-                        <div>
-                            <pre>{{.Raw}}</pre>
-                        </div>
-                    </td>
-                </tr>
+                    <tr class="raw" id="raw-{{.UUID}}">
+                        <td colspan="5"><pre>{{.Raw}}</pre></td>
+                    </tr>
 
-            {{end}}
+                {{end}}
+            </tbody>
         </table>
 
         <script>
-            function showRaw(e) {
-              const td = document.getElementById("raw-" + e.target.dataset.id);
-              td.style.display = e.target.checked ? "table-row" : "none";
+            window.onload = function() {
+                document.getElementById('filter-form').onsubmit = function() {
+                    // If until hasn't been changed, set it to blank to leave it as "now"
+                    // otherwise you forget about it and accidentally look at old logs.
+                    const until = document.getElementById("until_time");
+                    if (until.value === "{{.UntilTime}}") {
+                        until.value = "";
+                    }
+                };
 
-              console.log("Show raw ID: " + e.target.dataset.id);
+                // Construct the WebSocket URL (current URL + /ws + query params) and connect to it
+                const l = window.location;
+                const search = (l.search ? l.search + "&" : "?") + "since_uuid=" + "{{.LastUUID}}";
+                console.log(search);
+                const socket = new WebSocket(((l.protocol === "https:") ? "wss://" : "ws://") + l.host + "/ws" + search);
+
+                socket.onopen = function () {
+                    console.log("Connected to WebSocket");
+                };
+
+                socket.onmessage = function (e) {
+                    const data = JSON.parse(e.data);
+                    console.log(data["UUID"]);
+
+                    const newRows = `
+                        <tr>
+                          <td nowrap>${data["Timestamp"]}</td>
+                          <td nowrap>${data["Service"]}</td>
+                          <td nowrap>
+                            <div class="severity ${data["Severity"]}"></div>
+                            ${data["Severity"]}
+                          </td>
+                          <td>
+                            ${data["Message"]}
+                            <input type="checkbox" data-uuid="${data["UUID"]}" class="show-raw" name="show-raw" onclick="showRaw(event)">
+                          </td>
+                          <td class="metadata"><pre>${data["Metadata"]}</pre></td>
+                        </tr>
+                        <tr class="raw" id="raw-${data["UUID"]}">
+                          <td colspan="5"><pre>${data["Raw"]}</pre></td>
+                        </tr>
+                    `;
+
+                    const tbody = document.getElementById("logs-tbody");
+
+                    {{if .Reverse}}
+                        tbody.innerHTML = newRows + tbody.innerHTML;
+                    {{else}}
+                        tbody.innerHTML += newRows;
+                    {{end}}
+                };
+            };
+
+            function showRaw(e) {
+                const td = document.getElementById("raw-" + e.target.dataset.uuid);
+                td.style.display = e.target.checked ? "table-row" : "none";
             }
         </script>
     </body>

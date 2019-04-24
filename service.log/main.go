@@ -2,10 +2,12 @@ package main
 
 import (
 	"home-automation/libraries/go/bootstrap"
+	"home-automation/libraries/go/router"
 	"home-automation/libraries/go/slog"
 
-	"home-automation/service.log/dao"
-	"home-automation/service.log/routes"
+	"home-automation/service.log/handler"
+	"home-automation/service.log/repository"
+	"home-automation/service.log/watch"
 )
 
 func main() {
@@ -13,12 +15,25 @@ func main() {
 		slog.Panic("Failed to initialise service: %v", err)
 	}
 
-	logRepository := dao.NewLogRepository("/var/log/messages")
-	go logRepository.Watch()
+	fileLocation := "/var/log/messages"
 
-	(&routes.Controller{
-		Repository: logRepository,
-	}).RegisterRoutes()
+	logRepository := &repository.LogRepository{
+		Location: fileLocation,
+	}
 
-	bootstrap.Run()
+	watcher := &watch.Watcher{
+		LogRepository: logRepository,
+		Location:      fileLocation,
+	}
+
+	h := handler.LogHandler{
+		LogRepository: logRepository,
+		Watcher:       watcher,
+	}
+
+	r := router.New()
+	r.Get("/", h.HandleRead, h.DecodeBody)
+	r.Get("/ws", h.HandleWebSocket, h.DecodeBody)
+
+	bootstrap.Run(r, watcher)
 }

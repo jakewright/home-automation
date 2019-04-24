@@ -10,32 +10,67 @@ import (
 
 const jsonIndent = "    "
 
+// Event represents a single log event
 type Event struct {
-	ID        int
-	Timestamp time.Time     `json:"@timestamp"`
-	Severity  slog.Severity `json:"severity"`
-	Service   string        `json:"service"`
-	Message   string        `json:"message"`
-	Metadata  interface{}   `json:"metadata"`
-	Raw       []byte        `json:"-"`
+	// UUID is a unique identifier for this event
+	UUID string `json:"uuid"`
+
+	// Timestamp is the time on the event
+	Timestamp time.Time `json:"@timestamp"`
+
+	// Severity is the severity of the event
+	Severity slog.Severity `json:"severity"`
+
+	// Service is the name of the service from which the event came
+	Service string `json:"service"`
+
+	// Message is a best-effort attempt at parsing the message
+	// from the raw line. This is handled by logstash.
+	Message string `json:"message"`
+
+	// Metadata is extra parameters put into slog lines.
+	// This will usually be a map[string]string.
+	Metadata interface{} `json:"metadata"`
+
+	// Raw is the original log line
+	Raw []byte `json:"-"`
 }
 
+// FormattedEvent is a version of Event that
+// is ready to pass to an HTML template
 type FormattedEvent struct {
-	ID             int
-	Timestamp      string
-	Severity       string
-	Service        string
-	Message        template.HTML
-	Metadata       template.HTML
+	// UUID is a unique identifier for this event
+	UUID string
+
+	// Timestamp is the time on the event
+	Timestamp string
+
+	// Severity is the severity of the event
+	Severity string
+
+	// Service is the name of the service from which the event came
+	Service string
+
+	// Message is converted to template.HTML as-is
+	Message template.HTML
+
+	// Metadata is converted to template.HTML in its raw form
+	Metadata template.HTML
+
+	// MetadataPretty is parsed as JSON and indented if successful,
+	// otherwise it will be equal to Metadata.
 	MetadataPretty template.HTML
-	Raw            template.HTML
+
+	// Raw is the original log line
+	Raw template.HTML
 }
 
-func NewEventFromBytes(id int, b []byte) *Event {
+// NewEventFromBytes returns a structured event from a log line.
+// It is best-effort and therefore does not return an error. This
+// is why this approach is used over a custom JSON unmarshal function.
+func NewEventFromBytes(b []byte) *Event {
 	// Set some defaults in case they can't be parsed from the log
 	e := Event{
-		ID: id,
-		//Severity: slog.InfoSeverity,
 		Message: string(b),
 		Raw:     b,
 	}
@@ -52,6 +87,7 @@ func NewEventFromBytes(id int, b []byte) *Event {
 	return &e
 }
 
+// Format returns a formatted event that can be passed to an HTML template
 func (e *Event) Format() *FormattedEvent {
 	var metadataPretty []byte
 	metadata, err := json.Marshal(e.Metadata)
@@ -66,7 +102,7 @@ func (e *Event) Format() *FormattedEvent {
 	raw := template.HTML(formatRaw(e.Raw))
 
 	return &FormattedEvent{
-		ID:             e.ID,
+		UUID:           e.UUID,
 		Timestamp:      e.Timestamp.Format(time.Stamp),
 		Severity:       e.Severity.String(),
 		Service:        e.Service,
