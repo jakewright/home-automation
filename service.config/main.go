@@ -43,8 +43,9 @@ func main() {
 		go configService.Watch(time.Millisecond * time.Duration(interval))
 	}
 
-	router.Get("/read/{serviceName}", controller.ReadConfig)
-	router.Patch("/reload", controller.ReloadConfig)
+	r := router.New()
+	r.Get("/read/{serviceName}", controller.ReadConfig)
+	r.Patch("/reload", controller.ReloadConfig)
 
-	bootstrap.Run()
+	bootstrap.Run(r)
 }
