@@ -29,14 +29,14 @@ func main() {
 		LogRepository: logRepository,
 	}
 
-	h := handler.LogHandler{
+	readHandler := handler.ReadHandler{
 		LogRepository: logRepository,
 		Watcher:       watcher,
 	}
 
 	r := router.New()
-	r.Get("/", h.HandleRead, h.DecodeBody)
-	r.Get("/ws", h.HandleWebSocket, h.DecodeBody)
+	r.Get("/", readHandler.HandleRead, readHandler.DecodeBody)
+	r.Get("/ws", readHandler.HandleWebSocket, readHandler.DecodeBody)
 
 	bootstrap.Run(r, watcher)
 }

@@ -24,7 +24,7 @@ import (
 
 const htmlTimeFormat = "2006-01-02T15:04"
 
-type LogHandler struct {
+type ReadHandler struct {
 	LogRepository *repository.LogRepository
 	Watcher       *watch.Watcher
 }
@@ -38,7 +38,7 @@ type readRequest struct {
 	Reverse   bool   `mapstructure:"reverse"`
 }
 
-func (h *LogHandler) DecodeBody(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (h *ReadHandler) DecodeBody(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	body := readRequest{}
 	if err := request.Decode(r, &body); err != nil {
 		response.WriteJSON(w, err)
@@ -66,7 +66,7 @@ func (h *LogHandler) DecodeBody(w http.ResponseWriter, r *http.Request, next htt
 	next(w, r.WithContext(ctx))
 }
 
-func (h *LogHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
+func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	query := r.Context().Value("query").(*repository.LogQuery)
 	metadata := r.Context().Value("metadata").(map[string]string)
 
@@ -142,7 +142,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func (h *LogHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
+func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	query := r.Context().Value("query").(*repository.LogQuery)
 	metadata := r.Context().Value("metadata").(map[string]string)
 
