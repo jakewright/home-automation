@@ -1,7 +1,7 @@
 FROM golang:latest
 RUN go get github.com/golang/dep/cmd/dep
 
-WORKDIR /go/src/home-automation
+WORKDIR /go/src/github.com/jakewright/home-automation
 COPY . .
 
 RUN dep ensure
