@@ -2,9 +2,12 @@ package repository
 
 import (
 	"bytes"
+	"fmt"
 	"home-automation/libraries/go/errors"
 	"home-automation/libraries/go/slog"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -13,8 +16,8 @@ import (
 
 // LogRepository provides a query interface to the log file
 type LogRepository struct {
-	// Location is the path to the log file
-	Location string
+	// LogDirectory is the path to the directory containing daily log files
+	LogDirectory string
 }
 
 // LogQuery is a set of conditions to apply when finding events
@@ -48,45 +51,9 @@ type LogQuery struct {
 
 // Find returns all events that match the given query
 func (r *LogRepository) Find(q *LogQuery) ([]*domain.Event, error) {
-	lines, err := r.readLines()
+	events, err := r.findEvents(q)
 	if err != nil {
 		return nil, err
-	}
-
-	var events []*domain.Event
-
-	// Iterate backwards so we process newer log lines first
-	for i := len(lines) - 1; i >= 0; i-- {
-		if len(lines[i]) == 0 {
-			continue
-		}
-
-		event := domain.NewEventFromBytes(lines[i])
-
-		// Filter by severity
-		if event.Severity < q.Severity {
-			continue
-		}
-
-		// Filter by service
-		if len(q.Services) > 0 && !containsService(q.Services, event.Service) {
-			continue
-		}
-
-		// Filter by time
-		if !q.UntilTime.IsZero() && event.Timestamp.After(q.UntilTime) {
-			continue
-		}
-		if !q.SinceTime.IsZero() && event.Timestamp.Before(q.SinceTime) {
-			break
-		}
-
-		// Filter by UUID
-		if q.SinceUUID != "" && event.UUID == q.SinceUUID {
-			break
-		}
-
-		events = append(events, event)
 	}
 
 	// This is counter-intuitive but it is correct
@@ -97,9 +64,72 @@ func (r *LogRepository) Find(q *LogQuery) ([]*domain.Event, error) {
 	return events, nil
 }
 
+func (r *LogRepository) findEvents(q *LogQuery) ([]*domain.Event, error) {
+	var events []*domain.Event
+	date := time.Now().UTC()
+
+	for {
+		filename := filepath.Join(r.LogDirectory, fmt.Sprintf("messages-%s", date.Format("2006-01-02")))
+
+		lines, err := readLines(filename)
+		if err != nil {
+			// We expect to eventually find a file that does not exist so
+			// don't return an error, just return the events found so far.
+			if os.IsNotExist(err) {
+				return events, nil
+			}
+
+			// Any other error is unexpected
+			return nil, err
+		}
+
+		// Iterate backwards so we process newer log lines first
+		for i := len(lines) - 1; i >= 0; i-- {
+			// Skip empty lines
+			if len(lines[i]) == 0 {
+				continue
+			}
+
+			event := domain.NewEventFromBytes(lines[i])
+
+			// Filter by severity
+			if event.Severity < q.Severity {
+				continue
+			}
+
+			// Filter by service
+			if len(q.Services) > 0 && !containsService(q.Services, event.Service) {
+				continue
+			}
+
+			// Filter by time
+			if !q.UntilTime.IsZero() && event.Timestamp.After(q.UntilTime) {
+				continue
+			}
+			if !q.SinceTime.IsZero() && event.Timestamp.Before(q.SinceTime) {
+				return events, nil
+			}
+
+			// Filter by UUID
+			if q.SinceUUID != "" && event.UUID == q.SinceUUID {
+				return events, nil
+			}
+
+			events = append(events, event)
+		}
+
+		// Subtract a day from the date
+		date = date.AddDate(0, 0, -1)
+	}
+}
+
 // readLines loads all lines from the log file into memory
-func (r *LogRepository) readLines() ([][]byte, error) {
-	data, err := ioutil.ReadFile(r.Location)
+func readLines(filename string) ([][]byte, error) {
+	if _, err := os.Stat(filename); err != nil {
+		return nil, err
+	}
+
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, errors.Wrap(err, nil)
 	}

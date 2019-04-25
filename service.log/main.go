@@ -2,6 +2,7 @@ package main
 
 import (
 	"home-automation/libraries/go/bootstrap"
+	"home-automation/libraries/go/config"
 	"home-automation/libraries/go/router"
 	"home-automation/libraries/go/slog"
 
@@ -15,15 +16,17 @@ func main() {
 		slog.Panic("Failed to initialise service: %v", err)
 	}
 
-	fileLocation := "/var/log/messages"
+	logDirectory := config.Get("logDirectory").String()
+	if logDirectory == "" {
+		slog.Panic("Log directory not set in config")
+	}
 
 	logRepository := &repository.LogRepository{
-		Location: fileLocation,
+		LogDirectory: logDirectory,
 	}
 
 	watcher := &watch.Watcher{
 		LogRepository: logRepository,
-		Location:      fileLocation,
 	}
 
 	h := handler.LogHandler{

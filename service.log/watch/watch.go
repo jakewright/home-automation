@@ -16,9 +16,6 @@ type Watcher struct {
 	// LogDAO provides access to the log events
 	LogRepository *repository.LogRepository
 
-	// Location is the path to the log file to watch
-	Location string
-
 	watcher     *fsnotify.Watcher
 	subscribers map[chan<- *domain.Event]*repository.LogQuery
 	mux         sync.Mutex
@@ -31,51 +28,58 @@ func (w *Watcher) GetName() string {
 
 // Start begins watching for log file changes and notifies subscribers accordingly
 func (w *Watcher) Start() error {
-	metadata := map[string]string{
-		"location": w.Location,
-	}
-
+	// Make sure the receiver struct has been initialised properly
 	if w.LogRepository == nil {
-		return errors.InternalService("LogRepository is not set", metadata)
+		return errors.InternalService("LogRepository is not set")
+	}
+	if w.LogRepository.LogDirectory == "" {
+		return errors.InternalService("Log directory is not set")
 	}
 
-	if w.Location == "" {
-		return errors.InternalService("File location is not set", metadata)
-	}
-
-	// Create a file watcher
+	// Create an fsnotify watcher and attach to w so
+	// that the Stop method can call Close() on it
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return errors.Wrap(err, metadata)
+		return errors.Wrap(err, nil)
 	}
 	defer watcher.Close()
 	w.watcher = watcher
 
-	// Start watching the log file
-	err = watcher.Add(w.Location)
-	if err != nil {
-		return errors.Wrap(err, metadata)
+	// Start watching the log file directory so we
+	// are notified when new log files are created
+	if err = watcher.Add(w.LogRepository.LogDirectory); err != nil {
+		return errors.Wrap(err, nil)
 	}
-	slog.Info("Watching log file for changes", metadata)
+	slog.Info("Watching %s for changes", w.LogRepository.LogDirectory)
 
 	for {
 		select {
 		case fileEvent, ok := <-watcher.Events:
 			if !ok {
+				// If the channel is closed then just exit silently
+				// because Stop() was probably called
 				return nil
 			}
 
+			// We'll get a write event if any file inside the directory is written to.
+			// If the file isn't actually a log file we'll waste some work
+			// trying to read new events but it's safe to do.
 			if fileEvent.Op&fsnotify.Write != fsnotify.Write {
 				continue
 			}
 
 			w.notifySubscribers()
+
 		case err, ok := <-watcher.Errors:
 			if !ok {
+				// If the channel is closed then just exit silently
+				// because Stop() was probably called
 				return nil
 			}
 
-			return errors.Wrap(err, metadata)
+			// It's unclear what state the watcher will be in if we receive
+			// any errors so just return, which will trigger Close()
+			return errors.Wrap(err, nil)
 		}
 	}
 }
