@@ -1,4 +1,4 @@
-package controller
+package handler
 
 import (
 	"net/http"
@@ -11,14 +11,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Controller exports the handlers for the endpoints
-type Controller struct {
+// ConfigHandler exports the handlers for the endpoints
+type ConfigHandler struct {
 	ConfigService *service.ConfigService
 	Config        *domain.Config
 }
 
 // ReadConfig returns the config for the given service
-func (c *Controller) ReadConfig(w http.ResponseWriter, r *http.Request) {
+func (h *ConfigHandler) ReadConfig(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	serviceName, ok := vars["serviceName"]
 	if !ok {
@@ -27,7 +27,7 @@ func (c *Controller) ReadConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config, err := c.Config.Get(serviceName)
+	config, err := h.Config.Get(serviceName)
 	if err != nil {
 		response.WriteJSON(w, err)
 		return
@@ -37,8 +37,8 @@ func (c *Controller) ReadConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 // ReloadConfig reads the YAML file from disk and loads changes into memory
-func (c *Controller) ReloadConfig(w http.ResponseWriter, r *http.Request) {
-	reloaded, err := c.ConfigService.Reload()
+func (h *ConfigHandler) ReloadConfig(w http.ResponseWriter, r *http.Request) {
+	reloaded, err := h.ConfigService.Reload()
 	if err != nil {
 		response.WriteJSON(w, err)
 		return

@@ -7,8 +7,8 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	"github.com/jakewright/home-automation/service.config/controller"
 	"github.com/jakewright/home-automation/service.config/domain"
+	"github.com/jakewright/home-automation/service.config/handler"
 	"github.com/jakewright/home-automation/service.config/service"
 )
 
@@ -18,11 +18,6 @@ func main() {
 	configService := service.ConfigService{
 		Location: "/data/config.yaml",
 		Config:   &c,
-	}
-
-	controller := controller.Controller{
-		Config:        &c,
-		ConfigService: &configService,
 	}
 
 	_, err := configService.Reload()
@@ -43,9 +38,14 @@ func main() {
 		go configService.Watch(time.Millisecond * time.Duration(interval))
 	}
 
+	configHandler := handler.ConfigHandler{
+		Config:        &c,
+		ConfigService: &configService,
+	}
+
 	r := router.New()
-	r.Get("/read/{serviceName}", controller.ReadConfig)
-	r.Patch("/reload", controller.ReloadConfig)
+	r.Get("/read/{serviceName}", configHandler.ReadConfig)
+	r.Patch("/reload", configHandler.ReloadConfig)
 
 	bootstrap.Run(r)
 }
