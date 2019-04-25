@@ -3,12 +3,10 @@ package handler
 import (
 	"net/http"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/service.config/domain"
 	"github.com/jakewright/home-automation/service.config/service"
-
-	"github.com/gorilla/mux"
 )
 
 // ConfigHandler exports the handlers for the endpoints
@@ -17,17 +15,19 @@ type ConfigHandler struct {
 	Config        *domain.Config
 }
 
+type readRequest struct {
+	ServiceName string
+}
+
 // ReadConfig returns the config for the given service
 func (h *ConfigHandler) ReadConfig(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	serviceName, ok := vars["serviceName"]
-	if !ok {
-		err := errors.InternalService("service name not provided", nil)
+	body := &readRequest{}
+	if err := request.Decode(r, body); err != nil {
 		response.WriteJSON(w, err)
 		return
 	}
 
-	config, err := h.Config.Get(serviceName)
+	config, err := h.Config.Get(body.ServiceName)
 	if err != nil {
 		response.WriteJSON(w, err)
 		return
