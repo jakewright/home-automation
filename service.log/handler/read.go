@@ -146,9 +146,7 @@ func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	query := r.Context().Value("query").(*repository.LogQuery)
 	metadata := r.Context().Value("metadata").(map[string]string)
 
-	// Events sent over the WebSocket should always be in order
-	query.Reverse = false
-
+	// Upgrade the request to a WebSocket connection
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		slog.Error("Failed to create websocket upgrader: %v", err, metadata)
@@ -156,32 +154,47 @@ func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
+	// A loop must be started that reads and discards messages until a non-nil
+	// error is received so that close, ping and pong messages are processed.
+	// Close a channel to signal to the for loop below that the client has gone away.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		readLoop(ws)
+	}()
+
+	// Subscribe to new events that match the query in the request
 	events := make(chan *domain.Event, 50)
-	slog.Debug("Subscribing to channel", metadata)
 	err = h.Watcher.Subscribe(events, query)
 	if err != nil {
 		slog.Error("Failed to subscribe to the watcher: %v", err, metadata)
 		return
 	}
-
 	defer func() {
-		slog.Debug("Unsubscribing from channel", metadata)
 		h.Watcher.Unsubscribe(events)
 	}()
 
-	for event := range events {
-		formattedEvent := event.Format()
-		b, err := json.Marshal(formattedEvent)
-		if err != nil {
-			slog.Error("Failed to marshal event: %v", err, metadata)
-			continue
-		}
-
-		if err := ws.WriteMessage(websocket.TextMessage, b); err != nil {
-			if !websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				slog.Error("Failed to write message to websocket: %v", err, metadata)
+	for {
+		select {
+		case event, ok := <-events:
+			if !ok {
+				slog.Error("Events channel unexpectedly closed")
+				return
 			}
 
+			formattedEvent := event.Format()
+			b, err := json.Marshal(formattedEvent)
+			if err != nil {
+				slog.Error("Failed to marshal event: %v", err, metadata)
+				continue
+			}
+
+			if err := ws.WriteMessage(websocket.TextMessage, b); err != nil {
+				slog.Error("Failed to write message to websocket: %v", err, metadata)
+				return
+			}
+		case <-done:
+			// The WebSocket is closed so silently return
 			return
 		}
 	}
@@ -220,4 +233,13 @@ func parseQuery(body *readRequest) (*repository.LogQuery, error) {
 		SinceUUID: body.SinceUUID,
 		Reverse:   body.Reverse,
 	}, nil
+}
+
+func readLoop(c *websocket.Conn) {
+	for {
+		if _, _, err := c.NextReader(); err != nil {
+			c.Close()
+			break
+		}
+	}
 }
