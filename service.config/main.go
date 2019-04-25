@@ -44,7 +44,7 @@ func main() {
 	}
 
 	r := router.New()
-	r.Get("/read/{serviceName}", configHandler.ReadConfig)
+	r.Get("/read/{service_name}", configHandler.ReadConfig)
 	r.Patch("/reload", configHandler.ReloadConfig)
 
 	bootstrap.Run(r)

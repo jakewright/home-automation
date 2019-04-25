@@ -29,12 +29,12 @@ type ReadHandler struct {
 }
 
 type readRequest struct {
-	Services  string `mapstructure:"services"`
-	Severity  int    `mapstructure:"severity"`
-	SinceTime string `mapstructure:"since_time"` // The HTML datetime-local element formats time weirdly so we need to unmarshal to a string
-	UntilTime string `mapstructure:"until_time"`
-	SinceUUID string `mapstructure:"since_uuid"`
-	Reverse   bool   `mapstructure:"reverse"`
+	Services  string `json:"services"`
+	Severity  int    `json:"severity"`
+	SinceTime string `json:"since_time"` // The HTML datetime-local element formats time weirdly so we need to unmarshal to a string
+	UntilTime string `json:"until_time"`
+	SinceUUID string `json:"since_uuid"`
+	Reverse   bool   `json:"reverse"`
 }
 
 func (h *ReadHandler) DecodeBody(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

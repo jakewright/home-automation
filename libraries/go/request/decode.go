@@ -20,6 +20,10 @@ func Decode(r *http.Request, v interface{}) error {
 		DecodeHook:       mapstructure.StringToTimeHookFunc(time.RFC3339),
 		WeaklyTypedInput: true,
 		Result:           v,
+
+		// Override the TagName to match the one used by the encoding/json package
+		// so users of this function only have to define a single tag on struct fields
+		TagName: "json",
 	})
 	if err != nil {
 		return errors.Wrap(err, nil)

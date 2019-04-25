@@ -16,7 +16,7 @@ type ConfigHandler struct {
 }
 
 type readRequest struct {
-	ServiceName string
+	ServiceName string `json:"service_name"`
 }
 
 // ReadConfig returns the config for the given service
