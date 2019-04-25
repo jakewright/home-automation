@@ -37,6 +37,7 @@ func main() {
 	r := router.New()
 	r.Get("/", readHandler.HandleRead, readHandler.DecodeBody)
 	r.Get("/ws", readHandler.HandleWebSocket, readHandler.DecodeBody)
+	r.Post("/write", handler.HandleWrite)
 
 	bootstrap.Run(r, watcher)
 }
