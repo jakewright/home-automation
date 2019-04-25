@@ -5,6 +5,7 @@ import (
 	"home-automation/libraries/go/errors"
 	"home-automation/libraries/go/slog"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"home-automation/service.log/domain"
@@ -16,9 +17,11 @@ type Watcher struct {
 	// LogDAO provides access to the log events
 	LogRepository *repository.LogRepository
 
-	watcher     *fsnotify.Watcher
 	subscribers map[chan<- *domain.Event]*repository.LogQuery
-	mux         sync.Mutex
+	mux         sync.Mutex        // Concurrent map access
+	notify      chan struct{}     // Triggers reading new events from the log files
+	ticker      *time.Ticker      // Used as a rate limiter
+	watcher     *fsnotify.Watcher // Internal file watcher
 }
 
 // GetName returns the name "watcher"
@@ -52,6 +55,19 @@ func (w *Watcher) Start() error {
 	}
 	slog.Info("Watching %s for changes", w.LogRepository.LogDirectory)
 
+	// Create a notification channel with a buffer of 1 so
+	// that we can always queue a new event while the current
+	// one is in process. If the channel was unbuffered, we would
+	// risk missing events if the notifier were not ready to
+	// receive when the file write happened.
+	w.notify = make(chan struct{}, 1)
+
+	// Create a ticker to act as the rate limiter when notifying
+	// subscribers. Without this then we risk thrashing the disk.
+	w.ticker = time.NewTicker(time.Second * 2)
+
+	go w.notifySubscribers()
+
 	for {
 		select {
 		case fileEvent, ok := <-watcher.Events:
@@ -68,7 +84,12 @@ func (w *Watcher) Start() error {
 				continue
 			}
 
-			w.notifySubscribers()
+			// Write to the notify channel but do not block.
+			// If the channel is not ready to receive then skip.
+			select {
+			case w.notify <- struct{}{}:
+			default:
+			}
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
@@ -86,6 +107,9 @@ func (w *Watcher) Start() error {
 
 // Stop stops watching for log file changes
 func (w *Watcher) Stop(ctx context.Context) error {
+	w.ticker.Stop()
+	close(w.notify)
+
 	if w.watcher != nil {
 		return w.watcher.Close()
 	}
@@ -96,10 +120,6 @@ func (w *Watcher) Stop(ctx context.Context) error {
 // Subscribe starts sending all events that match the query over the given channel. The query
 // will be updated with the a new SinceUUID value whenever events are published to the channel.
 func (w *Watcher) Subscribe(c chan<- *domain.Event, q *repository.LogQuery) error {
-	if q.SinceUUID == "" {
-		return errors.InternalService("SinceUUID not set in subscriber query")
-	}
-
 	// Obtain a lock so we can write to the map
 	w.mux.Lock()
 	defer w.mux.Unlock()
@@ -122,7 +142,21 @@ func (w *Watcher) Unsubscribe(c chan<- *domain.Event) {
 	delete(w.subscribers, c)
 }
 
+// notifySubscribers finds and sends new events to all subscribers
+// whenever the notify channel is written to, rate limited by w.ticker.
 func (w *Watcher) notifySubscribers() {
+	// Read notify events until the channel is closed
+	for range w.notify {
+		// Block on the ticker to rate limit
+		<-w.ticker.C
+
+		w.findAndSendEvents()
+	}
+}
+
+// findAndSendEvents will find all new events for each subscriber
+// and send them over the subscribers' channels
+func (w *Watcher) findAndSendEvents() {
 	// Obtain a write lock before doing anything so that
 	// we don't send duplicate events to the subscriber
 	w.mux.Lock()
