@@ -1,13 +1,14 @@
 package controller
 
 import (
-	"home-automation/libraries/go/errors"
-	"home-automation/libraries/go/response"
 	"net/http"
 
+	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/response"
+	"github.com/jakewright/home-automation/service.config/domain"
+	"github.com/jakewright/home-automation/service.config/service"
+
 	"github.com/gorilla/mux"
-	"home-automation/service.config/domain"
-	"home-automation/service.config/service"
 )
 
 // Controller exports the handlers for the endpoints

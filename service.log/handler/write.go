@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"home-automation/libraries/go/errors"
-	"home-automation/libraries/go/request"
-	"home-automation/libraries/go/response"
-	"home-automation/libraries/go/slog"
 	"net/http"
 	"time"
+
+	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/request"
+	"github.com/jakewright/home-automation/libraries/go/response"
+	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
 type writeRequest struct {

@@ -3,15 +3,16 @@ package bootstrap
 import (
 	"context"
 	"fmt"
-	"home-automation/libraries/go/api"
-	"home-automation/libraries/go/config"
-	"home-automation/libraries/go/firehose"
-	"home-automation/libraries/go/slog"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/jakewright/home-automation/libraries/go/api"
+	"github.com/jakewright/home-automation/libraries/go/config"
+	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/jakewright/home-automation/libraries/go/slog"
 
 	"github.com/go-redis/redis"
 )

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"home-automation/libraries/go/errors"
 	"log"
 	"net/http"
+
+	"github.com/jakewright/home-automation/libraries/go/errors"
 )
 
 type response struct {

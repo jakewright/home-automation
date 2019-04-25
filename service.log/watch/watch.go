@@ -2,14 +2,15 @@ package watch
 
 import (
 	"context"
-	"home-automation/libraries/go/errors"
-	"home-automation/libraries/go/slog"
 	"sync"
 	"time"
 
+	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/service.log/domain"
+	"github.com/jakewright/home-automation/service.log/repository"
+
 	"github.com/fsnotify/fsnotify"
-	"home-automation/service.log/domain"
-	"home-automation/service.log/repository"
 )
 
 // Watcher notifies subscribers of new events whenever the log file is written to

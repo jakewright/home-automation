@@ -3,9 +3,10 @@ package domain
 import (
 	"bytes"
 	"encoding/json"
-	"home-automation/libraries/go/slog"
 	"html/template"
 	"time"
+
+	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
 const jsonIndent = "    "

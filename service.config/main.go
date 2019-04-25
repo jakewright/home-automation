@@ -1,15 +1,15 @@
 package main
 
 import (
-	"home-automation/libraries/go/bootstrap"
-	"home-automation/libraries/go/config"
-	"home-automation/libraries/go/router"
-	"home-automation/libraries/go/slog"
 	"time"
 
-	"home-automation/service.config/controller"
-	"home-automation/service.config/domain"
-	"home-automation/service.config/service"
+	"github.com/jakewright/home-automation/libraries/go/bootstrap"
+	"github.com/jakewright/home-automation/libraries/go/config"
+	"github.com/jakewright/home-automation/libraries/go/router"
+	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/service.config/controller"
+	"github.com/jakewright/home-automation/service.config/domain"
+	"github.com/jakewright/home-automation/service.config/service"
 )
 
 func main() {

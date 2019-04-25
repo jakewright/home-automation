@@ -3,10 +3,11 @@ package router
 import (
 	"context"
 	"fmt"
-	"home-automation/libraries/go/config"
-	"home-automation/libraries/go/slog"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/jakewright/home-automation/libraries/go/config"
+	"github.com/jakewright/home-automation/libraries/go/slog"
 
 	"github.com/jakewright/muxinator"
 )

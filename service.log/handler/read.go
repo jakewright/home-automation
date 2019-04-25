@@ -4,22 +4,21 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"home-automation/libraries/go/errors"
-	"home-automation/libraries/go/request"
-	"home-automation/libraries/go/response"
-	"home-automation/libraries/go/slog"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"home-automation/service.log/repository"
-	"home-automation/service.log/watch"
+	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/request"
+	"github.com/jakewright/home-automation/libraries/go/response"
+	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/service.log/domain"
+	"github.com/jakewright/home-automation/service.log/repository"
+	"github.com/jakewright/home-automation/service.log/watch"
 
 	"github.com/gorilla/websocket"
-
-	"home-automation/service.log/domain"
 )
 
 const htmlTimeFormat = "2006-01-02T15:04"

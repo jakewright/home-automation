@@ -2,9 +2,10 @@ package domain
 
 import (
 	"fmt"
-	"home-automation/libraries/go/errors"
 	"reflect"
 	"sync"
+
+	"github.com/jakewright/home-automation/libraries/go/errors"
 
 	"gopkg.in/yaml.v2"
 )

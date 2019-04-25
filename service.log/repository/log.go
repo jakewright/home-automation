@@ -3,15 +3,15 @@ package repository
 import (
 	"bytes"
 	"fmt"
-	"home-automation/libraries/go/errors"
-	"home-automation/libraries/go/slog"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"home-automation/service.log/domain"
+	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/service.log/domain"
 )
 
 // LogRepository provides a query interface to the log file

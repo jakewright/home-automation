@@ -5,9 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"gotest.tools/assert"
-
 	"github.com/gorilla/mux"
+	"gotest.tools/assert"
 )
 
 func TestDecodeMux(t *testing.T) {

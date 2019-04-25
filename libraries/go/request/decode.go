@@ -2,10 +2,11 @@ package request
 
 import (
 	"encoding/json"
-	"home-automation/libraries/go/errors"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/jakewright/home-automation/libraries/go/errors"
 
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"

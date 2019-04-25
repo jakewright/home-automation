@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"home-automation/libraries/go/slog"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
 type Provider interface {

@@ -1,12 +1,12 @@
 package service
 
 import (
-	"home-automation/libraries/go/errors"
-	"home-automation/libraries/go/slog"
 	"io/ioutil"
 	"time"
 
-	"home-automation/service.config/domain"
+	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/service.config/domain"
 )
 
 // ConfigService handles loading of the config
