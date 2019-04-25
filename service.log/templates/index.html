@@ -131,6 +131,14 @@
                     console.log("Connected to WebSocket");
                 };
 
+                socket.onclose = function () {
+                  console.error("WebSocket connection closed");
+                };
+
+                socket.onerror = function (e) {
+                  console.error(e);
+                };
+
                 socket.onmessage = function (e) {
                     const data = JSON.parse(e.data);
                     console.log(data["UUID"]);
