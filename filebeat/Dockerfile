@@ -1,8 +1,9 @@
 FROM docker.elastic.co/beats/filebeat:7.0.0
-COPY --chown=root ./filebeat/filebeat.yml /usr/share/filebeat/filebeat.yml
+COPY ./filebeat/filebeat.yml /usr/share/filebeat/filebeat.yml
 
 # filebeat.yml can only be writable by the owner
 # https://www.elastic.co/guide/en/beats/libbeat/current/config-file-permissions.html
+RUN chown root:root /usr/share/filebeat/filebeat.yml
 RUN chmod go-w /usr/share/filebeat/filebeat.yml
 
 ENV strict.perms false
