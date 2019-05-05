@@ -17,7 +17,12 @@ func main() {
 
 	logDirectory := config.Get("logDirectory").String()
 	if logDirectory == "" {
-		slog.Panic("Log directory not set in config")
+		slog.Panic("logDirectory not set in config")
+	}
+
+	templateDirectory := config.Get("templateDirectory").String()
+	if templateDirectory == "" {
+		slog.Panic("templateDirectory not set in config")
 	}
 
 	logRepository := &repository.LogRepository{
@@ -29,8 +34,9 @@ func main() {
 	}
 
 	readHandler := handler.ReadHandler{
-		LogRepository: logRepository,
-		Watcher:       watcher,
+		TemplateDirectory: templateDirectory,
+		LogRepository:     logRepository,
+		Watcher:           watcher,
 	}
 
 	r := router.New()

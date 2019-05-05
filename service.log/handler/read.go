@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -24,8 +25,9 @@ import (
 const htmlTimeFormat = "2006-01-02T15:04"
 
 type ReadHandler struct {
-	LogRepository *repository.LogRepository
-	Watcher       *watch.Watcher
+	TemplateDirectory string
+	LogRepository     *repository.LogRepository
+	Watcher           *watch.Watcher
 }
 
 type readRequest struct {
@@ -117,7 +119,7 @@ func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
 		Reverse:         query.Reverse,
 	}
 
-	t, err := template.ParseFiles("service.log/templates/index.html")
+	t, err := template.ParseFiles(path.Join(h.TemplateDirectory, "index.html"))
 	if err != nil {
 		slog.Error("Failed to parse template: %v", err)
 		response.WriteJSON(w, err)
