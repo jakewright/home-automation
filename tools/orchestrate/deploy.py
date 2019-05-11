@@ -42,7 +42,7 @@ def get_python_systemd(service, config):
 Description={service}
 
 [Service]
-SyslogIdentifier=ha-{service-dashes}
+SyslogIdentifier=ha-{service_dashes}
 Environment=APP_CONFIG_FILE={service_root}/config/production.py
 Environment=PYTHONPATH=$PYTHONPATH:{project_root}/libraries/python:/usr/lib/python2.7/dist-packages
 Environment=FLASK_APP={service_root}/{flask_app_name}
