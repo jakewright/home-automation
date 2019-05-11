@@ -54,7 +54,7 @@ export default {
     },
 
     value() {
-      return this.device ? this.device.properties.rgb.value : this.initialValue;
+      return this.device ? this.device.state.rgb.value : this.initialValue;
     },
   },
 
