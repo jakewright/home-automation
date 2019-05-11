@@ -22,7 +22,13 @@ class HueLight extends Device {
 
   validate(state) {
     if ("brightness" in state) {
-      if (state.brightness < 0 || state.brightness > 254) {
+      const brightness = parseInt(state.brightness, 10);
+
+      if (isNaN(brightness)) {
+        return `Brightness is not a valid number '${state.brightness}'`;
+      }
+
+      if (brightness < 0 || brightness > 254) {
         return `Invalid brightness '${state.brightness}'`;
       }
 
@@ -44,7 +50,7 @@ class HueLight extends Device {
     }
 
     if ("brightness" in state) {
-      t.brightness = state.brightness;
+      t.brightness = parseInt(state.brightness, 10);
       t.power = state.brightness > 0;
     }
 
