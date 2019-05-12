@@ -20,10 +20,6 @@
           :key="propertyName"
           :class="propertyName"
         >
-          <label class="property-name-label">
-            {{ propertyName }}
-          </label>
-
           <template v-if="property.type === 'bool'">
             <ToggleControl
               :value="property.value"
@@ -33,6 +29,8 @@
 
           <template v-else-if="property.type === 'int' && property.interpolation === 'continuous'">
             <SliderControl
+              :name="propertyName"
+              :prettyName="property.prettyName"
               :value="property.value"
               :min="property.min"
               :max="property.max"

@@ -1,5 +1,16 @@
 <template>
   <form class="slider">
+    <label
+      class="property-name-label"
+      :for="name"
+    >
+      {{ prettyName ? prettyName : name }}
+    </label>
+
+    <output>
+      {{ currentValue }}
+    </output>
+
     <input
       v-model="currentValue"
       :min="min"
@@ -10,10 +21,6 @@
 
       @change="$emit('input', $event.target.value)"
     >
-
-    <output>
-      {{ currentValue }}
-    </output>
   </form>
 </template>
 
@@ -31,6 +38,12 @@ export default {
       type: String,
       required: false,
       default: 'slider',
+    },
+
+    prettyName: {
+      type: String,
+      required: false,
+      default: '',
     },
 
     min: {

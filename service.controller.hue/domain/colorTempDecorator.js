@@ -20,6 +20,7 @@ const colorTempDecorator = {
 
   state: {
     colorTemp: {
+      prettyName: "colour temperature",
       type: "int",
       min: CT_MIN,
       max: CT_MAX,
