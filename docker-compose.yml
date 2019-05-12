@@ -87,7 +87,10 @@ services:
       context: .
     image: home-automation-controller-infrared
     volumes:
-      - .:/go/src/home-automation
+      - ./service.controller.infrared:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./libraries/javascript:/usr/src/libraries/javascript
+      - /usr/src/libraries/javascript/node_modules
     ports:
       - 7008:80
     env_file:
@@ -169,4 +172,4 @@ services:
     ports:
       - 7000:8080
     env_file:
-     - ./.env
+      - ./.env
