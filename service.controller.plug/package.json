@@ -12,6 +12,7 @@
     "prettier": "^1.14.2"
   },
   "dependencies": {
-    "tplink-smarthome-api": "0.23.0"
+    "lodash": "^4.17.11",
+    "tplink-smarthome-api": "1.2.0"
   }
 }

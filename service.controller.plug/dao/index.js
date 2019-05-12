@@ -1,8 +1,7 @@
 const req = require("../../libraries/javascript/http");
 const tpLinkClient = require("../api/tpLinkClient");
-const Index = require("../domain/Plug");
-const energyDecorator = require("../domain/energyDecorator");
-const decorateDevice = require("../domain/decorateDevice");
+const Hs100 = require("../domain/Hs100");
+const Hs110 = require("../domain/Hs110");
 
 const {
   store,
@@ -11,6 +10,10 @@ const {
 
 const findById = identifier => {
   return store.findById(identifier);
+};
+
+const findAll = () => {
+  return store.findAll();
 };
 
 const fetchAllState = async () => {
@@ -56,13 +59,18 @@ const applyState = async (device, state) => {
 
 const instantiateDevice = header => {
   header.controllerName = "service.controller.plug";
-  let device = new Index(header);
 
   if (header.attributes.energy) {
-    decorateDevice(device, energyDecorator);
+    return new Hs110(header);
   }
 
-  return device;
+  return new Hs100(header);
 };
 
-exports = module.exports = { findById, fetchAllState, watch, applyState };
+exports = module.exports = {
+  findById,
+  findAll,
+  fetchAllState,
+  watch,
+  applyState
+};

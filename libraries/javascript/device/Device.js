@@ -26,7 +26,9 @@ class Device {
   }
 
   getStateProviderUrls() {
-    return this.stateProviders.map(ctrl => `${ctrl}/device/${this.identifier}`);
+    return this.stateProviders.map(
+      ctrl => `${ctrl}/provide-state/${this.identifier}`
+    );
   }
 
   applyState(state) {

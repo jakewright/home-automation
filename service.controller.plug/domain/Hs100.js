@@ -1,6 +1,6 @@
 const { Device } = require("../../libraries/javascript/device");
 
-class Plug extends Device {
+class Hs100 extends Device {
   constructor(config) {
     super(config);
 
@@ -20,4 +20,4 @@ class Plug extends Device {
   }
 }
 
-exports = module.exports = Plug;
+exports = module.exports = Hs100;
