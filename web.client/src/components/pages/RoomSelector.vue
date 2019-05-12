@@ -1,40 +1,44 @@
 <template>
-  <div
-    id="room-selector"
+  <BaseLayout
     class="room-selector"
   >
-    <h2>Rooms</h2>
-
-    <div v-if="loading">
-      Loading…
-    </div>
-
-    <ul
-      v-if="rooms.length > 0"
-      class="rooms"
-    >
-      <li
-        v-for="room in rooms"
-        :key="room.identifier"
-        class="room"
+    <template slot="heading">
+      Rooms
+    </template>
+    <template slot="content">
+      <ul
+        v-if="rooms.length > 0"
+        class="rooms"
       >
-        <RouterLink :to="{ name: 'room', params: { roomId: room.identifier } }">
-          {{ room.name }}
-        </RouterLink>
-      </li>
-    </ul>
+        <li
+          v-for="room in rooms"
+          :key="room.identifier"
+          class="room"
+        >
+          <RouterLink :to="{ name: 'room', params: { roomId: room.identifier } }">
+            {{ room.name }}
+          </RouterLink>
+        </li>
+      </ul>
 
-    <div v-if="fetchError">
-      <p>Failed to fetch rooms: {{ fetchError }}</p>
-    </div>
-  </div>
+      <div v-if="fetchError">
+        <p>Failed to fetch rooms: {{ fetchError }}</p>
+      </div>
+    </template>
+  </BaseLayout>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import BaseLayout from '../layouts/BaseLayout';
 
 export default {
   name: 'RoomSelector',
+
+  components: {
+    BaseLayout,
+  },
+
   data() {
     return {
       loading: true,

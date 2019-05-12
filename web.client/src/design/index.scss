@@ -18,16 +18,7 @@ body {
     font-size: 1.4rem;
 }
 
-#app {
-    >.grid-container {
-        >.grid-item {
-            padding: 20px;
-        }
-    }
-}
-
 .base-layout {
-
     @media screen and (max-width: $screen-md-min) {
         .slide-up-enter-active, .slide-up-leave-active {
             transition: all .3s ease;
@@ -37,7 +28,6 @@ body {
             transform: translateY(100%);
         }
     }
-
 }
 
 .nav-bar {
@@ -81,16 +71,7 @@ body {
     padding: 0 20px;
 }
 
-
-
 .room-selector {
-    grid-column: 1 / span 2;
-    background-color: $color-grey-dark;
-    height: 100%;
-
-    @media screen and (max-width: $screen-lg-min) {
-        grid-column: 1 / span 3;
-    }
 
     li.room {
         font-size: 2.1rem;
@@ -115,7 +96,6 @@ body {
     }
 }
 
-
 .main-container {
     grid-column: 3 / span 10;
 
@@ -123,7 +103,6 @@ body {
         grid-column: 4 / span 9;
     }
 }
-
 
 .device {
     position: relative;
@@ -145,11 +124,9 @@ body {
     }
 }
 
-
 .color-picker {
     .color-circle {
         max-width: 500px;
         margin: 0 auto;
     }
 }
-

@@ -1,7 +1,6 @@
 <template>
   <div class="grid-container full-height">
     <RoomSelector class="grid-item room-selector" />
-    <RouterView class="main-container grid-item" />
   </div>
 </template>
 

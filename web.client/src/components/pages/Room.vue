@@ -1,6 +1,6 @@
 <template>
   <BaseLayout
-    :done="false"
+    :back="true"
     class="room grid-container"
   >
     <template slot="heading">

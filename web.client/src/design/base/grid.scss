@@ -6,13 +6,14 @@
         display: block;
 
         // When the page is mobile-sized, make each column max width and browser-height
-        .grid-item {
+        .side-column {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             height: 100vh;
             overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
         }
     }
 
