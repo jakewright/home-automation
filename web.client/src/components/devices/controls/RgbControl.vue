@@ -1,11 +1,9 @@
 <template>
   <div class="rgb-control">
-    <input
-      ref="input"
-      :value="value"
-      type="color"
-      @click.prevent="focusColorCircle"
-    >
+    <div
+      class="color"
+      @click="focusColorCircle"
+      :style="{ backgroundColor: value }"></div>
   </div>
 </template>
 
@@ -34,8 +32,17 @@ export default {
       this.$router.push({ name: 'rgb', params: { deviceId: this.deviceId } });
     },
   },
-
-
 };
 
 </script>
+
+<style scoped>
+  .color {
+    margin: 10px 0;
+    width: 60px;
+    height: 20px;
+    border: 2px solid #FFF;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+</style>
