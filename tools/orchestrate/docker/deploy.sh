@@ -26,7 +26,7 @@ ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNA
     # Build and push the Docker image
     # Escape the variables that are defined within the SSH context, otherwise
     # the shell will try to replace them with variables defined locally.
-    docker build -f ./$SERVICE/\$DOCKER_FILE -t localhost:6000/jakewright/home-automation-$DASHES:\$HASH --rm .
+    docker build -f ./$SERVICE/\$DOCKER_FILE -t localhost:6000/jakewright/home-automation-$DASHES:\$HASH --rm --pull .
     docker push localhost:6000/jakewright/home-automation-$DASHES:\$HASH
 
     echo "Pulling new image..."
