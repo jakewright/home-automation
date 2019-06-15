@@ -64,7 +64,7 @@ class DeviceList(Resource):
 
         parser.add_argument('identifier', required=True, location='json')
         parser.add_argument('name', required=True, location='json')
-        parser.add_argument('device_type', required=True, location='json')
+        parser.add_argument('type', required=True, location='json')
         parser.add_argument('controller_name', required=True, location='json')
         parser.add_argument('room_identifier', required=True, location='json')
 
