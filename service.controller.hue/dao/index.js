@@ -4,10 +4,7 @@ const colorDecorator = require("../domain/colorDecorator");
 const colorTempDecorator = require("../domain/colorTempDecorator");
 const rgbDecorator = require("../domain/rgbDecorator");
 const decorateDevice = require("../domain/decorateDevice");
-const {
-  store,
-  updateDependencies
-} = require("../../libraries/javascript/device");
+const { store } = require("../../libraries/javascript/device");
 const hueClient = require("../api/hueClient");
 
 const findById = identifier => {
@@ -45,9 +42,6 @@ const watch = interval => {
 };
 
 const applyState = async (device, state) => {
-  // Update dependencies
-  await updateDependencies(state, device.dependsOn);
-
   // Update light
   const newState = await hueClient.applyState(device.attributes.hueId, state);
 

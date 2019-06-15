@@ -44,7 +44,7 @@ const watch = interval => {
 
 const applyState = async (device, state) => {
   // Update dependencies
-  await updateDependencies(state, device.dependsOn);
+  // await updateDependencies(state, device.dependsOn);
 
   // Update plug
   const success = await tpLinkClient.applyState(device.attributes.host, state);
