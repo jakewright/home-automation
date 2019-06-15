@@ -8,7 +8,7 @@ apis:
       - name: retry
         enabled: true
         config:
-          attempts: 10
+          attempts: 1
 
   service.registry.device:
     name: Device Registry
@@ -19,7 +19,7 @@ apis:
       - name: retry
         enabled: true
         config:
-          attempts: 10
+          attempts: 1
 
   service.controller.dmx:
     name: DMX Controller
@@ -30,7 +30,7 @@ apis:
       - name: retry
         enabled: true
         config:
-          attempts: 10
+          attempts: 1
 
   service.controller.hue:
     name: Hue Controller
@@ -41,7 +41,7 @@ apis:
       - name: retry
         enabled: true
         config:
-          attempts: 10
+          attempts: 1
 
   service.controller.infrared:
     name: Infrared Controller
@@ -52,7 +52,7 @@ apis:
       - name: retry
         enabled: true
         config:
-          attempts: 10
+          attempts: 1
 
   service.controller.plug:
     name: TP-Link Plug Controller
@@ -63,4 +63,4 @@ apis:
       - name: retry
         enabled: true
         config:
-          attempts: 10
+          attempts: 1
