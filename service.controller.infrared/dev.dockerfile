@@ -3,6 +3,10 @@ FROM node:11
 # Install nodemon
 RUN npm install -g nodemon
 
+# Create a dummy irsend file for the service to shell out to
+RUN touch /usr/bin/irsend
+RUN chmod +x /usr/bin/irsend
+
 # Add the libraries
 RUN mkdir -p /usr/src/libraries/javascript
 COPY ./libraries/javascript /usr/src/libraries/javascript
