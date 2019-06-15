@@ -30,7 +30,7 @@
           <template v-else-if="property.type === 'int' && property.interpolation === 'continuous'">
             <SliderControl
               :name="propertyName"
-              :prettyName="property.prettyName"
+              :pretty-name="property.prettyName"
               :value="property.value"
               :min="property.min"
               :max="property.max"

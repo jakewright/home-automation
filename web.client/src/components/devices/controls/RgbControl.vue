@@ -2,8 +2,9 @@
   <div class="rgb-control">
     <div
       class="color"
+      :style="{ backgroundColor: value }"
       @click="focusColorCircle"
-      :style="{ backgroundColor: value }"></div>
+    />
   </div>
 </template>
 
