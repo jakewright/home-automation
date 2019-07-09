@@ -18,17 +18,20 @@ def docker(service, status, config):
 def systemd(service, status, config):
     script = dir_path + '/systemd/status.sh' if status else dir_path + '/systemd/deploy.sh'
 
-    if config['Language'] != 'python':
-        print('Unsupported language')
-        return 1
-
     new_env = os.environ.copy()
     new_env["SERVICE"] = service
     new_env["DEPLOYMENT_TARGET"] = config["DeploymentTarget"]
     new_env["TARGET_USERNAME"] = config["TargetUsername"]
     new_env["TARGET_DIRECTORY"] = config["TargetDirectory"]
-    new_env["SYSTEMD_SERVICE"] = get_python_systemd(service, config)
     new_env["LANG"] = config["Language"]
+
+    if config['Language'] == 'python':
+        new_env["SYSTEMD_SERVICE"] = get_python_systemd(service, config)
+    elif config['Language'] == 'node':
+        new_env["SYSTEMD_SERVICE"] = get_node_systemd(service, config)
+    else:
+        print('Unsupported language')
+        return 1
 
     return subprocess.run(script, shell=True, env=new_env).returncode
 
@@ -55,6 +58,26 @@ ExecStart={service_root}/env/bin/flask run
 [Install]
 WantedBy=multi-user.target
 '''.format(service=service, service_dashes=service_dashes, project_root=project_root, service_root=service_root, flask_app_name=config['FlaskAppName'], port=config['Port'])
+
+
+def get_node_systemd(service, config):
+    service_dashes = service.replace(".", "-")
+    project_root = config['TargetDirectory'] + '/src'
+    service_root =  project_root + '/' + service
+    return '''\
+[Unit]
+Description={service}
+
+[Service]
+SyslogIdentifier=ha-{service_dashes}
+WorkingDirectory={service_root}
+Environment=NODE_ENV=production
+Type=idle
+ExecStart=/usr/local/bin/npm run start
+
+[Install]
+WantedBy=multi-user.target
+'''.format(service=service, service_dashes=service_dashes, service_root=service_root)
 
 
 def run():
