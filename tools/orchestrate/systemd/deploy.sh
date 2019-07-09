@@ -21,7 +21,9 @@ ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNA
     git checkout master
     git pull
 
-    sudo systemctl stop "$DASHES".service
+    # The or true will suppress the non-zero exit code if the service does not exist
+    # Note that this will still print an error to the console though
+    sudo systemctl stop "$DASHES".service || true
 
     cd $SERVICE
     bash ../tools/orchestrate/systemd/$LANG.sh
