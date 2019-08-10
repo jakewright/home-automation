@@ -89,6 +89,13 @@ Note that the `cp` commands will not overwrite the existing directories. The con
 
 Now `node -v` should output `v8.1.0`.
 
+### Clone the repository
+
+```
+cd /home/pi/
+mkdir home-automation
+```
+
 
 ### Docker
 
