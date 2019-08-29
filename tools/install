@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Go to the root home-automation directory
+cd "$(dirname "$0")/.."
+
+printf "Installing tools...\n"
+
+printf "run "
+go install -ldflags "-X main.BuildDirectory=$(pwd)" ./tools/run
+printf "\xE2\x9C\x94\n" # tick
