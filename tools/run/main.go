@@ -34,6 +34,8 @@ func main() {
 		help()
 	case "stop":
 		stop(os.Args[2:])
+	case "restart":
+		restart(os.Args[2:])
 	default:
 		start(os.Args[1:])
 	}
@@ -68,6 +70,11 @@ func stop(args []string) {
 	}
 
 	run("docker-compose", composeArgs)
+}
+
+func restart(args[]string) {
+	stop(args)
+	start(args)
 }
 
 func getServices(args []string) []string {
