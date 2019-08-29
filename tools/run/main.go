@@ -16,7 +16,7 @@ import (
 // BuildDirectory is injected at compile time
 var BuildDirectory string
 
-const usage = "Usage: run [stop] core log service.name"
+const usage = "Usage: run [stop|restart] core log service.name"
 
 func main() {
 	if cwd, err := os.Getwd(); err != nil {
