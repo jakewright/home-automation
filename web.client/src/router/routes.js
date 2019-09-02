@@ -1,4 +1,4 @@
-import Home from "../components/pages/Home";
+import Home from "../pages/home";
 import Room from "../components/pages/Room";
 import ColorPicker from "../components/pages/ColorPicker";
 
