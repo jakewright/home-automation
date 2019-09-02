@@ -30,6 +30,7 @@ h2 {
 #home .room-selector {
     width: 100%;
     overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
 
     .scroller {
        width: 1000px;
