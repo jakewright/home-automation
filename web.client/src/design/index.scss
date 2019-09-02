@@ -36,36 +36,40 @@ h2 {
        width: 1000px;
     }
 
-    .room .box {
-        display: table;
-        position: relative;
-        float: left;
+    &::-webkit-scrollbar {
+        display: none;
+    }
 
-        margin-right: 10px;
-        padding: 10px;
-        width: 120px;
-        height: 52px;
-        border-radius: 10px;
+    .room {
+        .box {
+            display: table;
+            position: relative;
+            float: left;
 
-        color: $color-white;
+            margin-right: 10px;
+            padding: 10px;
+            width: 120px;
+            height: 52px;
+            border-radius: 10px;
 
-        .text-container {
-            display: table-cell;
-            height: 100%;
-            vertical-align: bottom;
+            color: $color-white;
+
+            .text-container {
+                display: table-cell;
+                height: 100%;
+                vertical-align: bottom;
+            }
         }
-    }
 
-    .room:nth-child(3n - 2) .box {
-        background: linear-gradient(135deg, $color-purple 0%, $color-blue 100%);
-    }
-
-    .room:nth-child(3n - 1) .box {
-        background: linear-gradient(135deg, $color-red 0%, $color-amber 100%);
-    }
-
-    .room:nth-child(3n) .box {
-        background: linear-gradient(135deg, $color-green 0%, $color-amber 100%);
+        &:nth-child(3n - 2) .box {
+            background: linear-gradient(135deg, $color-purple 0%, $color-blue 100%);
+        }
+        &:nth-child(3n - 1) .box {
+            background: linear-gradient(135deg, $color-red 0%, $color-amber 100%);
+        }
+        &:nth-child(3n) .box {
+            background: linear-gradient(135deg, $color-green 0%, $color-amber 100%);
+        }
     }
 }
 
