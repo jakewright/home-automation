@@ -4,6 +4,8 @@
 @import 'base/grid.scss';
 @import 'base/buttons.scss';
 
+@import 'pages/home.scss';
+
 html {
     font-size: 62.5%;
 }
@@ -12,9 +14,9 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: $color-gray-dark;
+    color: $color-text;
     font-size: 1.7rem;
-    margin: 20px;
+    margin: $margin-body;
 }
 
 h1 {
@@ -25,52 +27,6 @@ h1 {
 h2 {
     font-size: 2.4rem;
     font-weight: 500; // Medium
-}
-
-#home .room-selector {
-    width: 100%;
-    overflow-x: scroll;
-    -webkit-overflow-scrolling: touch;
-
-    .scroller {
-       width: 1000px;
-    }
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
-
-    .room {
-        .box {
-            display: table;
-            position: relative;
-            float: left;
-
-            margin-right: 10px;
-            padding: 10px;
-            width: 120px;
-            height: 52px;
-            border-radius: 10px;
-
-            color: $color-white;
-
-            .text-container {
-                display: table-cell;
-                height: 100%;
-                vertical-align: bottom;
-            }
-        }
-
-        &:nth-child(3n - 2) .box {
-            background: linear-gradient(135deg, $color-purple 0%, $color-blue 100%);
-        }
-        &:nth-child(3n - 1) .box {
-            background: linear-gradient(135deg, $color-red 0%, $color-amber 100%);
-        }
-        &:nth-child(3n) .box {
-            background: linear-gradient(135deg, $color-green 0%, $color-amber 100%);
-        }
-    }
 }
 
 //.base-layout {

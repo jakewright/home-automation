@@ -1,2 +1,25 @@
-@import 'colors.scss';
 @import 'breakpoints.scss';
+
+$spacing-sm: 10px;
+$spacing-md: 20px;
+
+$margin-body: $spacing-md;
+$padding-element: $spacing-sm;
+$spacing-element: $spacing-sm;
+
+$color-blue: #2D9CDB;
+$color-purple: #9B51E0;
+$color-green: #6FCF97;
+$color-yellow: #F2C94C;
+$color-orange: #F2994A;
+$color-red: #EB5757;
+
+$color-black: #000000;
+$color-gray-dark: #3B3B3B;
+$color-gray: #696969;
+$color-gray-light: #C6C6C6;
+$color-gray-lighter: #DDDDDD;
+$color-white: #FFFFFF;
+
+$color-text: $color-gray-dark;
+$color-highlight-primary: $color-green;
