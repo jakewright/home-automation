@@ -3,7 +3,7 @@ import json
 from device_registry import app
 
 
-def add_device(identifier, name, device_type, controller_name,
+def add_device(identifier, name, type, kind, controller_name,
                room_identifier):
     """Helper function to post a new device to the registry and return the response."""
 
@@ -15,7 +15,8 @@ def add_device(identifier, name, device_type, controller_name,
             json={
                 'identifier': identifier,
                 'name': name,
-                'device_type': device_type,
+                'type': type,
+                'kind': kind,
                 'controller_name': controller_name,
                 'room_identifier': room_identifier,
             })
