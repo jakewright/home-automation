@@ -9,6 +9,18 @@
       {{ name }}
     </template>
     <template slot="content">
+
+      <div class="tabs">
+        <h2><a href="">Lights</a></h2>
+        <h2><a href="">Devices</a></h2>
+      </div>
+
+      <Lights :headers="room.deviceHeaders" />
+
+      <div class="devices">
+
+      </div>
+
       <div
         v-for="deviceHeader in room.deviceHeaders"
         :key="deviceHeader.identifier"
@@ -29,11 +41,13 @@
   import Device from "../../components/devices/Device";
   import Store from "../../store";
   import NotFound from "../404/index";
+  import Lights from "./Lights";
 
   export default {
     name: "Room",
 
     components: {
+      Lights,
       NotFound,
       Base, Device
     },

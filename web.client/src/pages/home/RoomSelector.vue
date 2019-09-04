@@ -11,7 +11,6 @@
           <div class="text-container">{{ room.name }}</div>
         </div>
       </RouterLink>
-      <div class="margin"></div>
     </div>
   </div>
 </template>

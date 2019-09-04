@@ -2,6 +2,7 @@
 
 $spacing-sm: 10px;
 $spacing-md: 20px;
+$spacing-lg: 30px;
 
 $margin-body: $spacing-md;
 $padding-element: $spacing-sm;
@@ -17,9 +18,10 @@ $color-red: #EB5757;
 $color-black: #000000;
 $color-gray-dark: #3B3B3B;
 $color-gray: #696969;
-$color-gray-light: #C6C6C6;
-$color-gray-lighter: #DDDDDD;
+$color-gray-light: #AAAAAA;
+$color-gray-lighter: #EEEEEE;
 $color-white: #FFFFFF;
 
 $color-text: $color-gray-dark;
+$color-text-fade: $color-gray-light;
 $color-highlight-primary: $color-green;

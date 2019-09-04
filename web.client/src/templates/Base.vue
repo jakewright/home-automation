@@ -32,9 +32,9 @@
     name: "Base",
 
     props: {
-      // Whether to show a "back" button in the nav bar
+      // The page the back button should link to
       back: {
-        type: Boolean,
+        type: String,
         required: false,
         default: false
       },

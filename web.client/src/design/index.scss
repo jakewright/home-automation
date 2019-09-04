@@ -29,6 +29,18 @@ h2 {
     font-weight: 500; // Medium
 }
 
+.tabs h2 {
+    display: inline;
+    margin-right: $spacing-lg;
+
+    a.active {
+        color: $color-text;
+    }
+    a {
+        color: $color-text-fade;
+    }
+}
+
 //.base-layout {
 //    @media screen and (max-width: $screen-md-min) {
 //        .slide-up-enter-active, .slide-up-leave-active {

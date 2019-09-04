@@ -2,21 +2,25 @@
   width: calc(100% + #{2 * $margin-body});
   height: calc(52px + #{2 * $padding-element}); // Reserve the height while the rooms load
   margin-left: -$margin-body;
-  overflow-x: scroll;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 
   &::-webkit-scrollbar {
     display: none;
   }
 
   .scroller {
-    width: 1000px;
+    display: flex;
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+
+    // Hide the scroll bar
+    height: calc(100% + 2rem);
+    overflow-y: hidden;
 
     a {
+      display: flex;
       .box {
-        display: table;
-        position: relative;
-        float: left;
+        display: flex;
 
         margin-right: $spacing-element;
         padding: $padding-element;
@@ -27,14 +31,16 @@
         color: $color-white;
 
         .text-container {
-          display: table-cell;
-          height: 100%;
-          vertical-align: bottom;
+          align-self: flex-end;
         }
       }
 
       &:first-child .box {
         margin-left: $margin-body;
+      }
+
+      &:last-child .box {
+        margin-right: $margin-body;
       }
 
       &:nth-child(3n - 2) .box {
@@ -48,12 +54,6 @@
       &:nth-child(3n) .box {
         background: linear-gradient(135deg, $color-green 0%, $color-yellow 100%);
       }
-    }
-
-    .margin {
-      float: left;
-      width: calc(#{$margin-body} - #{$spacing-element});
-      height: 10px;
     }
   }
 }
