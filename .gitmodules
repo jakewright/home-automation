@@ -1,0 +1,3 @@
+[submodule "private"]
+	path = private
+	url = git@github.com:jakewright/home-automation-private.git
