@@ -16,7 +16,8 @@
     {
         "identifier": "id1",
         "name": "Device 1",
-        "device_type": "switch",
+        "type": "hs100",
+        "kind": "switch",
         "controller_name": "controller-1",
         "room": {
             "identifier": "bedroom",
@@ -26,7 +27,8 @@
     {
         "identifier": "id2",
         "name": "Device 2",
-        "device_type": "bulb",
+        "type": "huelight",
+        "kind": "lamp",
         "controller_name": "controller-2",
         "room": {
             "identifier": "kitchen",
@@ -45,7 +47,8 @@
 
 - `"identifier":string` a globally unique identifier for this device
 - `"name":string` a friendly name for the device
-- `"device_type":string` the type of the device as understood by the client
+- `"type":string` the type of the device as understood by the client e.g. hs100
+- `"kind":string` the kind of device e.g. lamp
 - `"room_identifier":string` the globally unique identifier of the room
 - `"controller_name":string` the name of the device's controller
 - `"attributes":object` arbitrary controller-specific information about the device
@@ -70,7 +73,8 @@ Returns the new device if successful.
 {
     "identifier": "id1",
     "name": "Device 1",
-    "device_type": "switch",
+    "type": "hs100",
+    "kind": "switch",
     "controller_name": "controller-2",
     "room": {
         "identifier": "bedroom",
@@ -93,7 +97,8 @@ Returns the new device if successful.
 {
     "identifier": "id1",
     "name": "Device 1",
-    "device_type": "switch",
+    "type": "hs100",
+    "kind": "switch",
     "controller_name": "controller-1",
     "room": {
         "identifier": "bedroom",
@@ -130,7 +135,8 @@ Returns the new device if successful.
             {
                 "identifier": "lamp1",
                 "name": "Lamp",
-                "device_type": "bulb",
+                "type": "huelight",
+                "kind": "lamp",
                 "controller_name": "controller-1"
             }
         ]
@@ -142,7 +148,8 @@ Returns the new device if successful.
             {
                 "identifier": "tv2",
                 "name": "TV",
-                "device_type": "switch",
+                "type": "philips48",
+                "kind": "tv",
                 "controller_name": "controller-2"
             }
         ]
@@ -195,7 +202,8 @@ Returns the new room is created successfully.
         {
             "identifier": "id1",
             "name": "Device 1",
-            "device_type": "switch",
+            "type": "hs100",
+            "kind": "switch",
             "controller_name": "controller-1"
         }
     ]

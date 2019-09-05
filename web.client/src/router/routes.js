@@ -1,5 +1,6 @@
-import Home from "../components/pages/Home";
-import Room from "../components/pages/Room";
+import Home from "../pages/home";
+import Room from "../pages/room";
+import NotFound from "../pages/404";
 import ColorPicker from "../components/pages/ColorPicker";
 
 export default [
@@ -19,5 +20,10 @@ export default [
         component: ColorPicker
       }
     ]
+  },
+  {
+    path: '*',
+    name: "not-found",
+    component: NotFound,
   }
 ];

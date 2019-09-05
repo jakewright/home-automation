@@ -1,0 +1,59 @@
+#home .room-selector {
+  width: calc(100% + #{2 * $margin-body});
+  height: calc(52px + #{2 * $padding-element}); // Reserve the height while the rooms load
+  margin-left: -$margin-body;
+  overflow: hidden;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scroller {
+    display: flex;
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+
+    // Hide the scroll bar
+    height: calc(100% + 2rem);
+    overflow-y: hidden;
+
+    a {
+      display: flex;
+      .box {
+        display: flex;
+
+        margin-right: $spacing-element;
+        padding: $padding-element;
+        width: 120px;
+        height: 52px;
+        border-radius: 10px;
+
+        color: $color-white;
+
+        .text-container {
+          align-self: flex-end;
+        }
+      }
+
+      &:first-child .box {
+        margin-left: $margin-body;
+      }
+
+      &:last-child .box {
+        margin-right: $margin-body;
+      }
+
+      &:nth-child(3n - 2) .box {
+        background: linear-gradient(135deg, $color-purple 0%, $color-blue 100%);
+      }
+
+      &:nth-child(3n - 1) .box {
+        background: linear-gradient(135deg, $color-red 0%, $color-yellow 100%);
+      }
+
+      &:nth-child(3n) .box {
+        background: linear-gradient(135deg, $color-green 0%, $color-yellow 100%);
+      }
+    }
+  }
+}

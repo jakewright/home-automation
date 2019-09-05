@@ -30,7 +30,8 @@ class TestDevice(unittest.TestCase):
         device = {
             'identifier': 'test',
             'name': 'Test',
-            'device_type': 'switch',
+            'type': 'hs100',
+            'kind': 'switch',
             'depends_on': None,
             'controller_name': 'controller-1',
             'room': {
@@ -41,7 +42,7 @@ class TestDevice(unittest.TestCase):
         }
 
         # Add the device to the registry
-        add_device(device['identifier'], device['name'], device['device_type'],
+        add_device(device['identifier'], device['name'], device['type'], device['kind'],
                    device['controller_name'], device['room']['identifier'])
 
         # Ask the registry for the device's details
@@ -60,7 +61,7 @@ class TestDevice(unittest.TestCase):
 
         # Add a device
         add_room('bedroom', "Jake's Bedroom")
-        add_device('test-del', 'name', 'type', 'controller', 'bedroom')
+        add_device('test-del', 'name', 'type', 'kind', 'controller', 'bedroom')
 
         # Try to get the device
         response = self.app.get('/device/test-del')

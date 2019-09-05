@@ -29,7 +29,8 @@ class TestRoom(unittest.TestCase):
         device1 = {
             'identifier': 'device1',
             'name': 'Test Device 1',
-            'device_type': 'switch',
+            'type': 'hs100',
+            'kind': 'switch'
             'depends_on': None,
             'controller_name': 'controller-1',
             'state_providers': None,
@@ -38,7 +39,8 @@ class TestRoom(unittest.TestCase):
         device2 = {
             'identifier': 'device2',
             'name': 'Test Device 2',
-            'device_type': 'switch',
+            'type': 'hs100',
+            'kind': 'switch',
             'depends_on': None,
             'controller_name': 'controller-1',
             'state_providers': None,
@@ -54,7 +56,8 @@ class TestRoom(unittest.TestCase):
         add_device(
             device1['identifier'],
             device1['name'],
-            device1['device_type'],
+            device1['type'],
+            device1['kind'],
             device1['controller_name'],
             room['identifier'],
         )
@@ -62,7 +65,8 @@ class TestRoom(unittest.TestCase):
         add_device(
             device2['identifier'],
             device2['name'],
-            device2['device_type'],
+            device2['type'],
+            device2['kind'],
             device2['controller_name'],
             room['identifier'],
         )
