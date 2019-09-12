@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jakewright/home-automation/libraries/go/slog"
+
 	"github.com/jakewright/home-automation/libraries/go/errors"
 )
 
@@ -41,16 +43,16 @@ func WriteJSON(w http.ResponseWriter, data interface{}) {
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
+	fmt.Println(payload)
 	rsp, err := json.Marshal(&payload)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(err)
+		slog.Error("Failed to marshal response payload: %v", err)
 		return
 	}
 
 	w.WriteHeader(status)
 	if _, err := fmt.Fprint(w, string(rsp)); err != nil {
-		log.Println("Failed to write response", err)
+		slog.Error("Failed to write response: %v", err)
 	}
 }

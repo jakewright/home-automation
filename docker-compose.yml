@@ -113,6 +113,19 @@ services:
     env_file:
       - ./.env
 
+  service.device-registry:
+    build:
+      dockerfile: service.device-registry/dev.dockerfile
+      context: .
+    image: home-automation-device-registry
+    volumes:
+      - .:/go/src/github.com/jakewright/home-automation
+      - /go/src/github.com/jakewright/home-automation/vendor
+    ports:
+      - 7001:80
+    env_file:
+      - ./.env
+
   service.event-bus:
     build:
       dockerfile: ./service.event-bus/dev.dockerfile
@@ -153,7 +166,7 @@ services:
       - ./service.registry.device:/usr/src/app
       - ./libraries/python:/root/.local/lib/python3.5/site-packages
     ports:
-      - 7001:80
+      - 7099:80
     environment:
       APP_CONFIG_FILE: /usr/src/app/config/development.py
     env_file:

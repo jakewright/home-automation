@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
@@ -122,7 +123,7 @@ func (v Value) String(defaults ...string) string {
 // Bool converts the raw to a bool and panics if it cannot be represented.
 // The first default is returned if raw is not defined.
 func (v Value) Bool(defaults ...bool) bool {
-	// Return the first default raw is undefined
+	// Return the first default if the raw is undefined
 	if v.raw == nil {
 		// Make sure there's at least one thing in the list
 		defaults = append(defaults, false)
@@ -145,4 +146,26 @@ func (v Value) Bool(defaults ...bool) bool {
 	}
 
 	return false
+}
+
+func (v Value) Duration(defaults ...time.Duration) time.Duration {
+	// Return the first default if raw is undefined
+	if v.raw == nil {
+		// Make sure there's at least one thing in the list
+		defaults = append(defaults, 0)
+		return defaults[0]
+	}
+
+	switch t := v.raw.(type) {
+	case string:
+		d, err := time.ParseDuration(t)
+		if err != nil {
+			slog.Panic("Failed to parse duration: %v", err)
+		}
+		return d
+	default:
+		slog.Panic("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
+	}
+
+	return 0
 }
