@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jinzhu/copier"
+
 	"github.com/jakewright/home-automation/service.device-registry/domain"
 )
 
@@ -31,7 +33,11 @@ func (r *DeviceRepository) FindAll() ([]*domain.Device, error) {
 
 	var devices []*domain.Device
 	for _, device := range r.devices {
-		devices = append(devices, device)
+		out := &domain.Device{}
+		if err := copier.Copy(&out, device); err != nil {
+			return nil, err
+		}
+		devices = append(devices, out)
 	}
 
 	return devices, nil
@@ -45,7 +51,12 @@ func (r *DeviceRepository) Find(deviceID string) (*domain.Device, error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	return r.devices[deviceID], nil
+	out := &domain.Device{}
+	if err := copier.Copy(out, r.devices[deviceID]); err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func (r *DeviceRepository) FindByController(controllerName string) ([]*domain.Device, error) {
@@ -59,7 +70,11 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*domain.De
 	var devices []*domain.Device
 	for _, device := range r.devices {
 		if device.ControllerName == controllerName {
-			devices = append(devices, device)
+			out := &domain.Device{}
+			if err := copier.Copy(out, device); err != nil {
+				return nil, err
+			}
+			devices = append(devices, out)
 		}
 	}
 
@@ -77,7 +92,11 @@ func (r *DeviceRepository) FindByRoom(roomID string) ([]*domain.Device, error) {
 	var devices []*domain.Device
 	for _, device := range r.devices {
 		if device.RoomID == roomID {
-			devices = append(devices, device)
+			out := &domain.Device{}
+			if err := copier.Copy(out, device); err != nil {
+				return nil, err
+			}
+			devices = append(devices, out)
 		}
 	}
 

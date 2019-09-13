@@ -43,7 +43,7 @@ func WriteJSON(w http.ResponseWriter, data interface{}) {
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	fmt.Println(payload)
+
 	rsp, err := json.Marshal(&payload)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jakewright/home-automation/service.device-registry/domain"
+	"github.com/jinzhu/copier"
 )
 
 type RoomRepository struct {
@@ -31,7 +32,11 @@ func (r *RoomRepository) FindAll() ([]*domain.Room, error) {
 
 	var rooms []*domain.Room
 	for _, room := range r.rooms {
-		rooms = append(rooms, room)
+		out := &domain.Room{}
+		if err := copier.Copy(out, room); err != nil {
+			return nil, err
+		}
+		rooms = append(rooms, out)
 	}
 
 	return rooms, nil
@@ -42,7 +47,15 @@ func (r *RoomRepository) Find(id string) (*domain.Room, error) {
 		return nil, err
 	}
 
-	return r.rooms[id], nil
+	r.lock.RLock()
+	defer r.lock.RUnlock()
+
+	out := &domain.Room{}
+	if err := copier.Copy(out, r.rooms[id]); err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func (r *RoomRepository) reload() error {
