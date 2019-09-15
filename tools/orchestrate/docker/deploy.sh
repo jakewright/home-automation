@@ -13,6 +13,7 @@ ssh -t -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null "$TARGET_USERNA
     echo "Building $SERVICE..."
     cd $TARGET_DIRECTORY/src
     git pull
+    git submodule update
 
     # Get the current git commit hash to use as the image label
     HASH=\$(git log --pretty=format:'%h' -n 1)
