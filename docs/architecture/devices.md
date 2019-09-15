@@ -1,6 +1,6 @@
 # Devices
 
-Devices are registered with `service.registry.device`. 
+Devices are registered with `service.device-registry`. 
 Various metadata about the devices are stored here, including which controller controls them. This allows the frontend to discover controllers.
 
  

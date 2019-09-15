@@ -17,7 +17,7 @@ const findAll = () => {
 };
 
 const fetchAllState = async () => {
-  (await req.get("service.registry.device/devices", {
+  (await req.get("service.device-registry/devices", {
     controllerName: "service.controller.plug"
   }))
     .map(instantiateDevice)

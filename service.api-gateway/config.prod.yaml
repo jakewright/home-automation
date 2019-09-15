@@ -10,17 +10,6 @@ apis:
         config:
           attempts: 3
 
-  service.registry.device:
-    name: Device Registry
-    prefix: service.registry.device
-    upstream_url: http://192.168.1.100:7001
-    allow_cross_origin: true
-    plugins:
-      - name: retry
-        enabled: true
-        config:
-          attempts: 3
-
   service.controller.dmx:
     name: DMX Controller
     prefix: service.controller.dmx
@@ -58,6 +47,17 @@ apis:
     name: TP-Link Plug Controller
     prefix: service.controller.plug
     upstream_url: http://192.168.1.100:7009
+    allow_cross_origin: true
+    plugins:
+      - name: retry
+        enabled: true
+        config:
+          attempts: 3
+
+  service.device-registry:
+    name: Device Registry
+    prefix: service.device-registry
+    upstream_url: http://192.168.1.100:7001
     allow_cross_origin: true
     plugins:
       - name: retry

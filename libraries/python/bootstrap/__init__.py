@@ -57,14 +57,14 @@ class ApiClient:
 
     def get_devices(self, controller_name):
         r = requests.get(
-            self.api_gateway + '/service.registry.device/devices',
+            self.api_gateway + '/service.device-registry/devices',
             params={
                 'controller_name': controller_name,
             })
 
         if r.status_code != 200:
             raise Exception(
-                'service.registry.device returned status code of {}, expected 200'.
+                'service.device-registry returned status code of {}, expected 200'.
                 format(r.status_code))
 
         return r.json()['data']
