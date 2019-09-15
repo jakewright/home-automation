@@ -11,4 +11,4 @@ FROM alpine:latest
 WORKDIR /root/
 COPY --from=0 /go/bin/service.device-registry .
 COPY ./private/devices/prod.json /data/config.json
-CMD ["./service.log"]
+CMD ["./service.device-registry"]
