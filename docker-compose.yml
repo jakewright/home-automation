@@ -41,7 +41,7 @@ services:
     image: home-automation-service-config
     volumes:
       - .:/go/src/github.com/jakewright/home-automation
-      - ./service.config/data/dev.yaml:/data/config.yaml
+      - ./private/config/dev.yaml:/data/config.yaml
       - /go/src/github.com/jakewright/home-automation/vendor
     ports:
       - 7002:80
