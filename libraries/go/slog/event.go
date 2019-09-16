@@ -49,7 +49,7 @@ func newEventFromFormat(severity Severity, format string, a ...interface{}) *Eve
 
 	return &Event{
 		Timestamp: time.Now(),
-		Severity:  Severity(severity),
+		Severity:  severity,
 		Message:   message,
 		Metadata:  metadata,
 	}
