@@ -29,26 +29,34 @@ type Process interface {
 	Stop(context.Context) error
 }
 
+type Service struct {
+	processes []Process
+}
+
 // Boot performs standard service startup tasks
-func Init(serviceName string) error {
+func Init(serviceName string) (*Service, error) {
+	service := &Service{}
+
 	// Create default API client
 	apiGateway := os.Getenv("API_GATEWAY")
 	if apiGateway == "" {
-		return fmt.Errorf("API_GATEWAY env var not set")
+		return nil, fmt.Errorf("API_GATEWAY env var not set")
 	}
 	apiClient, err := api.New(apiGateway, "data")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	api.DefaultClient = apiClient
 
 	// Load config
-	var configRsp map[string]interface{}
-	_, err = api.Get(fmt.Sprintf("service.config/read/%s", serviceName), &configRsp)
-	if err != nil {
-		return err
+	configLoader := &config.Loader{
+		ServiceName: serviceName,
 	}
-	config.DefaultProvider = config.New(configRsp)
+	if err := configLoader.Load(); err != nil {
+		return nil, err
+	}
+	slog.Info("Config loaded")
+	service.processes = append(service.processes, configLoader)
 
 	// Connect to Redis
 	if config.Has("redis.host") {
@@ -71,19 +79,21 @@ func Init(serviceName string) error {
 		firehose.DefaultPublisher = firehose.New(redisClient)
 	}
 
-	return nil
+	return service, nil
 }
 
 // Run takes a number of processes and concurrently runs them all. It will stop if all processes
 // terminate or if a signal (SIGINT or SIGTERM) is received.
-func Run(processes ...Process) {
+func (s *Service) Run(processes ...Process) {
+	s.processes = append(s.processes, processes...)
+
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := sync.WaitGroup{}
 
 	// Start all of the processes in goroutines
-	for _, process := range processes {
+	for _, process := range s.processes {
 		process := process
 
 		wg.Add(1)
@@ -118,7 +128,7 @@ func Run(processes ...Process) {
 	defer cancel()
 
 	// Simultaneously stop all processes
-	for _, process := range processes {
+	for _, process := range s.processes {
 		process := process
 
 		wg.Add(1)

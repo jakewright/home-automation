@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	if err := bootstrap.Init("service.device-registry"); err != nil {
+	svc, err := bootstrap.Init("service.device-registry")
+	if err != nil {
 		slog.Panic("Failed to initialise service: %v", err)
 	}
 
@@ -49,5 +50,5 @@ func main() {
 	r.Get("/rooms", roomHandler.HandleListRooms)
 	r.Get("/room/{room_id}", roomHandler.HandleGetRoom)
 
-	bootstrap.Run(r)
+	svc.Run(r)
 }
