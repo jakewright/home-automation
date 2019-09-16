@@ -56,11 +56,19 @@ func Init(serviceName string) error {
 		port := config.Get("redis.port").Int()
 		addr := fmt.Sprintf("%s:%d", host, port)
 		slog.Info("Connecting to Redis at address %s", addr)
-		firehose.DefaultPublisher = firehose.New(redis.NewClient(&redis.Options{
-			Addr:     addr,
-			Password: "",
-			DB:       0,
-		}))
+		redisClient := redis.NewClient(&redis.Options{
+			Addr:            addr,
+			Password:        "",
+			DB:              0,
+			MaxRetries:      5,
+			MinRetryBackoff: time.Second,
+			MaxRetryBackoff: time.Second * 5,
+		})
+		_, err := redisClient.Ping().Result()
+		if err != nil {
+			return nil, err
+		}
+		firehose.DefaultPublisher = firehose.New(redisClient)
 	}
 
 	return nil
