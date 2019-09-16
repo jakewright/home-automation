@@ -1,5 +1,8 @@
 <template>
-  <div class="room-selector">
+  <div v-if="fetchError">
+    {{ fetchError }}
+  </div>
+  <div v-else class="room-selector">
     <div class="scroller">
       <RouterLink
         v-for="room in rooms"
