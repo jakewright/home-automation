@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.0-14",
+    "@fortawesome/pro-light-svg-icons": "^5.11.0",
     "@fortawesome/pro-regular-svg-icons": "^5.10.2",
     "@fortawesome/pro-solid-svg-icons": "^5.1.0",
     "@fortawesome/vue-fontawesome": "0.1.0-5",
     "axios": "^0.18.0",
-    "bulma": "^0.7.1",
     "color-circle": "^1.0.0",
     "lodash": "^4.17.11",
     "vue": "^2.5.17",
