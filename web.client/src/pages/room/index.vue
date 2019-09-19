@@ -11,25 +11,25 @@
     <template slot="content">
 
       <div class="tabs">
-        <h2><a href="">Lights</a></h2>
-        <h2><a href="">Devices</a></h2>
+        <h2><a href="#lights" :class="{'tab--active': tab === '#lights'}">Lights</a></h2>
+        <h2><a href="#devices" :class="{'tab--active': tab === '#devices'}">Devices</a></h2>
       </div>
 
-      <Lights :headers="room.deviceHeaders" />
+      <Lights v-if="tab === '#lights'" :headers="room.deviceHeaders" />
 
-      <div class="devices">
+<!--      <div class="devices">-->
 
-      </div>
+<!--      </div>-->
 
-      <div
-        v-for="deviceHeader in room.deviceHeaders"
-        :key="deviceHeader.identifier"
-      >
-        <Component
-          :is="getComponentForDeviceType(deviceHeader.type)"
-          :device-header="deviceHeader"
-        />
-      </div>
+<!--      <div-->
+<!--        v-for="deviceHeader in room.deviceHeaders"-->
+<!--        :key="deviceHeader.identifier"-->
+<!--      >-->
+<!--        <Component-->
+<!--          :is="getComponentForDeviceType(deviceHeader.type)"-->
+<!--          :device-header="deviceHeader"-->
+<!--        />-->
+<!--      </div>-->
     </template>
 
   </Base>
@@ -74,7 +74,11 @@
 
       name() {
         return this.room ? this.room.name : "";
-      }
+      },
+
+      tab() {
+        return this.$route.hash;
+      },
     },
 
     async beforeRouteEnter(to, from, next) {
@@ -94,13 +98,13 @@
       next();
     },
 
-    methods: {
-      getComponentForDeviceType(type) {
-        switch (type) {
-          default:
-            return "Device";
-        }
-      }
-    }
+    // methods: {
+    //   getComponentForDeviceType(type) {
+    //     switch (type) {
+    //       default:
+    //         return "Device";
+    //     }
+    //   }
+    // }
   };
 </script>

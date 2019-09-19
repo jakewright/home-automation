@@ -15,6 +15,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: $color-text;
+    background-color: $color-background;
     font-size: 1.7rem;
     margin: $margin-body;
 }
@@ -33,12 +34,27 @@ h2 {
     display: inline;
     margin-right: $spacing-lg;
 
-    a.active {
+    a.tab--active {
         color: $color-text;
     }
     a {
         color: $color-text-fade;
     }
+}
+
+.card-grid {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: repeat(auto-fill, 100px);
+}
+
+.card {
+    background-color: $color-background-secondary;
+    border-radius: 10px;
+    box-sizing: border-box;
+    width: 100px;
+    height: 75px;
+    padding: $padding-element;
 }
 
 //.base-layout {
