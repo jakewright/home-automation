@@ -26,7 +26,7 @@ const apiToDevice = rsp => {
  */
 const apiToRoom = rsp => {
   const deviceHeaders = rsp.devices.map(
-    d => new DeviceHeader(d.id, d.name, d.deviceType, d.controllerName)
+    d => new DeviceHeader(d.id, d.name, d.type, d.kind, d.controllerName)
   );
   return new Room(rsp.id, rsp.name, deviceHeaders);
 };

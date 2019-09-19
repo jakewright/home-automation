@@ -1,8 +1,9 @@
 export default class DeviceHeader {
-  constructor(identifier, name, deviceType, controllerName) {
+  constructor(identifier, name, type, kind, controllerName) {
     this.identifier = identifier;
     this.name = name;
-    this.deviceType = deviceType;
+    this.type = type;
+    this.kind = kind;
     this.controllerName = controllerName;
   }
 }
