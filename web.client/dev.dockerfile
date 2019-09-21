@@ -12,8 +12,9 @@ WORKDIR /usr/src/app
 
 # Install app dependencies
 RUN npm install -g @vue/cli@3.5.5
-COPY ./web.client/.npmrc .
+COPY ./private/.npmrc .
 COPY ./web.client/package.json .
+COPY ./web.client/package-lock.json .
 RUN npm install
 
 # Move one level up so node_modules is not overwritten by a mounted directory
