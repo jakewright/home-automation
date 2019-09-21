@@ -4,129 +4,192 @@
 @import 'base/grid.scss';
 @import 'base/buttons.scss';
 
+@import 'pages/home.scss';
+
 html {
     font-size: 62.5%;
 }
 
 body {
-    font-family: 'Quicksand', system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: $color-white;
-    background-color: $color-grey;
-    margin: 0;
-    font-size: 1.4rem;
+    color: $color-text;
+    background-color: $color-background;
+    font-size: 1.7rem;
+    margin: $margin-body;
 }
 
-.base-layout {
-    @media screen and (max-width: $screen-md-min) {
-        .slide-up-enter-active, .slide-up-leave-active {
-            transition: all .3s ease;
-        }
+h1 {
+    font-size: $font-size-h1;
+    font-weight: 700; // Bold
+}
 
-        .slide-up-enter, .slide-up-leave-to {
-            transform: translateY(100%);
-        }
+h2 {
+    font-size: $font-size-h2;
+    font-weight: 500; // Medium
+}
+
+.tabs h2 {
+    display: inline;
+    margin-right: $spacing-lg;
+
+    a.tab--active {
+        color: $color-text;
+    }
+    a {
+        color: $color-text-fade;
     }
 }
 
-.nav-bar {
-    background-color: $color-grey-dark;
-    padding: 10px;
-    margin-bottom: 20px;
+.card-grid {
+    // Grid with a gap makes it easy to space the cards out
+    // and overflow onto the next line when necessary
+    display: grid;
+    grid-gap: $spacing-element;
 
-    // Fix the height when all the elements are floating
-    &:after {
-        content: " ";
-        display: block;
-        height: 0;
-        clear: both;
+    // 3 x 105px makes it fill an iPhone 6/7/8 screen
+    grid-template-columns: repeat(auto-fill, 105px);
+}
+
+.card {
+    background-color: $color-background-secondary;
+    border-radius: $border-radius;
+    padding: $padding-element;
+    font-size: $font-size-callout;
+    font-weight: $font-weight-medium;
+
+    .card__icon {
+        font-size: $font-size-h2;
     }
 
-    .nav-bar__element--right {
-        float: right;
+    .card__content {
+        margin-top: $spacing-xs;
+
+        // Allow space for two lines
+        height: calc(#{$font-size-callout} * 2);
+        line-height: 1;
+
+        // Vertically align the text within
+        display: flex;
+        align-items: center;
     }
-}
 
-.loading {
-    //padding: 0 20px;
-    text-align: center;
-    align-items: center;
-    height: 100%;
-}
-
-.header {
-    padding: 0 20px;
-
-    &.header--icon {
-        text-align: center;
-
-        h1 {
-            margin-bottom: 50px;
-        }
-    }
-}
-
-.content {
-    padding: 0 20px;
-}
-
-.room-selector {
-
-    li.room {
-        font-size: 2.1rem;
-        margin-bottom: 20px;
-
-        a {
-            color: $color-white;
-
-            &:hover {
-                color: $color-highlight-primary;
-            }
-
-            &.router-link-active {
-                color: $color-highlight-primary;
-
-                &:after {
-                    content: ">";
-                    float: right;
-                }
-            }
-        }
+    &.card--active {
+        background-color: $color-highlight-primary;
+        color: $color-text-inverted;
     }
 }
 
-.main-container {
-    grid-column: 3 / span 10;
-
-    @media screen and (max-width: $screen-lg-min) {
-        grid-column: 4 / span 9;
-    }
-}
-
-.device {
-    position: relative;
-    margin-bottom: 60px;
-
-    .title {}
-
-    ul li {
-        // Move the power toggle to top-right
-        &.power {
-            label.property-name-label {
-                display: none;
-            }
-
-            position: absolute;
-            top: 0;
-            right: 0;
-        }
-    }
-}
-
-.color-picker {
-    .color-circle {
-        max-width: 500px;
-        margin: 0 auto;
-    }
-}
+//.base-layout {
+//    @media screen and (max-width: $screen-md-min) {
+//        .slide-up-enter-active, .slide-up-leave-active {
+//            transition: all .3s ease;
+//        }
+//
+//        .slide-up-enter, .slide-up-leave-to {
+//            transform: translateY(100%);
+//        }
+//    }
+//}
+//
+//.nav-bar {
+//    background-color: $color-gray-dark;
+//    padding: 10px;
+//    margin-bottom: 20px;
+//
+//    // Fix the height when all the elements are floating
+//    &:after {
+//        content: " ";
+//        display: block;
+//        height: 0;
+//        clear: both;
+//    }
+//
+//    .nav-bar__element--right {
+//        float: right;
+//    }
+//}
+//
+//.loading {
+//    //padding: 0 20px;
+//    text-align: center;
+//    align-items: center;
+//    height: 100%;
+//}
+//
+//.header {
+//    padding: 0 20px;
+//
+//    &.header--icon {
+//        text-align: center;
+//
+//        h1 {
+//            margin-bottom: 50px;
+//        }
+//    }
+//}
+//
+//.content {
+//    padding: 0 20px;
+//}
+//
+//.room-selector {
+//
+//    li.room {
+//        font-size: 2.1rem;
+//        margin-bottom: 20px;
+//
+//        a {
+//            color: $color-white;
+//
+//            &:hover {
+//                color: $color-highlight-primary;
+//            }
+//
+//            &.router-link-active {
+//                color: $color-highlight-primary;
+//
+//                &:after {
+//                    content: ">";
+//                    float: right;
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//.main-container {
+//    grid-column: 3 / span 10;
+//
+//    @media screen and (max-width: $screen-lg-min) {
+//        grid-column: 4 / span 9;
+//    }
+//}
+//
+//.device {
+//    position: relative;
+//    margin-bottom: 60px;
+//
+//    .title {}
+//
+//    ul li {
+//        // Move the power toggle to top-right
+//        &.power {
+//            label.property-name-label {
+//                display: none;
+//            }
+//
+//            position: absolute;
+//            top: 0;
+//            right: 0;
+//        }
+//    }
+//}
+//
+//.color-picker {
+//    .color-circle {
+//        max-width: 500px;
+//        margin: 0 auto;
+//    }
+//}

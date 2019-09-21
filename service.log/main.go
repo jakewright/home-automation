@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	if err := bootstrap.Init("service.log"); err != nil {
+	svc, err := bootstrap.Init("service.log")
+	if err != nil {
 		slog.Panic("Failed to initialise service: %v", err)
 	}
 
@@ -44,5 +45,5 @@ func main() {
 	r.Get("/ws", readHandler.HandleWebSocket, readHandler.DecodeBody)
 	r.Post("/write", handler.HandleWrite)
 
-	bootstrap.Run(r, watcher)
+	svc.Run(r, watcher)
 }

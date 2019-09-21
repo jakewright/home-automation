@@ -47,5 +47,8 @@ func main() {
 	r.Get("/read/{service_name}", configHandler.ReadConfig)
 	r.Patch("/reload", configHandler.ReloadConfig)
 
-	bootstrap.Run(r)
+	// Create a service struct manually because the Init function tries
+	// to load config, which doesn't make sense for service.config.
+	svc := bootstrap.Service{}
+	svc.Run(r)
 }

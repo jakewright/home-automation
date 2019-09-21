@@ -13,7 +13,7 @@ const findById = identifier => {
 
 const fetchAllState = async () => {
   // Get all devices from the registry and add them to the store
-  (await req.get("service.registry.device/devices", {
+  (await req.get("service.device-registry/devices", {
     controllerName: "service.controller.hue"
   }))
     .map(instantiateDevice)

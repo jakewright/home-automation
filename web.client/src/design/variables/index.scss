@@ -1,2 +1,43 @@
-@import 'colors.scss';
 @import 'breakpoints.scss';
+
+$spacing-xs: 5px;
+$spacing-sm: 10px;
+$spacing-md: 20px;
+$spacing-lg: 30px;
+
+$margin-body: $spacing-md;
+$padding-element: $spacing-sm;
+$spacing-element: $spacing-sm;
+
+$font-size-h1: 3.6rem;
+$font-size-h2: 2.4rem;
+$font-size-body: 1.7rem;
+$font-size-callout: 1.4rem;
+$font-size-caption: 1.2rem;
+
+$font-weight-bold: 700;
+$font-weight-medium: 500;
+$font-weight-regular: 400;
+
+$border-radius: 10px;
+
+$color-blue: #2D9CDB;
+$color-purple: #9B51E0;
+$color-green: #6FCF97;
+$color-yellow: #F2C94C;
+$color-orange: #F2994A;
+$color-red: #EB5757;
+
+$color-black: #000000;
+$color-gray-dark: #3B3B3B;
+$color-gray: #696969;
+$color-gray-light: #AAAAAA;
+$color-gray-lighter: #EEEEEE;
+$color-white: #FFFFFF;
+
+$color-background: $color-white;
+$color-background-secondary: $color-gray-lighter;
+$color-text: $color-gray-dark;
+$color-text-fade: $color-gray-light;
+$color-text-inverted: $color-white;
+$color-highlight-primary: $color-green;

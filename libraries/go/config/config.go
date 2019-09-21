@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
@@ -17,7 +19,8 @@ type Provider interface {
 // Config holds a nested map of config values and provides
 // helper functions for easier access and type casting.
 type Config struct {
-	Map map[string]interface{}
+	m map[string]interface{}
+	l sync.RWMutex
 }
 
 // Value is returned from Get and has
@@ -30,7 +33,7 @@ var DefaultProvider Provider
 
 func mustGetDefaultProvider() Provider {
 	if DefaultProvider == nil {
-		panic("Config read before default provider set")
+		slog.Panic("Config read before default provider set")
 	}
 
 	return DefaultProvider
@@ -39,10 +42,22 @@ func mustGetDefaultProvider() Provider {
 func Has(path string) bool  { return mustGetDefaultProvider().Has(path) }
 func Get(path string) Value { return mustGetDefaultProvider().Get(path) }
 
-func New(content map[string]interface{}) Provider {
+func New(content map[string]interface{}) *Config {
 	return &Config{
-		Map: content,
+		m: content,
 	}
+}
+
+// Replace swaps the internal config map and returns whether true if anything changed
+func (c *Config) Replace(content map[string]interface{}) {
+	c.l.Lock()
+	defer c.l.Unlock()
+
+	if !reflect.DeepEqual(content, c.m) {
+		slog.Info("Config updated")
+	}
+
+	c.m = content
 }
 
 // Has returns whether the config has a raw at the given path e.g. "redis.host"
@@ -53,8 +68,11 @@ func (c *Config) Has(path string) bool {
 
 // Get returns the raw at the given path e.g. "redis.host"
 func (c *Config) Get(path string) Value {
+	c.l.RLock()
+	defer c.l.RUnlock()
+
 	return Value{
-		raw: reduce(strings.Split(path, "."), c.Map),
+		raw: reduce(strings.Split(path, "."), c.m),
 	}
 }
 
@@ -94,19 +112,21 @@ func (v Value) Int(defaults ...int) int {
 		return t
 	case float64:
 		if t != float64(int(t)) {
-			panic(fmt.Sprintf("%v cannot be represented as an int", t))
+			slog.Panic("%v cannot be represented as an int", t)
 		}
 
 		return int(t)
 	case string:
 		i, err := strconv.Atoi(t)
 		if err != nil {
-			panic(err)
+			slog.Panic("Failed to convert string to int: %v", err)
 		}
 		return i
 	default:
-		panic(fmt.Sprintf("%v is of unsupported type %v", t, reflect.TypeOf(t).String()))
+		slog.Panic("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
 	}
+
+	return 0 // Never hit
 }
 
 // String converts the raw to a string. The first default is returned if raw is not defined.
@@ -122,7 +142,7 @@ func (v Value) String(defaults ...string) string {
 // Bool converts the raw to a bool and panics if it cannot be represented.
 // The first default is returned if raw is not defined.
 func (v Value) Bool(defaults ...bool) bool {
-	// Return the first default raw is undefined
+	// Return the first default if the raw is undefined
 	if v.raw == nil {
 		// Make sure there's at least one thing in the list
 		defaults = append(defaults, false)
@@ -133,7 +153,7 @@ func (v Value) Bool(defaults ...bool) bool {
 	case string:
 		b, err := strconv.ParseBool(t)
 		if err != nil {
-			panic(err)
+			slog.Panic("Failed to parse bool: %v", err)
 		}
 		return b
 
@@ -145,4 +165,26 @@ func (v Value) Bool(defaults ...bool) bool {
 	}
 
 	return false
+}
+
+func (v Value) Duration(defaults ...time.Duration) time.Duration {
+	// Return the first default if raw is undefined
+	if v.raw == nil {
+		// Make sure there's at least one thing in the list
+		defaults = append(defaults, 0)
+		return defaults[0]
+	}
+
+	switch t := v.raw.(type) {
+	case string:
+		d, err := time.ParseDuration(t)
+		if err != nil {
+			slog.Panic("Failed to parse duration: %v", err)
+		}
+		return d
+	default:
+		slog.Panic("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
+	}
+
+	return 0
 }

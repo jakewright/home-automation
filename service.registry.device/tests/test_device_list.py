@@ -34,7 +34,7 @@ class TestDeviceList(unittest.TestCase):
     def test_add_device_invalid_room(self):
         """Test that adding a device with an unknown room returns a 400"""
 
-        response = add_device('invalid-room-test', 'name', 'type',
+        response = add_device('invalid-room-test', 'name', 'type', 'kind',
                               'controller', 'unknown-room')
         self.assertEqual(400, response.status_code)
 
@@ -44,7 +44,8 @@ class TestDeviceList(unittest.TestCase):
         device = {
             'identifier': 'device1',
             'name': 'Device 1',
-            'device_type': 'switch',
+            'type': 'hs100',
+            'kind': 'switch',
             'depends_on': None,
             'controller_name': 'controller',
             'room': {
@@ -58,7 +59,8 @@ class TestDeviceList(unittest.TestCase):
         response = add_device(
             device['identifier'],
             device['name'],
-            device['device_type'],
+            device['type'],
+            device['kind'],
             device['controller_name'],
             device['room']['identifier'],
         )
@@ -71,8 +73,8 @@ class TestDeviceList(unittest.TestCase):
         """Test that adding a device with an identifier that is already used replaces the device."""
 
         # Add the same device twice
-        add_device('device1', 'device 1', 'switch', 'controller', 'room')
-        response = add_device('device1', 'device new', 'switch', 'controller',
+        add_device('device1', 'device 1', 'hs100', 'switch', 'controller', 'room')
+        response = add_device('device1', 'device new', 'hs100', 'switch', 'controller',
                               'room')
 
         # Assert that we get a 201 response code the second time

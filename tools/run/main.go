@@ -72,7 +72,7 @@ func stop(args []string) {
 	run("docker-compose", composeArgs)
 }
 
-func restart(args[]string) {
+func restart(args []string) {
 	stop(args)
 	start(args)
 }
@@ -86,7 +86,7 @@ func getServices(args []string) []string {
 }
 
 func expandService(s string) []string {
-	coreServices := []string{"service.api-gateway", "service.config", "service.registry.device", "redis"}
+	coreServices := []string{"service.api-gateway", "service.config", "service.device-registry", "redis"}
 	logServices := []string{"filebeat", "logstash", "service.log"}
 
 	switch s {

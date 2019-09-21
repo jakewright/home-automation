@@ -41,7 +41,7 @@ export default {
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: $color-grey-dark;
+        background-color: $color-gray-dark;
         -webkit-transition: .4s;
         transition: .4s;
     }
@@ -59,11 +59,11 @@ export default {
     }
 
     input:checked + .slider {
-        background-color: $color-highlight-primary;
+        background-color: $color-green;
     }
 
     input:focus + .slider {
-        box-shadow: 0 0 1px $color-highlight-primary;
+        box-shadow: 0 0 1px $color-green;
     }
 
     input:checked + .slider:before {
