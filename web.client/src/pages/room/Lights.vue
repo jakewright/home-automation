@@ -6,7 +6,7 @@
       <Card
         v-for="header in lights"
         :key="header.identifier"
-        :icon="['far', 'lightbulb']"
+        :icon="['fal', 'lightbulb']"
       >
         <template slot="primary">
           {{ header.name }}

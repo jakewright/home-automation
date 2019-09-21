@@ -3,10 +3,10 @@
     <FontAwesomeIcon
       class="card__icon"
       :icon="icon"
-      size="2x"
+      size="1x"
     />
     <div class="card__content">
-      <slot name="primary" />
+      <span><slot name="primary" /></span>
     </div>
   </div>
 </template>
