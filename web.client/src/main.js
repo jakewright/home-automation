@@ -2,9 +2,12 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faLightbulb, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
-import { faHome as farHome, faArrowLeft as farArrowLeft } from "@fortawesome/pro-regular-svg-icons";
-import { faLightbulb as falLightbulb } from "@fortawesome/pro-light-svg-icons";
+// import { faLightbulb, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+// import { faHome as farHome, faArrowLeft as farArrowLeft } from "@fortawesome/pro-regular-svg-icons";
+// import { faLightbulb as falLightbulb } from "@fortawesome/pro-light-svg-icons";
+import { fal } from "@fortawesome/pro-light-svg-icons";
+import { far } from "@fortawesome/pro-regular-svg-icons";
+import { fas } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 import httpClient from "../../libraries/javascript/http";
@@ -16,7 +19,8 @@ import EventConsumer from "./api/EventConsumer";
 
 httpClient.setApiGateway(process.env.VUE_APP_API_GATEWAY);
 
-library.add(faLightbulb, falLightbulb, faSpinnerThird, farArrowLeft, farHome);
+// library.add(faLightbulb, falLightbulb, faSpinnerThird, farArrowLeft, farHome);
+library.add(fas, far, fal);
 Vue.component("FontAwesomeIcon", FontAwesomeIcon);
 
 Vue.use(Vuex);
