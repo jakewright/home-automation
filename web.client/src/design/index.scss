@@ -42,8 +42,8 @@ h2 {
     }
 }
 
-.card-grid {
-    // Grid with a gap makes it easy to space the cards out
+.tile-grid {
+    // Grid with a gap makes it easy to space the tiles out
     // and overflow onto the next line when necessary
     display: grid;
     grid-gap: $spacing-element;
@@ -52,18 +52,18 @@ h2 {
     grid-template-columns: repeat(auto-fill, 105px);
 }
 
-.card {
+.tile {
     background-color: $color-background-secondary;
     border-radius: $border-radius;
     padding: $padding-element;
     font-size: $font-size-callout;
     font-weight: $font-weight-medium;
 
-    .card__icon {
+    .tile__icon {
         font-size: $font-size-h2;
     }
 
-    .card__content {
+    .tile__content {
         margin-top: $spacing-xs;
 
         // Allow space for two lines
@@ -75,7 +75,7 @@ h2 {
         align-items: center;
     }
 
-    &.card--active {
+    &.tile--active {
         background-color: $color-highlight-primary;
         color: $color-text-inverted;
     }

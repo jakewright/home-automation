@@ -1,11 +1,11 @@
 <template>
-  <div class="card">
+  <div class="tile" :class="{ 'tile--active': checked }">
     <FontAwesomeIcon
-      class="card__icon"
+      class="tile__icon"
       :icon="icon"
       size="1x"
     />
-    <div class="card__content">
+    <div class="tile__content">
       <span><slot name="primary" /></span>
     </div>
   </div>
@@ -13,12 +13,17 @@
 
 <script>
   export default {
-    name: "Card",
+    name: "Tile",
 
     props: {
       icon: {
         type: Array,
         required: true
+      },
+
+      checked: {
+        type: Boolean,
+        required: false
       }
     }
   };
