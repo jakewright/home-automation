@@ -58,7 +58,7 @@ const findByHueId = hueId => {
 
 const instantiateDevice = header => {
   let device = new HueLight({
-    identifier: header.identifier,
+    identifier: header.id,
     name: header.name,
     type: header.type,
     controllerName: "service.controller.hue",
