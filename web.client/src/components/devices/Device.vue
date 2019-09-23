@@ -1,7 +1,7 @@
 <template>
   <div class="device">
     <h3 class="title">
-      {{ deviceHeader.name }}
+      {{ header.name }}
     </h3>
 
     <template v-if="fetchError">
@@ -85,7 +85,7 @@ export default {
   },
 
   props: {
-    deviceHeader: {
+    header: {
       type: DeviceHeader,
       required: true,
     },
@@ -99,7 +99,7 @@ export default {
 
   computed: {
     device() {
-      return this.$store.getters.device(this.deviceHeader.identifier);
+      return this.$store.getters.device(this.header.identifier);
     },
   },
 
@@ -107,7 +107,7 @@ export default {
     if (this.device) return;
 
     try {
-      await this.$store.dispatch('fetchDevice', this.deviceHeader);
+      await this.$store.dispatch('fetchDevice', this.header);
     } catch (err) {
       this.fetchError = err.message;
     }
@@ -121,7 +121,7 @@ export default {
     async updateProperty(name, value) {
       try {
         await this.$store.dispatch('updateDeviceProperty', {
-          deviceId: this.deviceHeader.identifier,
+          deviceId: this.header.identifier,
           name,
           value,
         });

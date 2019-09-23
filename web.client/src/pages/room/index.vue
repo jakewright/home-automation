@@ -77,7 +77,7 @@
       },
 
       tab() {
-        return this.$route.hash;
+        return this.$route.hash || "#lights";
       },
     },
 

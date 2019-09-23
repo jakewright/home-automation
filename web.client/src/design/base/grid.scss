@@ -1,28 +1,28 @@
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-
-    @media screen and (max-width: $screen-md-min) {
-        display: block;
-
-        // When the page is mobile-sized, make each column max width and browser-height
-        .side-column {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100vh;
-            overflow-y: scroll;
-            -webkit-overflow-scrolling: touch;
-        }
-    }
-
-    &.full-height {
-        height: 100vh;
-    }
-}
-
-.grid-item {
-    background-color: $color-gray;
-    grid-column: span 6;
-}
+//.grid-container {
+//    display: grid;
+//    grid-template-columns: repeat(12, 1fr);
+//
+//    @media screen and (max-width: $screen-md-min) {
+//        display: block;
+//
+//        // When the page is mobile-sized, make each column max width and browser-height
+//        .side-column {
+//            position: fixed;
+//            top: 0;
+//            left: 0;
+//            right: 0;
+//            height: 100vh;
+//            overflow-y: scroll;
+//            -webkit-overflow-scrolling: touch;
+//        }
+//    }
+//
+//    &.full-height {
+//        height: 100vh;
+//    }
+//}
+//
+//.grid-item {
+//    background-color: $color-gray;
+//    grid-column: span 6;
+//}
