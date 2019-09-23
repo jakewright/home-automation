@@ -79,6 +79,10 @@ h2 {
         background-color: $color-highlight-primary;
         color: $color-text-inverted;
     }
+
+    &.tile--clickable {
+        cursor: pointer;
+    }
 }
 
 //.base-layout {

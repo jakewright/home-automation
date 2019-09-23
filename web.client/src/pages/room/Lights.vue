@@ -34,20 +34,5 @@
         required: true
       }
     },
-
-    methods: {
-      async updateProperty(deviceId, name, value) {
-        try {
-          await this.$store.dispatch('updateDeviceProperty', {
-            deviceId,
-            name,
-            value,
-          })
-        } catch (err) {
-          console.error(err);
-          await this.$store.dispatch('enqueueError', err)
-        }
-      }
-    }
   };
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="tile" :class="{ 'tile--active': active }">
+  <div class="tile" :class="{ 'tile--active': active, 'tile--clickable': clickable }">
     <FontAwesomeIcon
       v-if="error"
       class="tile__icon"
@@ -30,21 +30,32 @@
     name: "Tile",
 
     props: {
+      // The Font Awesome icon to display in the top left
       icon: {
         type: Array,
         required: true
       },
 
+      // Affects the tile's background color
       active: {
         type: Boolean,
         required: false
       },
 
+      // Affects the cursor
+      clickable: {
+        type: Boolean,
+        required: false,
+      },
+
+      // If true then the icon will be replaced with an exclamation
+      // triangle. This takes precedence over loading.
       error: {
         type: Boolean,
         required: false,
       },
 
+      // If true then the icon will be replaced with a loading icon
       loading: {
         type: Boolean,
         required: false
