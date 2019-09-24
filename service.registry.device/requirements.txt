@@ -1,5 +1,0 @@
-Flask==1.0.2
-flask-restful==0.3.6
-markdown==3.0.1
-requests==2.20.1
-requests-mock==1.5.2

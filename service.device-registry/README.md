@@ -1,4 +1,4 @@
-# Home Automation Device Registry
+# service.device-registry
 
 ## Usage
 
@@ -14,24 +14,24 @@
 ```json
 [
     {
-        "identifier": "id1",
+        "id": "id1",
         "name": "Device 1",
         "type": "hs100",
         "kind": "switch",
         "controller_name": "controller-1",
         "room": {
-            "identifier": "bedroom",
+            "id": "bedroom",
             "name": "Jake's Bedroom"
         }
     },
     {
-        "identifier": "id2",
+        "id": "id2",
         "name": "Device 2",
         "type": "huelight",
         "kind": "lamp",
         "controller_name": "controller-2",
         "room": {
-            "identifier": "kitchen",
+            "id": "kitchen",
             "name": "Kitchen"
         }
     }
@@ -45,22 +45,16 @@
 
 **Arguments**
 
-- `"identifier":string` a globally unique identifier for this device
+- `"id":string` a globally unique ID for this device
 - `"name":string` a friendly name for the device
 - `"type":string` the type of the device as understood by the client e.g. hs100
 - `"kind":string` the kind of device e.g. lamp
-- `"room_identifier":string` the globally unique identifier of the room
+- `"room_id":string` the globally unique ID of the room
 - `"controller_name":string` the name of the device's controller
 - `"attributes":object` arbitrary controller-specific information about the device
-- `"depends_on":array` an array of dependencies for this device
-    - `"local_property":string` the name of the local property that has a dependency
-    - `"local_value":string` the value of the local property that has a dependency
-    - `"remote_device_identifier":string` the identifier of the device this property depends on
-    - `"remote_property":string` the remote property that must be set
-    - `"remote_value":string` the value of the remote property
 - `"state_providers":array` names of external services that provide state
 
-If the identifier already exists, the existing device will be overwritten.
+If the ID already exists, the existing device will be overwritten.
 
 **Response**
 
@@ -71,13 +65,13 @@ Returns the new device if successful.
 
 ```json
 {
-    "identifier": "id1",
+    "id": "id1",
     "name": "Device 1",
     "type": "hs100",
     "kind": "switch",
     "controller_name": "controller-2",
     "room": {
-        "identifier": "bedroom",
+        "id": "bedroom",
         "name": "Jake's Bedroom"
     }
 }
@@ -86,7 +80,7 @@ Returns the new device if successful.
 ### Lookup device details
 **Definition**
 
-`GET /device/<identifier>`
+`GET /device/<id>`
 
 **Response**
 
@@ -95,13 +89,13 @@ Returns the new device if successful.
 
 ```json
 {
-    "identifier": "id1",
+    "id": "id1",
     "name": "Device 1",
     "type": "hs100",
     "kind": "switch",
     "controller_name": "controller-1",
     "room": {
-        "identifier": "bedroom",
+        "id": "bedroom",
         "name": "Jake's Bedroom"
     }
 }
@@ -110,7 +104,7 @@ Returns the new device if successful.
 ### Delete a device
 **Definition**
 
-`DELETE /device/<identifier>`
+`DELETE /device/<id>`
 
 **Response**
 
@@ -129,11 +123,11 @@ Returns the new device if successful.
 ```json
 [
     {
-        "identifier": "bedroom",
+        "id": "bedroom",
         "name": "Jake's Bedroom",
         "devices": [
             {
-                "identifier": "lamp1",
+                "id": "lamp1",
                 "name": "Lamp",
                 "type": "huelight",
                 "kind": "lamp",
@@ -142,11 +136,11 @@ Returns the new device if successful.
         ]
     },
     {
-        "identifier": "kitchen",
+        "id": "kitchen",
         "name": "Kitchen",
         "devices": [
             {
-                "identifier": "tv2",
+                "id": "tv2",
                 "name": "TV",
                 "type": "philips48",
                 "kind": "tv",
@@ -165,10 +159,10 @@ Returns the new device if successful.
 
 **Arguments**
 
-- `"identifier":string` a globally unique identifier for the room
+- `"id":string` a globally unique id for the room
 - `"name":string` a friendly name for the room
 
-If the identifier already exists, the existing room will be overwritten.
+If the id already exists, the existing room will be overwritten.
 Devices belonging to an existing room will not be modified.
 
 **Response**
@@ -179,7 +173,7 @@ Returns the new room is created successfully.
 
 ```json
 {
-    "identifier": "bedroom",
+    "id": "bedroom",
     "name": "Jake's Bedroom",
     "devices": []
 }
@@ -187,7 +181,7 @@ Returns the new room is created successfully.
 
 ### Lookup room details
 **Definition**
-`GET /room/<identifier>`
+`GET /room/<id>`
 
 **Response**
 
@@ -196,11 +190,11 @@ Returns the new room is created successfully.
 
 ```json
 {
-    "identifier": "bedroom",
+    "id": "bedroom",
     "name": "Jake's Bedroom",
     "devices": [
         {
-            "identifier": "id1",
+            "id": "id1",
             "name": "Device 1",
             "type": "hs100",
             "kind": "switch",
@@ -213,7 +207,7 @@ Returns the new room is created successfully.
 ### Delete a room
 **Definition**
 
-`DELETE /rooms/<identifier>`
+`DELETE /rooms/<id>`
 
 **Response**
 

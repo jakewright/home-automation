@@ -1,1 +1,0 @@
-DATABASE = 'data/devices.db'
