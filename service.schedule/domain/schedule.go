@@ -30,5 +30,5 @@ type Schedule struct {
 	Until time.Time
 
 	// Rules define when this schedule should run
-	Rules []ScheduleRule
+	//Rules []ScheduleRule
 }

@@ -116,7 +116,7 @@ func Wrap(err error, metadata map[string]string) *Error {
 
 // newError returns a new Error with the given code. The message is formatted using Sprintf.
 // If the last parameter is a map[string]string, it is assumed to be the error params.
-func newError(code, format string, params ...interface{}) *Error {
+func newError(code, format string, params []interface{}) *Error {
 	// Take the last parameter
 	last := params[len(params)-1]
 
