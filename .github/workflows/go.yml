@@ -22,7 +22,7 @@ jobs:
     - name: Run static analysis
       run: |
         go vet ./...
-        go get -u golint      
+        go get -u golang.org/x/lint/golint    
         golint ./...
       
 
