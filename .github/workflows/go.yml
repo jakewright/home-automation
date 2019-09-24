@@ -22,8 +22,9 @@ jobs:
     - name: Run static analysis
       run: |
         go vet ./...
+        export PATH=$PATH:$(go env GOPATH)/bin
         go get -u golang.org/x/lint/golint    
-        golint ./...
+        golint -set_exit_status ./...
       
 
   test:
