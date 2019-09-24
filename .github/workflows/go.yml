@@ -19,13 +19,17 @@ jobs:
     - name: Get dependencies
       run: go get -v -t -d ./...
       
-    - name: Run static analysis
+    - name: gofmt
+      run: test -z "$(gofmt -l .)"
+    
+    - name: go vet
+      run: go vet ./...
+      
+    - name: golint
       run: |
-        go vet ./...
         export PATH=$PATH:$(go env GOPATH)/bin
         go get -u golang.org/x/lint/golint    
         golint -set_exit_status ./...
-      
 
   test:
     name: Unit Tests
