@@ -2,11 +2,21 @@
 
 set -e
 
+TICK="\xE2\x9C\x94"
+GREEN="\033[32m"
+RESET="\033[0m"
+
 # Go to the root home-automation directory
 cd "$(dirname "$0")/.."
 
 printf "Installing tools...\n"
 
+printf "hooks "
+# Trailing slash copies contents of hooks to .git/hooks
+cp -R ./tools/hooks/ ./.git/hooks
+printf "$GREEN$TICK$RESET\n"
+
 printf "run "
 go install -ldflags "-X main.BuildDirectory=$(pwd)" ./tools/run
-printf "\xE2\x9C\x94\n" # tick
+printf "$GREEN$TICK$RESET\n"
+

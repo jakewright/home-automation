@@ -1,0 +1,59 @@
+#!/bin/bash
+
+STAGED_GO_FILES=$(git diff --staged --name-only | grep "\.go$")
+if [[ "$STAGED_GO_FILES" = "" ]]; then
+  exit 0
+fi
+
+printf "Running go pre-commit hook...\n\n"
+
+GOLINT=$GOPATH/bin/golint
+GOIMPORTS=$GOPATH/bin/goimports
+
+# Check for golint
+if [[ ! -x "$GOLINT" ]]; then
+  printf "\033[41mPlease install golint\033[0m go get -u golang.org/x/lint/golint"
+  exit 1
+fi
+
+# Check for goimports
+if [[ ! -x "$GOIMPORTS" ]]; then
+  printf "\033[41mPlease install goimports\033[0m go get golang.org/x/tools/cmd/goimports"
+  exit 1
+fi
+
+PASS=true
+
+for FILE in $STAGED_GO_FILES
+do
+  # Run goimports on the staged file
+  # This enforces the same formatting as gofmt
+  if [[ ! -z $($GOIMPORTS $FILE) ]]; then
+    PASS=false
+    printf "Run goimports $FILE\n"
+  fi
+
+
+  # Run golint on the staged file and check the exit status
+  $GOLINT "-set_exit_status" $FILE
+  if [[ $? == 1 ]]; then
+    PASS=false
+    printf "\n"
+  fi
+
+  # Run govet on the staged file and check the exit status
+  go vet $FILE
+  if [[ $? != 0 ]]; then
+    PASS=false
+    printf "\n"
+  fi
+done
+
+if ! $PASS; then
+  printf "\033[31mpre-commit hook failed \xE2\x9C\x97\033[0m\n"
+  exit 1
+else
+  printf "\033[32mpre-commit hook succeeded \xE2\x9C\x94\033[0m\n"
+fi
+
+exit 0
