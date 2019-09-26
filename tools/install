@@ -13,7 +13,7 @@ printf "Installing tools...\n"
 
 printf "hooks "
 # Trailing slash copies contents of hooks to .git/hooks
-cp -R ./tools/hooks/ ./.git/hooks
+cp -pR ./tools/hooks/ ./.git/hooks
 printf "$GREEN$TICK$RESET\n"
 
 printf "run "

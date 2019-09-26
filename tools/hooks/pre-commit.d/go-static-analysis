@@ -5,20 +5,20 @@ if [[ "$STAGED_GO_FILES" = "" ]]; then
   exit 0
 fi
 
-printf "Running go pre-commit hook...\n\n"
+printf "Running go pre-commit hook...\n"
 
 GOLINT=$GOPATH/bin/golint
 GOIMPORTS=$GOPATH/bin/goimports
 
 # Check for golint
 if [[ ! -x "$GOLINT" ]]; then
-  printf "\033[41mPlease install golint\033[0m go get -u golang.org/x/lint/golint"
+  printf "\033[41mPlease install golint\033[0m go get -u golang.org/x/lint/golint\n"
   exit 1
 fi
 
 # Check for goimports
 if [[ ! -x "$GOIMPORTS" ]]; then
-  printf "\033[41mPlease install goimports\033[0m go get golang.org/x/tools/cmd/goimports"
+  printf "\033[41mPlease install goimports\033[0m go get golang.org/x/tools/cmd/goimports\n"
   exit 1
 fi
 
@@ -38,14 +38,12 @@ do
   $GOLINT "-set_exit_status" $FILE
   if [[ $? == 1 ]]; then
     PASS=false
-    printf "\n"
   fi
 
   # Run govet on the staged file and check the exit status
   go vet $FILE
   if [[ $? != 0 ]]; then
     PASS=false
-    printf "\n"
   fi
 done
 
