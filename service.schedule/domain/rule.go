@@ -48,7 +48,7 @@ func (r *Rule) CalculateNextRunAfterTime(t time.Time) (time.Time, error) {
 
 		// If an hour is set
 		if r.Hour != nil {
-			d = mod(*r.Hour - n.Hour(), 24)
+			d = mod(*r.Hour-n.Hour(), 24)
 			n = n.Add(d * time.Hour)
 			if d > 0 {
 				continue
@@ -61,7 +61,7 @@ func (r *Rule) CalculateNextRunAfterTime(t time.Time) (time.Time, error) {
 
 		// If a weekday is set
 		if r.Weekday != nil {
-			d = mod(*r.Weekday - int(n.Weekday()), 7)
+			d = mod(*r.Weekday-int(n.Weekday()), 7)
 			n = n.AddDate(0, 0, int(d))
 			if d > 0 {
 				continue
@@ -72,7 +72,7 @@ func (r *Rule) CalculateNextRunAfterTime(t time.Time) (time.Time, error) {
 
 		// If a day is set
 		if r.Day != nil {
-			d = mod(*r.Day - n.Day(), daysInMonth(n.Year(), n.Month()))
+			d = mod(*r.Day-n.Day(), daysInMonth(n.Year(), n.Month()))
 			n = n.AddDate(0, 0, int(d))
 			if d > 0 {
 				continue
@@ -86,7 +86,7 @@ func (r *Rule) CalculateNextRunAfterTime(t time.Time) (time.Time, error) {
 				// Rollover to the first of the next month. This is obviously not as efficient as going
 				// directly to the required month, but adding months is tricky because their lengths aren't
 				// equal. For example, adding one month to October 31 yields December 1.
-				n = n.AddDate(0, 0, daysInMonth(n.Year(), n.Month()) - n.Day() + 1)
+				n = n.AddDate(0, 0, daysInMonth(n.Year(), n.Month())-n.Day()+1)
 				continue
 			}
 		}

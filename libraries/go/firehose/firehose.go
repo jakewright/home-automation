@@ -7,6 +7,7 @@ type Publisher interface {
 }
 
 var DefaultPublisher Publisher
+
 func mustGetDefaultPublisher() Publisher {
 	if DefaultPublisher == nil {
 		panic("Firehose used before default publisher set")
@@ -15,7 +16,9 @@ func mustGetDefaultPublisher() Publisher {
 	return DefaultPublisher
 }
 
-func Publish(channel, message string) error { return mustGetDefaultPublisher().Publish(channel, message) }
+func Publish(channel, message string) error {
+	return mustGetDefaultPublisher().Publish(channel, message)
+}
 
 type RedisClient struct {
 	client *redis.Client
