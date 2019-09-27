@@ -5,6 +5,10 @@
 # passing along stdin. If any script exits with a non-zero status, this script exits.
 # https://gist.github.com/mjackson/7e602a7aa357cfe37dadcc016710931b
 
+if [ -f "$HOME/.bash_profile" ]; then
+  source "$HOME/.bash_profile"
+fi
+
 script_dir=$(dirname $0)
 hook_name=$(basename $0)
 

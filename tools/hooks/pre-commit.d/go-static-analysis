@@ -1,11 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 STAGED_GO_FILES=$(git diff --staged --name-only | grep "\.go$")
 if [[ "$STAGED_GO_FILES" = "" ]]; then
   exit 0
 fi
-
-printf "Running go pre-commit hook...\n"
 
 GOLINT=$GOPATH/bin/golint
 GOIMPORTS=$GOPATH/bin/goimports
@@ -28,11 +26,10 @@ for FILE in $STAGED_GO_FILES
 do
   # Run goimports on the staged file
   # This enforces the same formatting as gofmt
-  if [[ ! -z $($GOIMPORTS $FILE) ]]; then
+  if [[ ! -z $($GOIMPORTS -l $FILE) ]]; then
     PASS=false
     printf "Run goimports $FILE\n"
   fi
-
 
   # Run golint on the staged file and check the exit status
   $GOLINT "-set_exit_status" $FILE
