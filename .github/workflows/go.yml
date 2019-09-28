@@ -19,8 +19,12 @@ jobs:
     - name: Get dependencies
       run: go get -v -t -d ./...
       
-    - name: gofmt
-      run: test -z "$(gofmt -l .)"
+    - name: goimports
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        printf "$PATH\n"
+        go get -u golang.org/x/tools/cmd/goimports
+        test -z "$(goimports -l .)"
     
     - name: go vet
       run: go vet ./...
@@ -28,6 +32,7 @@ jobs:
     - name: golint
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
+        printf "$PATH\n"
         go get -u golang.org/x/lint/golint    
         golint -set_exit_status ./...
 
