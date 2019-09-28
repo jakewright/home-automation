@@ -18,6 +18,7 @@ type Requester interface {
 	Patch(url string, body map[string]interface{}, response interface{}) (*Response, error)
 }
 
+// Client is a high-level HTTP client for making requests to other services
 type Client struct {
 	// Base is the base URL used for relative requests
 	Base string
@@ -29,6 +30,7 @@ type Client struct {
 	Envelope string
 }
 
+// DefaultClient is a global instance of Client
 var DefaultClient Requester
 
 func mustGetDefaultClient() Requester {
@@ -39,12 +41,17 @@ func mustGetDefaultClient() Requester {
 	return DefaultClient
 }
 
+// Get makes GET requests using the default client
 func Get(url string, response interface{}) (*Response, error) {
 	return mustGetDefaultClient().Get(url, response)
 }
+
+// Put makes PUT requests using the default client
 func Put(url string, body map[string]interface{}, response interface{}) (*Response, error) {
 	return mustGetDefaultClient().Put(url, body, response)
 }
+
+// Patch makes PATCH requests using the default client
 func Patch(url string, body map[string]interface{}, response interface{}) (*Response, error) {
 	return mustGetDefaultClient().Patch(url, body, response)
 }
@@ -72,6 +79,7 @@ type Request struct {
 	Body   map[string]interface{}
 }
 
+// Response wraps the http.Response returned from the request
 type Response struct {
 	*http.Response
 	Body string

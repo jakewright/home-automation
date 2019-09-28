@@ -11,6 +11,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
+// Provider allows reading of config values
 type Provider interface {
 	Has(string) bool
 	Get(string) Value
@@ -29,6 +30,7 @@ type Value struct {
 	raw interface{}
 }
 
+// DefaultProvider is a global instance of a Provider
 var DefaultProvider Provider
 
 func mustGetDefaultProvider() Provider {
@@ -39,9 +41,13 @@ func mustGetDefaultProvider() Provider {
 	return DefaultProvider
 }
 
-func Has(path string) bool  { return mustGetDefaultProvider().Has(path) }
+// Has returns whether the default provider has a config value at the given path
+func Has(path string) bool { return mustGetDefaultProvider().Has(path) }
+
+// Get returns the config value from the default provider at the given path
 func Get(path string) Value { return mustGetDefaultProvider().Get(path) }
 
+// New returns an instance of Config with the given content map
 func New(content map[string]interface{}) *Config {
 	return &Config{
 		m: content,
@@ -167,6 +173,8 @@ func (v Value) Bool(defaults ...bool) bool {
 	return false
 }
 
+// Duration converts the raw to a time.Duration.
+// The first default is returned if raw is not defined.
 func (v Value) Duration(defaults ...time.Duration) time.Duration {
 	// Return the first default if raw is undefined
 	if v.raw == nil {

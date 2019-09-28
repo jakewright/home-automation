@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// Schedule wraps a set of rules and a set of actions
 type Schedule struct {
 	gorm.Model
 

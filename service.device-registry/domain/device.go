@@ -1,5 +1,6 @@
 package domain
 
+// Device is a thing that can be controlled by the system
 type Device struct {
 	ID             string                 `json:"id"`
 	Name           string                 `json:"name"`

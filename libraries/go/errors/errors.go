@@ -27,6 +27,7 @@ func (e *Error) Error() string {
 	}
 }
 
+// GetMetadata returns the metadata map of the error
 func (e *Error) GetMetadata() map[string]string {
 	return e.Metadata
 }
@@ -110,6 +111,7 @@ func Unauthorized(format string, a ...interface{}) *Error {
 	return newError(ErrUnauthorized, format, a)
 }
 
+// Wrap turns a standard error into an errors.Error
 func Wrap(err error, metadata map[string]string) *Error {
 	return &Error{ErrInternalService, err.Error(), metadata}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/jakewright/home-automation/service.device-registry/repository"
 )
 
+// DeviceHandler has functions to handle device-related requests
 type DeviceHandler struct {
 	DeviceRepository *repository.DeviceRepository
 	RoomRepository   *repository.RoomRepository
@@ -26,6 +27,7 @@ type getDeviceRequest struct {
 	DeviceID string `json:"device_id"`
 }
 
+// HandleListDevices lists all devices known by the registry. Results can be filtered by controller name.
 func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request) {
 	body := listRequest{}
 	if err := request.Decode(r, &body); err != nil {
@@ -66,6 +68,7 @@ func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request
 	response.WriteJSON(w, devices)
 }
 
+// HandleGetDevice returns a specific device by ID
 func (h *DeviceHandler) HandleGetDevice(w http.ResponseWriter, r *http.Request) {
 	body := getDeviceRequest{}
 	if err := request.Decode(r, &body); err != nil {

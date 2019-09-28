@@ -29,11 +29,12 @@ type Process interface {
 	Stop(context.Context) error
 }
 
+// Service represents a collection of processes
 type Service struct {
 	processes []Process
 }
 
-// Boot performs standard service startup tasks
+// Init performs standard service startup tasks and returns a Service
 func Init(serviceName string) (*Service, error) {
 	service := &Service{}
 

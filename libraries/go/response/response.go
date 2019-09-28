@@ -17,13 +17,15 @@ type response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+// Write returns a raw response to the client
 func Write(w http.ResponseWriter, buf bytes.Buffer) {
 	if _, err := buf.WriteTo(w); err != nil {
 		log.Println("Failed to write response", err)
 	}
 }
 
-// WriteJSON returns a response to the client
+// WriteJSON returns a response to the client. If data is an error,
+// a status code is inferred. Otherwise, data is marshaled to JSON.
 func WriteJSON(w http.ResponseWriter, data interface{}) {
 	status := http.StatusOK
 	payload := response{}

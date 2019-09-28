@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Rule represents a periodic time
 type Rule struct {
 	Second  *int // 0-59
 	Minute  *int // 0-59
@@ -14,12 +15,13 @@ type Rule struct {
 	Month   *int // 1-12
 }
 
+// CalculateNextRunAfterTime returns the first time that the rule describes that is later than the given time t
 func (r *Rule) CalculateNextRunAfterTime(t time.Time) (time.Time, error) {
 	// Make sure the time is advanced by at least one second
 	n := t.Add(time.Second)
 
-	var stage float64 = 0
-	var d time.Duration = 0
+	var stage float64
+	var d time.Duration
 	done := false
 
 	for i := 0; i < 400 && !done; i++ {

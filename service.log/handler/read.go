@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"html/template"
 	"net/http"
@@ -24,6 +23,7 @@ import (
 
 const htmlTimeFormat = "2006-01-02T15:04"
 
+// ReadHandler has functions that deal with reading log lines
 type ReadHandler struct {
 	TemplateDirectory string
 	LogRepository     *repository.LogRepository
@@ -39,37 +39,14 @@ type readRequest struct {
 	Reverse   bool   `json:"reverse"`
 }
 
-func (h *ReadHandler) DecodeBody(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	body := readRequest{}
-	if err := request.Decode(r, &body); err != nil {
-		response.WriteJSON(w, err)
-		return
-	}
-
-	query, err := parseQuery(&body)
-	if err != nil {
-		slog.Error("Failed to parse options from body: %v", err)
-		response.WriteJSON(w, err)
-		return
-	}
-
-	metadata := map[string]string{
-		"services":  strings.Join(query.Services, ", "),
-		"severity":  query.Severity.String(),
-		"sinceTime": query.SinceTime.Format(time.RFC3339),
-		"untilTime": query.UntilTime.Format(time.RFC3339),
-		"sinceUUID": query.SinceUUID,
-		"reverse":   strconv.FormatBool(query.Reverse),
-	}
-
-	ctx := context.WithValue(r.Context(), "query", query)
-	ctx = context.WithValue(ctx, "metadata", metadata)
-	next(w, r.WithContext(ctx))
-}
-
+// HandleRead renders an HTML page with log lines according to the query in the request
 func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
-	query := r.Context().Value("query").(*repository.LogQuery)
-	metadata := r.Context().Value("metadata").(map[string]string)
+	query, metadata, err := decodeBody(r)
+	if err != nil {
+		slog.Error("Failed to decode body: %v", err)
+		response.WriteJSON(w, err)
+		return
+	}
 
 	// Default to logs from the last hour
 	if query.SinceTime.IsZero() {
@@ -143,9 +120,13 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// HandleWebSocket sends new log lines over a web socket
 func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
-	query := r.Context().Value("query").(*repository.LogQuery)
-	metadata := r.Context().Value("metadata").(map[string]string)
+	query, metadata, err := decodeBody(r)
+	if err != nil {
+		slog.Error("Failed to decode body: %v", err)
+		return
+	}
 
 	// Upgrade the request to a WebSocket connection
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -199,6 +180,29 @@ func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func decodeBody(r *http.Request) (*repository.LogQuery, map[string]string, error) {
+	body := readRequest{}
+	if err := request.Decode(r, &body); err != nil {
+		return nil, nil, err
+	}
+
+	query, err := parseQuery(&body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	metadata := map[string]string{
+		"services":  strings.Join(query.Services, ", "),
+		"severity":  query.Severity.String(),
+		"sinceTime": query.SinceTime.Format(time.RFC3339),
+		"untilTime": query.UntilTime.Format(time.RFC3339),
+		"sinceUUID": query.SinceUUID,
+		"reverse":   strconv.FormatBool(query.Reverse),
+	}
+
+	return query, metadata, nil
 }
 
 func parseQuery(body *readRequest) (*repository.LogQuery, error) {

@@ -11,6 +11,7 @@ import (
 	"github.com/jakewright/home-automation/service.device-registry/repository"
 )
 
+// RoomHandler has functions that deal with room-related requests
 type RoomHandler struct {
 	DeviceRepository *repository.DeviceRepository
 	RoomRepository   *repository.RoomRepository
@@ -20,6 +21,7 @@ type getRoomRequest struct {
 	RoomID string `json:"room_id"`
 }
 
+// HandleListRooms returns all rooms known by the registry
 func (h *RoomHandler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
 	rooms, err := h.RoomRepository.FindAll()
 	if err != nil {
@@ -42,6 +44,7 @@ func (h *RoomHandler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, rooms)
 }
 
+// HandleGetRoom returns a specific room by ID, including its devices.
 func (h *RoomHandler) HandleGetRoom(w http.ResponseWriter, r *http.Request) {
 	body := getRoomRequest{}
 	if err := request.Decode(r, &body); err != nil {

@@ -25,6 +25,7 @@ const (
 	UnknownSeverity Severity = 10
 )
 
+// String returns the name of the severity level
 func (s Severity) String() string {
 	switch s {
 	case DebugSeverity:
@@ -40,6 +41,7 @@ func (s Severity) String() string {
 	return "UNKNOWN"
 }
 
+// UnmarshalJSON unmarshals a JSON string into a Severity
 func (s *Severity) UnmarshalJSON(data []byte) error {
 	var str string
 	if err := json.Unmarshal(data, &str); err != nil {

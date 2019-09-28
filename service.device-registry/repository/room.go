@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/copier"
 )
 
+// RoomRepository provides access to the underlying storage layer
 type RoomRepository struct {
 	// ConfigFilename is the path to the room config file
 	ConfigFilename string
@@ -22,6 +23,7 @@ type RoomRepository struct {
 	lock     sync.RWMutex
 }
 
+// FindAll returns all rooms
 func (r *RoomRepository) FindAll() ([]*domain.Room, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
@@ -42,6 +44,7 @@ func (r *RoomRepository) FindAll() ([]*domain.Room, error) {
 	return rooms, nil
 }
 
+// Find returns a room by ID
 func (r *RoomRepository) Find(id string) (*domain.Room, error) {
 	if err := r.reload(); err != nil {
 		return nil, err

@@ -11,6 +11,7 @@ import (
 	"github.com/jakewright/home-automation/service.device-registry/domain"
 )
 
+// DeviceRepository provides access to the underlying storage layer
 type DeviceRepository struct {
 	// ConfigFilename is the path to the device config file
 	ConfigFilename string
@@ -23,6 +24,7 @@ type DeviceRepository struct {
 	lock     sync.RWMutex
 }
 
+// FindAll returns all devices
 func (r *DeviceRepository) FindAll() ([]*domain.Device, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
@@ -43,6 +45,7 @@ func (r *DeviceRepository) FindAll() ([]*domain.Device, error) {
 	return devices, nil
 }
 
+// Find returns a device by ID
 func (r *DeviceRepository) Find(deviceID string) (*domain.Device, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
@@ -59,6 +62,7 @@ func (r *DeviceRepository) Find(deviceID string) (*domain.Device, error) {
 	return out, nil
 }
 
+// FindByController returns all devices with the given controller name
 func (r *DeviceRepository) FindByController(controllerName string) ([]*domain.Device, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
@@ -81,6 +85,7 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*domain.De
 	return devices, nil
 }
 
+// FindByRoom returns all devices for the given room
 func (r *DeviceRepository) FindByRoom(roomID string) ([]*domain.Device, error) {
 	if err := r.reload(); err != nil {
 		return nil, err

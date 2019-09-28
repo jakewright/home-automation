@@ -26,6 +26,7 @@ func New() *Router {
 	}
 }
 
+// GetName returns a friendly name for the process
 func (r *Router) GetName() string {
 	return "router"
 }

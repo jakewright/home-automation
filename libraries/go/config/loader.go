@@ -14,6 +14,7 @@ const (
 	reloadInterval = time.Second * 30
 )
 
+// Loader is a process that reloads config according to the above constants
 type Loader struct {
 	ServiceName string
 
@@ -23,10 +24,12 @@ type Loader struct {
 	reloaded time.Time
 }
 
+// GetName returns a friendly name for the process
 func (l *Loader) GetName() string {
 	return "config"
 }
 
+// Load makes a request to service.config and overwrites the default config with new values
 func (l *Loader) Load() error {
 	var content map[string]interface{}
 	var err error
@@ -52,6 +55,7 @@ func (l *Loader) Load() error {
 	return nil
 }
 
+// Start reloads config periodically and blocks until Stop() is called
 func (l *Loader) Start() error {
 	l.done = make(chan struct{})
 	l.ticker = time.NewTicker(reloadInterval)
@@ -68,6 +72,7 @@ func (l *Loader) Start() error {
 	}
 }
 
+// Stop cancels the config reloading process
 func (l *Loader) Stop(ctx context.Context) error {
 	l.ticker.Stop()
 	l.done <- struct{}{}
