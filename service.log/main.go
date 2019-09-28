@@ -41,8 +41,8 @@ func main() {
 	}
 
 	r := router.New()
-	r.Get("/", readHandler.HandleRead, readHandler.DecodeBody)
-	r.Get("/ws", readHandler.HandleWebSocket, readHandler.DecodeBody)
+	r.Get("/", readHandler.HandleRead)
+	r.Get("/ws", readHandler.HandleWebSocket)
 	r.Post("/write", handler.HandleWrite)
 
 	svc.Run(r, watcher)
