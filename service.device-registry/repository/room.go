@@ -18,7 +18,7 @@ type RoomRepository struct {
 	// ReloadInterval is the amount of time to wait before reading from disk again
 	ReloadInterval time.Duration
 
-	rooms    map[string]*domain.Room
+	rooms    []*domain.Room
 	reloaded time.Time
 	lock     sync.RWMutex
 }
@@ -53,12 +53,18 @@ func (r *RoomRepository) Find(id string) (*domain.Room, error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	out := &domain.Room{}
-	if err := copier.Copy(out, r.rooms[id]); err != nil {
-		return nil, err
+	for _, room := range r.rooms {
+		if room.ID == id {
+			out := &domain.Room{}
+			if err := copier.Copy(out, room); err != nil {
+				return nil, err
+			}
+
+			return out, nil
+		}
 	}
 
-	return out, nil
+	return nil, nil
 }
 
 func (r *RoomRepository) reload() error {
@@ -82,13 +88,7 @@ func (r *RoomRepository) reload() error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	if r.rooms == nil {
-		r.rooms = map[string]*domain.Room{}
-	}
-
-	for _, room := range cfg.Rooms {
-		r.rooms[room.ID] = room
-	}
+	r.rooms = cfg.Rooms
 
 	r.reloaded = time.Now()
 	return nil

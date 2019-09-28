@@ -19,7 +19,7 @@ type DeviceRepository struct {
 	// ReloadInterval is the amount of time to wait before reading from disk again
 	ReloadInterval time.Duration
 
-	devices  map[string]*domain.Device
+	devices  []*domain.Device
 	reloaded time.Time
 	lock     sync.RWMutex
 }
@@ -46,7 +46,7 @@ func (r *DeviceRepository) FindAll() ([]*domain.Device, error) {
 }
 
 // Find returns a device by ID
-func (r *DeviceRepository) Find(deviceID string) (*domain.Device, error) {
+func (r *DeviceRepository) Find(id string) (*domain.Device, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -54,16 +54,23 @@ func (r *DeviceRepository) Find(deviceID string) (*domain.Device, error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	out := &domain.Device{}
-	if err := copier.Copy(out, r.devices[deviceID]); err != nil {
-		return nil, err
+	for _, device := range r.devices {
+		if device.ID == id {
+			out := &domain.Device{}
+			if err := copier.Copy(out, device); err != nil {
+				return nil, err
+			}
+
+			return out, nil
+		}
 	}
 
-	return out, nil
+	return nil, nil
 }
 
 // FindByController returns all devices with the given controller name
 func (r *DeviceRepository) FindByController(controllerName string) ([]*domain.Device, error) {
+	// Skip if we've recently reloaded
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -130,13 +137,7 @@ func (r *DeviceRepository) reload() error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	if r.devices == nil {
-		r.devices = map[string]*domain.Device{}
-	}
-
-	for _, device := range cfg.Devices {
-		r.devices[device.ID] = device
-	}
+	r.devices = cfg.Devices
 
 	r.reloaded = time.Now()
 	return nil
