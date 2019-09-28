@@ -22,7 +22,6 @@ jobs:
     - name: goimports
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
-        printf "$PATH\n"
         go get -u golang.org/x/tools/cmd/goimports
         test -z "$(goimports -l .)"
     
@@ -32,7 +31,6 @@ jobs:
     - name: golint
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
-        printf "$PATH\n"
         go get -u golang.org/x/lint/golint    
         golint -set_exit_status ./...
 
