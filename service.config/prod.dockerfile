@@ -1,10 +1,8 @@
-FROM golang:latest
-RUN go get github.com/golang/dep/cmd/dep
+FROM golang:1.13
 
-WORKDIR /go/src/github.com/jakewright/home-automation
+WORKDIR /app
 COPY . .
 
-RUN dep ensure
 RUN CGO_ENABLED=0 GOOS=linux go install ./service.config
 
 FROM alpine:latest
