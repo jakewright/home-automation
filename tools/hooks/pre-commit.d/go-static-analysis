@@ -1,6 +1,7 @@
 #!/bin/sh
 
-STAGED_GO_FILES=$(git diff --staged --name-only | grep "\.go$")
+# Select all go files that have been added, created, or modified that are staged
+STAGED_GO_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep "\.go$")
 if [[ "$STAGED_GO_FILES" = "" ]]; then
   exit 0
 fi
