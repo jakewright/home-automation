@@ -1,4 +1,4 @@
-package api
+package rpc
 
 import (
 	"bytes"
@@ -41,6 +41,11 @@ func mustGetDefaultClient() Requester {
 	return DefaultClient
 }
 
+// Do makes a request using the default client
+func Do(req *Request, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Do(req, response)
+}
+
 // Get makes GET requests using the default client
 func Get(url string, response interface{}) (*Response, error) {
 	return mustGetDefaultClient().Get(url, response)
@@ -56,7 +61,7 @@ func Patch(url string, body map[string]interface{}, response interface{}) (*Resp
 	return mustGetDefaultClient().Patch(url, body, response)
 }
 
-// New returns a new API Client
+// New returns a new RPC Client
 func New(base string, envelope string) (Requester, error) {
 	u, err := url.Parse(base)
 	if err != nil {
@@ -76,13 +81,13 @@ func New(base string, envelope string) (Requester, error) {
 type Request struct {
 	Method string
 	URL    string
-	Body   map[string]interface{}
+	Body   interface{}
 }
 
 // Response wraps the http.Response returned from the request
 type Response struct {
 	*http.Response
-	Body string
+	Body []byte
 }
 
 // Do performs the HTTP request. Relative URLs will have the base URL prepended. An error
@@ -107,6 +112,9 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 	// If the URL is relative, prepend the base URL
 	absURL := request.URL
 	u, err := url.Parse(request.URL)
+	if err != nil {
+		return nil, err
+	}
 	if !u.IsAbs() {
 		absURL = fmt.Sprintf("%s/%s", c.Base, strings.TrimLeft(request.URL, "/"))
 	}
@@ -133,7 +141,7 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 	if err != nil {
 		return rsp, err
 	}
-	rsp.Body = string(body)
+	rsp.Body = body
 
 	// Validate the status
 	if !c.ValidateStatus(rawRsp.StatusCode) {
@@ -171,7 +179,7 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 		}
 	}
 
-	return &Response{Response: rawRsp, Body: string(body)}, nil
+	return rsp, nil
 }
 
 // Get performs a GET request

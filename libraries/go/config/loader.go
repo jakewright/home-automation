@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/api"
+	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
@@ -34,7 +34,7 @@ func (l *Loader) Load() error {
 	var content map[string]interface{}
 	var err error
 	for i := 0; i < maxRetries; i++ {
-		if _, err = api.Get("service.config/read/"+l.ServiceName, &content); err == nil {
+		if _, err = rpc.Get("service.config/read/"+l.ServiceName, &content); err == nil {
 			break
 		}
 		slog.Error("Failed to load config [attempt %d of %d]: %v", i+1, maxRetries, err)

@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/api"
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 
 	"github.com/go-redis/redis"
@@ -43,11 +43,11 @@ func Init(serviceName string) (*Service, error) {
 	if apiGateway == "" {
 		return nil, fmt.Errorf("API_GATEWAY env var not set")
 	}
-	apiClient, err := api.New(apiGateway, "data")
+	apiClient, err := rpc.New(apiGateway, "data")
 	if err != nil {
 		return nil, err
 	}
-	api.DefaultClient = apiClient
+	rpc.DefaultClient = apiClient
 
 	// Load config
 	configLoader := &config.Loader{
