@@ -6,6 +6,7 @@ require (
 	github.com/creack/pty v1.1.7
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-redis/redis v6.15.5+incompatible
+	github.com/golang/protobuf v1.3.2
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.1
 	github.com/jakewright/muxinator v0.0.0-20190505163137-fedb92b26321
@@ -13,7 +14,7 @@ require (
 	github.com/jinzhu/gorm v1.9.10
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
-	github.com/pkg/errors v0.8.1 // indirect
+	github.com/pkg/errors v0.8.1
 	github.com/urfave/negroni v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
