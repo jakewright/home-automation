@@ -5,7 +5,7 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 
-	"github.com/jakewright/home-automation/service.device-registry/domain"
+	proto "github.com/jakewright/home-automation/service.device-registry/proto"
 
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
@@ -36,7 +36,7 @@ func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var devices []*domain.Device
+	var devices []*proto.Device
 	var err error
 	if body.ControllerName != "" {
 		devices, err = h.DeviceRepository.FindByController(body.ControllerName)

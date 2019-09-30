@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jakewright/home-automation/service.device-registry/domain"
+	proto "github.com/jakewright/home-automation/service.device-registry/proto"
 	"github.com/jinzhu/copier"
 )
 
@@ -18,13 +18,13 @@ type RoomRepository struct {
 	// ReloadInterval is the amount of time to wait before reading from disk again
 	ReloadInterval time.Duration
 
-	rooms    []*domain.Room
+	rooms    []*proto.Room
 	reloaded time.Time
 	lock     sync.RWMutex
 }
 
 // FindAll returns all rooms
-func (r *RoomRepository) FindAll() ([]*domain.Room, error) {
+func (r *RoomRepository) FindAll() ([]*proto.Room, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -32,9 +32,9 @@ func (r *RoomRepository) FindAll() ([]*domain.Room, error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	var rooms []*domain.Room
+	var rooms []*proto.Room
 	for _, room := range r.rooms {
-		out := &domain.Room{}
+		out := &proto.Room{}
 		if err := copier.Copy(out, room); err != nil {
 			return nil, err
 		}
@@ -45,7 +45,7 @@ func (r *RoomRepository) FindAll() ([]*domain.Room, error) {
 }
 
 // Find returns a room by ID
-func (r *RoomRepository) Find(id string) (*domain.Room, error) {
+func (r *RoomRepository) Find(id string) (*proto.Room, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (r *RoomRepository) Find(id string) (*domain.Room, error) {
 
 	for _, room := range r.rooms {
 		if room.ID == id {
-			out := &domain.Room{}
+			out := &proto.Room{}
 			if err := copier.Copy(out, room); err != nil {
 				return nil, err
 			}
@@ -79,7 +79,7 @@ func (r *RoomRepository) reload() error {
 	}
 
 	var cfg struct {
-		Rooms []*domain.Room `json:"rooms"`
+		Rooms []*proto.Room `json:"rooms"`
 	}
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return err
