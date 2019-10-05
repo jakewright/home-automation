@@ -44,7 +44,7 @@ func (w *Watcher) Start() error {
 	// that the Stop method can call Close() on it
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return errors.Wrap(err, nil)
+		return errors.Wrap(err, "failed to create file watcher")
 	}
 	defer watcher.Close()
 	w.watcher = watcher
@@ -52,7 +52,7 @@ func (w *Watcher) Start() error {
 	// Start watching the log file directory so we
 	// are notified when new log files are created
 	if err = watcher.Add(w.LogRepository.LogDirectory); err != nil {
-		return errors.Wrap(err, nil)
+		return errors.Wrap(err, "failed to watch log directory")
 	}
 	slog.Info("Watching %s for changes", w.LogRepository.LogDirectory)
 
@@ -101,7 +101,7 @@ func (w *Watcher) Start() error {
 
 			// It's unclear what state the watcher will be in if we receive
 			// any errors so just return, which will trigger Close()
-			return errors.Wrap(err, nil)
+			return errors.Wrap(err, "received error from watcher")
 		}
 	}
 }

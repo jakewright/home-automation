@@ -112,68 +112,88 @@ func Unauthorized(format string, a ...interface{}) *Error {
 	return newError(ErrUnauthorized, format, a)
 }
 
-// Wrap turns a standard error into an errors.Error
-func Wrap(err error, metadata map[string]string) *Error {
-	return &Error{ErrInternalService, err.Error(), metadata}
+// Wrap prepends a new message onto an existing error to add more context.
+// Optionally, the last parameter can be a map[string]string containing
+// metadata. If the error-to-wrap is already an *Error, the metadata will
+// me merged and the existing code will remain the same. If the error
+// is not an *Error, the code will default to ErrInternalService.
+func Wrap(err error, format string, a ...interface{}) *Error {
+	return WrapWithCode(err, "", format, a...)
 }
 
-func WithMessage(format string, a ...interface{}) {
-	var metadata map[string]string
+// WrapWithCode wraps the given error in the same way as Wrap but allows
+// the code to be set/overridden.
+func WrapWithCode(err error, code, format string, a ...interface{}) *Error {
+	metadata, a := extractMetadata(format, a)
 
+	// By default, the message of the returned error is the
+	// error-to-wrap's message. If the given format is not
+	// the empty string, the message becomes: new message: old message.
+	msg := err.Error()
+	if format != "" {
+		msg = fmt.Sprintf(format, a...) + ": " + msg
+	}
+
+	// If the message to wrap is already an *Error
+	switch v := err.(type) {
+	case *Error:
+		v.Message = msg
+		v.Metadata = mergeMetadata(v.Metadata, metadata)
+
+		if code != "" {
+			v.Code = code
+		}
+
+		return v
+	}
+
+	if code == "" {
+		code = ErrInternalService
+	}
+
+	return &Error{code, msg, metadata}
+}
+
+// newError returns a new Error with the given code. The message is formatted using Sprintf.
+// If the last parameter is a map[string]string, it is assumed to be the error params.
+func newError(code, format string, a []interface{}) *Error {
+	metadata, a := extractMetadata(format, a)
+	message := fmt.Sprintf(format, a...)
+	return &Error{code, message, metadata}
+}
+
+func extractMetadata(format string, a []interface{}) (map[string]string, []interface{}) {
 	if len(a) > 0 {
 		// If we have too many parameters for the formatting directive,
 		// the last parameter should be a metadata map.
 		operandCount := util.CountFmtOperands(format)
 		if len(a) > operandCount {
-			var ok bool
-			metadata, ok = a[len(a)-1].(map[string]string)
+			metadata, ok := a[len(a)-1].(map[string]string)
 			if !ok {
 				panic("Failed to assert metadata type")
 			}
-			a = a[:operandCount]
+			return metadata, a[:operandCount]
 		}
 	}
 
+	return nil, a
 }
 
-// newError returns a new Error with the given code. The message is formatted using Sprintf.
-// If the last parameter is a map[string]string, it is assumed to be the error params.
-func newError(code, format string, params []interface{}) *Error {
-	// Take the last parameter
-	last := params[len(params)-1]
-
-	// Try to cast it to a map[string]string. If it fails, metadata will be an empty map.
-	metadata, ok := last.(map[string]string)
-
-	var message string
-
-	// If the last parameter was a map[string]string
-	if ok {
-		// Format the string using all but the last parameter
-		message = fmt.Sprintf(format, params[:len(params)-1]...)
-	} else {
-		// Format the string using all parameters
-		message = fmt.Sprintf(format, params...)
+// mergeMetadata merges the metadata but preserves existing entries
+func mergeMetadata(current, new map[string]string) map[string]string {
+	if len(new) == 0 {
+		return current
 	}
 
-	return &Error{code, message, metadata}
-}
-
-func lastError(format string, a []interface{}) error {
-	if !strings.HasSuffix(format, ": %w") &&
-		!strings.HasSuffix(format, ": %s") &&
-		!strings.HasSuffix(format, ": %v") {
-		return nil
+	if current == nil {
+		current = map[string]string{}
 	}
 
-	if len(a) == 0 {
-		return nil
+	for k, v := range new {
+		if _, ok := current[k]; !ok {
+			current[k] = v
+		}
 	}
 
-	err, ok := a[len(a)-1].(error)
-	if !ok {
-		return nil
-	}
-
-	return err
+	return current
 }

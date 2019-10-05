@@ -131,7 +131,7 @@ func readLines(filename string) ([][]byte, error) {
 
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, errors.Wrap(err, nil)
+		return nil, errors.Wrap(err, "failed to read log file")
 	}
 
 	return bytes.Split(data, []byte("\n")), nil
