@@ -60,7 +60,7 @@ func Decode(r *http.Request, v interface{}) error {
 	}
 
 	// Read the body of the request
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return errors.Wrap(err, nil)
