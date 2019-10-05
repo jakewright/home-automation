@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
 // Error is a custom error type that implements Go's error interface
@@ -60,7 +62,6 @@ func (e *Error) Matches(match string) bool {
 }
 
 // Generic error codes. Each of these has their own constructor for convenience.
-// You can use any string as a code, just use the `New` method.
 const (
 	ErrBadRequest         = "bad_request"
 	ErrForbidden          = "forbidden"
@@ -116,6 +117,25 @@ func Wrap(err error, metadata map[string]string) *Error {
 	return &Error{ErrInternalService, err.Error(), metadata}
 }
 
+func WithMessage(format string, a ...interface{}) {
+	var metadata map[string]string
+
+	if len(a) > 0 {
+		// If we have too many parameters for the formatting directive,
+		// the last parameter should be a metadata map.
+		operandCount := util.CountFmtOperands(format)
+		if len(a) > operandCount {
+			var ok bool
+			metadata, ok = a[len(a)-1].(map[string]string)
+			if !ok {
+				panic("Failed to assert metadata type")
+			}
+			a = a[:operandCount]
+		}
+	}
+
+}
+
 // newError returns a new Error with the given code. The message is formatted using Sprintf.
 // If the last parameter is a map[string]string, it is assumed to be the error params.
 func newError(code, format string, params []interface{}) *Error {
@@ -137,4 +157,23 @@ func newError(code, format string, params []interface{}) *Error {
 	}
 
 	return &Error{code, message, metadata}
+}
+
+func lastError(format string, a []interface{}) error {
+	if !strings.HasSuffix(format, ": %w") &&
+		!strings.HasSuffix(format, ": %s") &&
+		!strings.HasSuffix(format, ": %v") {
+		return nil
+	}
+
+	if len(a) == 0 {
+		return nil
+	}
+
+	err, ok := a[len(a)-1].(error)
+	if !ok {
+		return nil
+	}
+
+	return err
 }

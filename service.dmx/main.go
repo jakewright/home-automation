@@ -4,6 +4,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/service.dmx/handler"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	}
 
 	r := router.New()
-	r.Patch("/{device_id}")
+	r.Patch("/{device_id}", handler.Update)
 
 	svc.Run(r)
 }
