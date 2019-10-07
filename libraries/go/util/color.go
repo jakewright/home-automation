@@ -3,8 +3,12 @@ package util
 import (
 	"fmt"
 	"image/color"
+
+	"github.com/jakewright/home-automation/libraries/go/errors"
 )
 
+// ParseHexColor turns a hexadecimal color code (e.g. #FBEE13)
+// into a color.RGBA.
 func ParseHexColor(s string) (c color.RGBA, err error) {
 	c.A = 0xff
 	switch len(s) {
@@ -17,7 +21,13 @@ func ParseHexColor(s string) (c color.RGBA, err error) {
 		c.G *= 17
 		c.B *= 17
 	default:
-		err = fmt.Errorf("invalid length, must be 7 or 4")
+		err = errors.BadRequest("invalid length; must be 7 or 4 characters")
+	}
+
+	if err != nil {
+		err = errors.WrapWithCode(err, errors.ErrBadRequest, "failed to parse hex color code", map[string]string{
+			"color_code": s,
+		})
 	}
 
 	return
