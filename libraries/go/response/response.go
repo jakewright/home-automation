@@ -33,9 +33,11 @@ func WriteJSON(w http.ResponseWriter, data interface{}) {
 	if e, ok := data.(*errors.Error); ok {
 		status = e.HTTPStatus()
 		payload.Message = e.Error()
+		slog.Error(e.Error(), e.GetMetadata())
 	} else if e, ok := (data).(error); ok {
 		status = http.StatusInternalServerError
 		payload.Message = e.Error()
+		slog.Error(e.Error())
 	} else {
 		payload.Data = data
 	}
