@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"image/color"
@@ -20,6 +21,7 @@ type MegaParProfile struct {
 	brightness byte
 }
 
+// ID returns the device ID
 func (f *MegaParProfile) ID() string {
 	return f.DeviceHeader.ID
 }
@@ -39,7 +41,9 @@ func (f *MegaParProfile) DMXValues() []byte {
 	return []byte{f.color.R, f.color.G, f.color.B, f.colorMacro, f.strobe, f.program, b}
 }
 
-func (f *MegaParProfile) UnmarshalJSON(data []byte) error {
+// SetProperties unmarshals the []byte as JSON and sets
+// any properties that exist in the resulting object.
+func (f *MegaParProfile) SetProperties(data []byte) (bool, error) {
 	var properties struct {
 		RGB        string `json:"rgb"`
 		Strobe     *byte  `json:"strobe"`
@@ -48,16 +52,18 @@ func (f *MegaParProfile) UnmarshalJSON(data []byte) error {
 	}
 
 	if err := json.Unmarshal(data, &properties); err != nil {
-		return err
+		return false, err
 	}
 
 	var c color.RGBA
 	if properties.RGB != "" {
 		var err error
 		if c, err = util.ParseHexColor(properties.RGB); err != nil {
-			return err
+			return false, err
 		}
 	}
+
+	oldState := f.DMXValues()
 
 	if properties.Power != nil {
 		f.power = *properties.Power
@@ -72,11 +78,13 @@ func (f *MegaParProfile) UnmarshalJSON(data []byte) error {
 		f.strobe = *properties.Strobe
 	}
 
-	return nil
+	equal := bytes.Equal(oldState, f.DMXValues())
+	return !equal, nil
 }
 
+// MarshalJSON returns the standard home-automation JSON encoding of the device
 func (f *MegaParProfile) MarshalJSON() ([]byte, error) {
-	rgb := fmt.Sprintf("#%02x%0x%0x", f.color.R, f.color.G, f.color.G)
+	rgb := fmt.Sprintf("#%02X%02X%02X", f.color.R, f.color.G, f.color.G)
 
 	return json.Marshal(&struct {
 		*DeviceHeader

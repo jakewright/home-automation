@@ -5,55 +5,75 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/jakewright/home-automation/service.dmx/domain"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/service.dmx/ola"
 
-	"github.com/jakewright/home-automation/service.dmx/repository"
-
-	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
-	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
 type DMXHandler struct {
-	Repository *repository.DMXRepository
-}
-
-type updateRequest struct {
-	DeviceID   string `json:"device_id"` // URL param
-	RGB        string `json:"rgb"`
-	Strobe     int    `json:"strobe"`
-	Brightness int    `json:"brightness"`
+	Universe *domain.Universe
 }
 
 func (h *DMXHandler) Read(w http.ResponseWriter, r *http.Request) {
+	// Get the device ID from the route params
 	deviceID, ok := mux.Vars(r)["device_id"]
 	if !ok {
-
+		response.WriteJSON(w, errors.BadRequest("device_id not set in route params"))
+		return
 	}
 
-	defer func() { _ = r.Body.Close() }()
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-
-	}
-
-	fixture := h.Repository.Find(deviceID)
+	fixture := h.Universe.Find(deviceID)
 	if fixture == nil {
 		response.WriteJSON(w, errors.NotFound("Device '%s' not found", deviceID))
+		return
 	}
 
-	request.Decode(r, &fixture)
-
-	ola.SetDMX()
+	response.WriteJSON(w, fixture)
 }
 
 func (h *DMXHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var body updateRequest
-	if err := request.Decode(r, &body); err != nil {
-		slog.Error("Failed to decode body: %v", err)
-		response.WriteJSON(w, err)
+	// Get the device ID from the route params
+	deviceID, ok := mux.Vars(r)["device_id"]
+	if !ok {
+		response.WriteJSON(w, errors.BadRequest("device_id not set in route params"))
 		return
 	}
+
+	fixture := h.Universe.Find(deviceID)
+	if fixture == nil {
+		response.WriteJSON(w, errors.NotFound("Device '%s' not found", deviceID))
+		return
+	}
+
+	// Read the body of the request
+	defer func() { _ = r.Body.Close() }()
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		response.WriteJSON(w, errors.Wrap(err, "failed to read request body"))
+		return
+	}
+
+	changed, err := fixture.SetProperties(body)
+	if err != nil {
+		response.WriteJSON(w, errors.Wrap(err, "failed to update fixture"))
+		return
+	}
+
+	if err := ola.SetDMX(h.Universe.Number, h.Universe.DMXValues()); err != nil {
+		response.WriteJSON(w, errors.Wrap(err, "failed to set DMX values"))
+		return
+	}
+
+	if changed {
+		if err := firehose.Publish("device-state-changed." + deviceID, fixture); err != nil {
+			response.WriteJSON(w, errors.Wrap(err, "failed to emit event"))
+			return
+		}
+	}
+
+	response.WriteJSON(w, fixture)
 }

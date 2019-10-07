@@ -16,19 +16,6 @@ type DMXRepository struct {
 	mux         sync.RWMutex
 }
 
-func (r *DMXRepository) Find(id string) domain.Fixture {
-	r.mux.RLock()
-	defer r.mux.RUnlock()
-
-	for _, f := range r.universe.Fixtures {
-		if f.ID() == id {
-			return f
-		}
-	}
-
-	return nil
-}
-
 func (r *DMXRepository) FetchDevices() error {
 	url := fmt.Sprintf("service.device-registry/devices?controller_name=%s", r.ServiceName)
 	var rsp []*domain.DeviceHeader
