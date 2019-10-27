@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
 // Error is a custom error type that implements Go's error interface
@@ -166,7 +164,7 @@ func extractMetadata(format string, a []interface{}) (map[string]string, []inter
 	if len(a) > 0 {
 		// If we have too many parameters for the formatting directive,
 		// the last parameter should be a metadata map.
-		operandCount := util.CountFmtOperands(format)
+		operandCount := countFmtOperands(format)
 		if len(a) > operandCount {
 			metadata, ok := a[len(a)-1].(map[string]string)
 			if !ok {

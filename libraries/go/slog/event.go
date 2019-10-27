@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
 type metadataProvider interface {
@@ -28,7 +26,7 @@ func newEventFromFormat(severity Severity, format string, a ...interface{}) *Eve
 	if len(a) > 0 {
 		// If we have too many parameters for the formatting directive,
 		// the last parameter should be a metadata map.
-		operandCount := util.CountFmtOperands(format)
+		operandCount := countFmtOperands(format)
 		if len(a) > operandCount {
 			var ok bool
 			metadata, ok = a[len(a)-1].(map[string]string)

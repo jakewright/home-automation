@@ -38,6 +38,7 @@ func (r *DMXRepository) FetchDevices() error {
 		if err != nil {
 			return errors.InternalService("Failed to create fixture: %v", err)
 		}
-		r.universe.Fixtures = append(r.universe.Fixtures, fixture)
+
+		r.universe.AddFixture(fixture)
 	}
 }

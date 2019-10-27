@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package util
+package slog
 
 import (
 	"regexp"
@@ -36,7 +36,7 @@ var formatterRe = regexp.MustCompile(`%` +
 	`[vTtbcdoqxXUbeEfFgGsqxXpt%]`, // Verb
 )
 
-func CountFmtOperands(input string) int {
+func countFmtOperands(input string) int {
 	count, point := 0, 0
 	for _, match := range formatterRe.FindAllStringSubmatch(input, -1) {
 		if match[0] == "%%" {
