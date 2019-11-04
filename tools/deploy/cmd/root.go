@@ -2,19 +2,38 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 
+	"github.com/jakewright/home-automation/tools/deploy/config"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 var (
+	revision bool
+
 	rootCmd = &cobra.Command{
 		Use:       "deploy",
 		Short:     "A deployment tool for home automation",
 		ValidArgs: []string{"service"},
 		Args:      cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			service := args[0]
+			if revision {
+				fmt.Printf("Revision flag set\n")
+			}
+
+			service := config.FindService(args[0])
+			if service == nil {
+				log.Fatalf("Unknown service '%s'", args[0])
+			}
+
+			switch service.System {
+			case systemSystemd:
+				//
+			}
+
 			fmt.Printf("Building %s...\n", service)
 		},
 	}
@@ -29,9 +48,6 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().BoolVar(&revision, "revision", false, "Retrieve the currently deployed version of the service")
 }
 
-func initConfig() {
-
-}

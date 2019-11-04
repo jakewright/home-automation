@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/jakewright/home-automation/tools/deploy/build"
+	"github.com/jakewright/home-automation/tools/deploy/cmd"
 )
 
 // BuildDirectory is injected at compile time
@@ -17,8 +17,7 @@ func main() {
 		//log.Fatalf("Must be run from home-automation root: %s\n", BuildDirectory)
 	}
 
-	log.Printf("Checkout out code")
-	if err := build.Checkout("master"); err != nil {
-		log.Fatal(err)
-	}
+	// Load the configuration
+
+	cmd.Execute()
 }
