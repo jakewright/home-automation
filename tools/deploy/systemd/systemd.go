@@ -26,13 +26,6 @@ func Deploy(service *config.Service) error {
 	return nil
 }
 
-func deployGo(service *config.Service) error {
-	// Checkout the code
-	// Build the binary
-	// SSH to the target
-	//
-}
-
 func deployJavaScript(service *config.Service) error {
 
 }

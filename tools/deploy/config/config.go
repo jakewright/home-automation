@@ -8,31 +8,32 @@ import (
 )
 
 const (
-	LangGo = "go"
+	LangGo         = "go"
 	LangJavaScript = "javascript"
-	SysDocker = "docker"
-	SysSystemd = "systemd"
+	SysDocker      = "docker"
+	SysSystemd     = "systemd"
 )
 
 var cfg config
 
 type config struct {
-	Targets map[string]*Target `yaml:"targets"`
+	Targets  map[string]*Target  `yaml:"targets"`
 	Services map[string]*Service `yaml:"services"`
 }
 
 type Target struct {
-	Name string `yaml:"-"`
-	Host string `yaml:"host"`
-	Username string `yaml:"username"`
+	Name      string `yaml:"-"`
+	Host      string `yaml:"host"`
+	Username  string `yaml:"username"`
 	Directory string `yaml:"directory"`
 }
 
 type Service struct {
-	Name string `yaml:"-"`
-	Target string `yaml:"target"`
-	Language string `yaml:"language"`
-	System string `yaml:"system"`
+	Name       string  `yaml:"-"`
+	TargetName string  `yaml:"target"`
+	Target     *Target `yaml:"-"`
+	Language   string  `yaml:"language"`
+	System     string  `yaml:"system"`
 }
 
 func init() {
@@ -62,10 +63,17 @@ func init() {
 		default:
 			log.Fatalf("Invalid system '%s' for service '%s'\n", service.System, name)
 		}
+
+		target := findTarget(service.TargetName)
+		if target == nil {
+			log.Fatalf("Invalid target '%s' for service '%s'\n", service.TargetName, name)
+		}
+
+		service.Target = target
 	}
 }
 
-func FindTarget(name string) *Target {
+func findTarget(name string) *Target {
 	return cfg.Targets[name]
 }
 

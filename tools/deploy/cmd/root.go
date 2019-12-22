@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/jakewright/home-automation/tools/deploy/config"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -30,7 +28,7 @@ var (
 			}
 
 			switch service.System {
-			case systemSystemd:
+			case config.SysSystemd:
 				//
 			}
 
@@ -50,4 +48,3 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&revision, "revision", false, "Retrieve the currently deployed version of the service")
 }
-
