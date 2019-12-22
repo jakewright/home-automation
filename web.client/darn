@@ -2,7 +2,7 @@
 
 docker \
   run --rm -it \
-  --volume $PWD:/usr/src/app \
+  --volume "$PWD":/usr/src/app \
   --volume $(dirname "$PWD")/private/.npmrc:/usr/src/app/.npmrc \
   --workdir /usr/src/app \
   node:12 npm "$@"
