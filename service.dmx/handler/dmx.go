@@ -69,7 +69,7 @@ func (h *DMXHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if changed {
-		if err := firehose.Publish("device-state-changed." + deviceID, fixture); err != nil {
+		if err := firehose.Publish("device-state-changed."+deviceID, fixture); err != nil {
 			response.WriteJSON(w, errors.Wrap(err, "failed to emit event"))
 			return
 		}

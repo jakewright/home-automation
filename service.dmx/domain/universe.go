@@ -7,7 +7,7 @@ import (
 
 // Universe represents a set of fixtures in a 512 channel space
 type Universe struct {
-	Number   int
+	Number int
 
 	fixtures []Fixture
 	mux      sync.RWMutex
