@@ -36,7 +36,7 @@ func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var devices []*proto.Device
+	var devices []*proto.DeviceHeader
 	var err error
 	if body.ControllerName != "" {
 		devices, err = h.DeviceRepository.FindByController(body.ControllerName)

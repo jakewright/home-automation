@@ -19,10 +19,12 @@ func main() {
 	universeNumber := config.Get("universe.number").Int()
 	u := &domain.Universe{Number: universeNumber}
 
-	if err := (device.Loader{
+	l := device.Loader{
 		ServiceName: "service.dmx",
 		Universe:    u,
-	}.FetchDevices()); err != nil {
+	}
+
+	if err := l.FetchDevices(); err != nil {
 		slog.Panic("Failed to load devices: %v", err)
 	}
 

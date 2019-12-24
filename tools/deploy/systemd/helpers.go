@@ -11,7 +11,7 @@ import (
 )
 
 func createSSHScript(serviceName, language, workingDirectory, cmd string) string {
-
+	return ""
 }
 
 func stopService(serviceName string) string {
@@ -59,9 +59,10 @@ func unit(serviceName, language, workingDirectory, cmd string) string {
 	switch language {
 	case config.LangGo:
 		return goUnit(serviceName, workingDirectory, cmd)
-	default:
-		log.Fatalf("no systemd unit definition for language '%s'\n", language)
 	}
+
+	log.Fatalf("no systemd unit definition for language '%s'\n", language)
+	return ""
 }
 
 func goUnit(serviceName, workingDirectory, cmd string) string {

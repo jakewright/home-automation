@@ -81,7 +81,7 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*proto.Dev
 	var devices []*proto.DeviceHeader
 	for _, device := range r.devices {
 		if device.ControllerName == controllerName {
-			out := &proto.Device{}
+			out := &proto.DeviceHeader{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}
@@ -93,7 +93,7 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*proto.Dev
 }
 
 // FindByRoom returns all devices for the given room
-func (r *DeviceRepository) FindByRoom(roomID string) ([]*proto.Device, error) {
+func (r *DeviceRepository) FindByRoom(roomID string) ([]*proto.DeviceHeader, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (r *DeviceRepository) FindByRoom(roomID string) ([]*proto.Device, error) {
 	var devices []*proto.DeviceHeader
 	for _, device := range r.devices {
 		if device.RoomID == roomID {
-			out := &proto.Device{}
+			out := &proto.DeviceHeader{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}

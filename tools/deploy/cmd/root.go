@@ -32,7 +32,7 @@ var (
 				//
 			}
 
-			fmt.Printf("Building %s...\n", service)
+			fmt.Printf("Building %s...\n", service.Name)
 		},
 	}
 )

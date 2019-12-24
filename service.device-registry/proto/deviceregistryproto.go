@@ -40,8 +40,8 @@ type Property interface {
 
 type IntProperty struct {
 	Value         int    `json:"value"`
-	Min           *int   `json:"value,omitempty"`
-	Max           *int   `json:"value,omitempty"`
+	Min           *int   `json:"min,omitempty"`
+	Max           *int   `json:"max,omitempty"`
 	Interpolation string `json:",omitempty"`
 }
 

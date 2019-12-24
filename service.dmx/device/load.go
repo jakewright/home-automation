@@ -36,4 +36,6 @@ func (l *Loader) FetchDevices() error {
 
 		l.Universe.AddFixture(fixture)
 	}
+
+	return nil
 }

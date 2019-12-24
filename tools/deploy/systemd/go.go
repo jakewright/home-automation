@@ -45,5 +45,6 @@ EOF
 		log.Fatal(err)
 	}
 
-	return b.String()
+	//return b.String()
+	return nil
 }

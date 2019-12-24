@@ -22,10 +22,8 @@ func Deploy(service *config.Service) error {
 	default:
 		return fmt.Errorf("unsupported language '%s'", service.Language)
 	}
-
-	return nil
 }
 
 func deployJavaScript(service *config.Service) error {
-
+	return nil
 }
