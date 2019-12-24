@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Service constants
 const (
 	LangGo         = "go"
 	LangJavaScript = "javascript"
@@ -21,6 +22,7 @@ type config struct {
 	Services map[string]*Service `yaml:"services"`
 }
 
+// Target is the destination server for the deployment
 type Target struct {
 	Name      string `yaml:"-"`
 	Host      string `yaml:"host"`
@@ -28,6 +30,7 @@ type Target struct {
 	Directory string `yaml:"directory"`
 }
 
+// Service is the microservice to be deployed
 type Service struct {
 	Name       string  `yaml:"-"`
 	TargetName string  `yaml:"target"`
@@ -77,6 +80,7 @@ func findTarget(name string) *Target {
 	return cfg.Targets[name]
 }
 
+// FindService returns a service by name or nil if it doesn't exist
 func FindService(name string) *Service {
 	return cfg.Services[name]
 }

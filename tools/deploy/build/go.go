@@ -1,4 +1,4 @@
 package build
 
-type GoBuilder struct {
-}
+//type GoBuilder struct {
+//}

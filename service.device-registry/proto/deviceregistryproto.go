@@ -1,8 +1,8 @@
 package deviceregistryproto
 
-import "encoding/json"
-
 const (
+	// InterpolationContinuous describes an integer property that is updated
+	// smoothly and continuously e.g. volume, as opposed to channel number.
 	InterpolationContinuous = "continuous"
 )
 
@@ -24,34 +24,4 @@ type Room struct {
 	ID      string          `json:"id"`
 	Name    string          `json:"name"`
 	Devices []*DeviceHeader `json:"devices,omitempty"`
-}
-
-type ListDeviceResponse []*DeviceHeader
-
-type GetDeviceResponse *DeviceHeader
-
-type ListRoomsResponse []*Room
-
-type GetRoomResponse *Room
-
-type Property interface {
-	MarshalJSON() ([]byte, error)
-}
-
-type IntProperty struct {
-	Value         int    `json:"value"`
-	Min           *int   `json:"min,omitempty"`
-	Max           *int   `json:"max,omitempty"`
-	Interpolation string `json:",omitempty"`
-}
-
-func (p *IntProperty) MarshalJSON() ([]byte, error) {
-	type Alias IntProperty
-	return json.Marshal(&struct {
-		Type string `json:"type"`
-		*Alias
-	}{
-		Type:  "int",
-		Alias: (*Alias)(p),
-	})
 }

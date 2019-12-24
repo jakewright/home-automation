@@ -14,10 +14,12 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/response"
 )
 
+// DMXHandler handles device requests
 type DMXHandler struct {
 	Universe *domain.Universe
 }
 
+// Read returns the current state of a fixture
 func (h *DMXHandler) Read(w http.ResponseWriter, r *http.Request) {
 	// Get the device ID from the route params
 	deviceID, ok := mux.Vars(r)["device_id"]
@@ -35,6 +37,7 @@ func (h *DMXHandler) Read(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, fixture)
 }
 
+// Update modifies fixture properties
 func (h *DMXHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// Get the device ID from the route params
 	deviceID, ok := mux.Vars(r)["device_id"]

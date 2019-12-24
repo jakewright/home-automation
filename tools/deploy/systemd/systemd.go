@@ -6,6 +6,7 @@ import (
 	"github.com/jakewright/home-automation/tools/deploy/config"
 )
 
+// Deploy deploys the given service
 func Deploy(service *config.Service) error {
 	if service == nil {
 		return fmt.Errorf("service is nil")

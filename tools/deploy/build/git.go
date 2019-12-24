@@ -13,7 +13,7 @@ const (
 	mirrorDirectory = "mirror"
 )
 
-func Checkout(reference string) error {
+func checkout(reference string) error {
 	if err := cacheDir(); err != nil {
 		return errors.Wrap(err, "failed to create cache directory")
 	}

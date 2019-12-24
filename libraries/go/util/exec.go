@@ -13,6 +13,8 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+// Exec runs a command with a pseudo-tty and returns an
+// error if the program exits with a non-zero code.
 func Exec(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 

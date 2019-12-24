@@ -8,12 +8,13 @@ import (
 	"github.com/jakewright/home-automation/service.dmx/domain"
 )
 
+// Loader loads device metadata and instantiates fixtures
 type Loader struct {
 	ServiceName string
 	Universe    *domain.Universe
 }
 
-// Fetch loads devices from the device registry, creates fixtures, and adds them to the universe.
+// FetchDevices loads devices from the device registry, creates fixtures, and adds them to the universe.
 func (l *Loader) FetchDevices() error {
 	url := fmt.Sprintf("service.device-registry/devices?controller_name=%s", l.ServiceName)
 	var rsp []*domain.DeviceHeader
