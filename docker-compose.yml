@@ -1,6 +1,13 @@
 version: '3'
 
 services:
+  adminer:
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    ports:
+      - 8080:8080
+
   filebeat:
     build:
       dockerfile: filebeat/Dockerfile
@@ -21,6 +28,13 @@ services:
     ports:
       - 7514:7514 # Syslog
       - 5044:5044 # Beats
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
 
   redis:
     image: redis:latest
