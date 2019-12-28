@@ -11,7 +11,11 @@ import (
 )
 
 func main() {
-	svc, err := bootstrap.Init("service.dmx")
+	svc, err := bootstrap.Init(&bootstrap.Opts{
+		ServiceName: "service.dmx",
+		Firehose:    true,
+	})
+
 	if err != nil {
 		slog.Panic("Failed to initialise service: %v", err)
 	}

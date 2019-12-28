@@ -5,16 +5,23 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"regexp"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/jakewright/home-automation/libraries/go/config"
+	"github.com/jakewright/home-automation/libraries/go/database"
+	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 
 	"github.com/go-redis/redis"
+	"github.com/jinzhu/gorm"
+
+	// Register MySQL driver
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 // Process is a long-running task that provides service functionality
@@ -32,10 +39,23 @@ type Process interface {
 // Service represents a collection of processes
 type Service struct {
 	processes []Process
+	deferred  []func() error
+}
+
+// Opts defines basic initialisation options for a service
+type Opts struct {
+	// ServiceName is the name of the service e.g. service.foo
+	ServiceName string
+
+	// Firehose indicates whether a connection to Redis should be made
+	Firehose bool
+
+	// Database indicates whether a connection to MySQL should be made
+	Database bool
 }
 
 // Init performs standard service startup tasks and returns a Service
-func Init(serviceName string) (*Service, error) {
+func Init(opts *Opts) (*Service, error) {
 	service := &Service{}
 
 	// Create default API client
@@ -51,7 +71,7 @@ func Init(serviceName string) (*Service, error) {
 
 	// Load config
 	configLoader := &config.Loader{
-		ServiceName: serviceName,
+		ServiceName: opts.ServiceName,
 	}
 	if err := configLoader.Load(); err != nil {
 		return nil, err
@@ -60,32 +80,128 @@ func Init(serviceName string) (*Service, error) {
 	service.processes = append(service.processes, configLoader)
 
 	// Connect to Redis
-	if config.Has("redis.host") {
-		host := config.Get("redis.host").String()
-		port := config.Get("redis.port").Int()
-		addr := fmt.Sprintf("%s:%d", host, port)
-		slog.Info("Connecting to Redis at address %s", addr)
-		redisClient := redis.NewClient(&redis.Options{
-			Addr:            addr,
-			Password:        "",
-			DB:              0,
-			MaxRetries:      5,
-			MinRetryBackoff: time.Second,
-			MaxRetryBackoff: time.Second * 5,
-		})
-		_, err := redisClient.Ping().Result()
-		if err != nil {
+	if opts.Firehose {
+		if err := initFirehose(service); err != nil {
 			return nil, err
 		}
-		firehose.DefaultPublisher = firehose.New(redisClient)
+	}
+
+	// Connect to MySQL
+	if opts.Database {
+		if err := initDatabase(opts, service); err != nil {
+			return nil, err
+		}
 	}
 
 	return service, nil
 }
 
+func initFirehose(svc *Service) error {
+	host := config.Get("redis.host").String()
+	port := config.Get("redis.port").Int()
+
+	if host == "" || port == 0 {
+		return errors.InternalService("Redis host and port not set in config")
+	}
+
+	addr := fmt.Sprintf("%s:%d", host, port)
+	slog.Info("Connecting to Redis at address %s", addr)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:            addr,
+		Password:        "",
+		DB:              0,
+		MaxRetries:      5,
+		MinRetryBackoff: time.Second,
+		MaxRetryBackoff: time.Second * 5,
+	})
+
+	svc.deferred = append(svc.deferred, func() error {
+		err := redisClient.Close()
+		if err != nil {
+			slog.Error("Failed to close Redis connection: %v", err)
+		} else {
+			slog.Debug("Closed Redis connection")
+		}
+		return err
+	})
+
+	_, err := redisClient.Ping().Result()
+	if err != nil {
+		return err
+	}
+
+	firehose.DefaultPublisher = firehose.New(redisClient)
+
+	return nil
+}
+
+func initDatabase(opts *Opts, svc *Service) error {
+	// Replace hyphens and dots in the service name with underscores
+	re, err := regexp.Compile(`[-.]`)
+	if err != nil {
+		return err
+	}
+	prefix := re.ReplaceAllString(opts.ServiceName, "_")
+
+	// Remove any remaining non alphanumeric characters
+	re, err = regexp.Compile(`[^a-zA-Z0-9_]+`)
+	if err != nil {
+		return err
+	}
+	prefix = re.ReplaceAllString(opts.ServiceName, "")
+
+	// Set a default table prefix
+	gorm.DefaultTableNameHandler = func(_ *gorm.DB, defaultTableName string) string {
+		return prefix + "_" + defaultTableName
+	}
+
+	host := config.Get("mysql.host").String()
+	username := config.Get("mysql.username").String()
+	password := config.Get("mysql.password").String()
+	databaseName := "home_automation"
+	charset := "utf8mb4"
+
+	if host == "" || username == "" || password == "" {
+		return errors.InternalService("MySQL host, username and password not set in config")
+	}
+
+	addr := fmt.Sprintf("%s:%s@(%s)/%s?charset=%s&parseTime=True&loc=Local", username, password, host, databaseName, charset)
+
+	db, err := gorm.Open("mysql", addr)
+	if err != nil {
+		return err
+	}
+
+	svc.deferred = append(svc.deferred, func() error {
+		err := db.Close()
+		if err != nil {
+			slog.Error("Failed to close MySQL connection: %v", err)
+		} else {
+			slog.Debug("Closed MySQL connection")
+		}
+		return err
+	})
+
+	database.DefaultDB = db
+	return nil
+}
+
 // Run takes a number of processes and concurrently runs them all. It will stop if all processes
 // terminate or if a signal (SIGINT or SIGTERM) is received.
 func (s *Service) Run(processes ...Process) {
+	// os.Exit should be the last thing to happen
+	var code int
+	defer os.Exit(code)
+
+	// Close all of the resources after processes have shut down
+	for _, deferred := range s.deferred {
+		defer func(d func() error) {
+			if err := d(); err != nil {
+				code = 1
+			}
+		}(deferred)
+	}
+
 	s.processes = append(s.processes, processes...)
 
 	sig := make(chan os.Signal, 2)
@@ -102,6 +218,7 @@ func (s *Service) Run(processes ...Process) {
 			defer wg.Done()
 			if err := process.Start(); err != nil {
 				slog.Error("Process %s stopped with error: %v", process.GetName(), err)
+				code = 1
 			} else {
 				slog.Debug("Process %s stopped", process.GetName())
 			}
@@ -119,7 +236,7 @@ func (s *Service) Run(processes ...Process) {
 	select {
 	case <-done:
 		slog.Warn("All processes stopped prematurely")
-		os.Exit(1)
+		return
 	case s := <-sig:
 		slog.Info("Received %v signal", s)
 	}
@@ -137,17 +254,12 @@ func (s *Service) Run(processes ...Process) {
 			defer wg.Done()
 			if err := process.Stop(ctx); err != nil {
 				slog.Error("Failed to stop %s gracefully: %v", process.GetName(), err)
+				code = 1
 			}
 		}()
 	}
 
-	// Wait for everything to finish or a timeout to be hit
-	select {
-	case <-time.After(time.Second * 9):
-		slog.Error("Failed to stop processes in time")
-		os.Exit(1)
-	case <-done:
-		slog.Info("All processes stopped")
-		os.Exit(0)
-	}
+	// Wait for processes to terminate
+	wg.Wait()
+	slog.Info("All processes stopped")
 }

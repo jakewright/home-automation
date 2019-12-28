@@ -10,7 +10,10 @@ import (
 )
 
 func main() {
-	svc, err := bootstrap.Init("service.device-registry")
+	svc, err := bootstrap.Init(&bootstrap.Opts{
+		ServiceName: "service.device-registry",
+	})
+
 	if err != nil {
 		slog.Panic("Failed to initialise service: %v", err)
 	}
