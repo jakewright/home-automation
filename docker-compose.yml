@@ -34,7 +34,10 @@ services:
     volumes:
       - ./data/mysql:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: home_automation
+    ports:
+      - 3306:3306
 
   redis:
     image: redis:latest
