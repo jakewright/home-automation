@@ -1,22 +1,47 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/creack/pty"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+const (
+	tick  = "\xE2\x9C\x94"
+	green = "\033[32m"
+	reset = "\033[0m"
+)
+
 // BuildDirectory is injected at compile time
 var BuildDirectory string
 
-const usage = "Usage: run [stop|restart] core log service.name"
+const usage = `Home Automation Runner
+USAGE
+	Start, stop or restart a set of services
+	  run [stop|restart] service.name group
+
+	Apply all schema files. Optionally limited to a single service.
+	  schema apply [service.name]
+
+GROUPS
+	core
+	  Core platform services
+
+	log
+	  Services required for logging
+`
 
 func main() {
 	if cwd, err := os.Getwd(); err != nil {
@@ -36,13 +61,15 @@ func main() {
 		stop(os.Args[2:])
 	case "restart":
 		restart(os.Args[2:])
+	case "schema":
+		schema(os.Args[2:])
 	default:
 		start(os.Args[1:])
 	}
 }
 
 func help() {
-	log.Println(usage)
+	log.Print(usage)
 	os.Exit(0)
 }
 
@@ -56,7 +83,7 @@ func start(args []string) {
 		log.Printf("Starting %s...\n", strings.Join(services, ", "))
 	}
 
-	run("docker-compose", composeArgs)
+	runPTY("docker-compose", composeArgs)
 }
 
 func stop(args []string) {
@@ -69,12 +96,118 @@ func stop(args []string) {
 		log.Printf("Stopping %s...\n", strings.Join(services, ", "))
 	}
 
-	run("docker-compose", composeArgs)
+	runPTY("docker-compose", composeArgs)
 }
 
 func restart(args []string) {
 	stop(args)
 	start(args)
+}
+
+func schema(args []string) {
+	if len(args) < 1 {
+		log.Fatal(usage)
+	}
+
+	var service string
+	if len(args) > 1 {
+		service = args[1]
+	}
+
+	switch args[0] {
+	case "apply":
+		applySchema(service)
+	default:
+		log.Fatal(usage)
+	}
+}
+
+func applySchema(service string) {
+	running := false
+
+	// If the MySQL container exists
+	containerID := run("docker-compose", "ps", "-q", "mysql")
+	if containerID != "" {
+		// See if it's running
+		result := run("docker", "inspect", "-f", "{{.State.Running}}", containerID)
+		b, err := strconv.ParseBool(result)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		running = b
+	}
+
+	if !running {
+		start([]string{"mysql"})
+		containerID = run("docker-compose", "ps", "-q", "mysql")
+		time.Sleep(time.Second * 5)
+	}
+
+	log.Printf("Applying schema...\n")
+
+	var services []string
+	if service != "" {
+		services = []string{service}
+	} else {
+		services = getAllServiceNames()
+	}
+
+	for _, name := range services {
+		schema := getServiceSchema(name)
+		if schema == "" {
+			continue
+		}
+
+		fmt.Printf(name)
+
+		args := []string{"exec", "-i", containerID, "sh", "-c", "exec mysql -uroot -psecret"}
+		runWithInput(schema, "docker", args...)
+
+		fmt.Printf(" %s%s%s\n", green, tick, reset)
+	}
+}
+
+func getAllServiceNames() []string {
+	var services []string
+
+	ls, err := ioutil.ReadDir("./")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, info := range ls {
+		if !info.IsDir() {
+			continue
+		}
+
+		if !strings.HasPrefix(info.Name(), "service.") {
+			continue
+		}
+
+		services = append(services, info.Name())
+	}
+
+	return services
+}
+
+func getServiceSchema(service string) string {
+	filename := "./" + service + "/schema/schema.sql"
+
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return ""
+	} else if err != nil {
+		log.Fatal(err)
+	}
+
+	a := "USE home_automation;\n\n"
+
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return a + string(b)
 }
 
 func getServices(args []string) []string {
@@ -99,7 +232,32 @@ func expandService(s string) []string {
 	return []string{s}
 }
 
-func run(command string, args []string) {
+func run(command string, args ...string) string {
+	return runWithInput("", command, args...)
+}
+
+func runWithInput(stdin, command string, args ...string) string {
+	cmd := exec.Command(command, args...)
+	pipe, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
+		defer pipe.Close()
+		io.WriteString(pipe, stdin)
+	}()
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("\n%s\n", out)
+		log.Fatal(err)
+	}
+
+	return string(bytes.TrimSpace(out))
+}
+
+func runPTY(command string, args []string) {
 	cmd := exec.Command(command, args...)
 
 	// Start the command with a pty
