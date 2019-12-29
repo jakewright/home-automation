@@ -32,6 +32,9 @@ USAGE
 	Start, stop or restart a set of services
 	  run [stop|restart] service.name group
 
+	Build a service or set of services
+	  build service.name group
+
 	Apply all schema files. Optionally limited to a single service.
 	  schema apply [service.name]
 
@@ -61,6 +64,8 @@ func main() {
 		stop(os.Args[2:])
 	case "restart":
 		restart(os.Args[2:])
+	case "build":
+		build(os.Args[2:])
 	case "schema":
 		schema(os.Args[2:])
 	default:
@@ -74,8 +79,18 @@ func help() {
 }
 
 func start(args []string) {
+	var build bool
+	if len(args) > 0 && args[0] == "--build" {
+		build = true
+		args = args[1:]
+	}
+
 	services := getServices(args)
-	composeArgs := append([]string{"up", "-d", "--renew-anon-volumes", "--remove-orphans"}, services...)
+	composeArgs := []string{"up", "-d", "--renew-anon-volumes", "--remove-orphans"}
+	if build {
+		composeArgs = append(composeArgs, "--build")
+	}
+	composeArgs = append(composeArgs, services...)
 
 	if len(services) == 0 {
 		log.Printf("Starting all services...\n")
@@ -102,6 +117,19 @@ func stop(args []string) {
 func restart(args []string) {
 	stop(args)
 	start(args)
+}
+
+func build(args []string) {
+	services := getServices(args)
+	if len(services) == 0 {
+		log.Printf("Nothing to build")
+		return
+	}
+
+	log.Printf("Building %s...\n", strings.Join(services, ", "))
+
+	composeArgs := append([]string{"build", "--pull"}, services...)
+	runPTY("docker-compose", composeArgs)
 }
 
 func schema(args []string) {
