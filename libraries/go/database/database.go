@@ -19,3 +19,8 @@ func mustGetDefaultDB() *gorm.DB {
 func Find(out interface{}, where ...interface{}) *gorm.DB {
 	return mustGetDefaultDB().Find(out, where...)
 }
+
+// Create inserts value into the database
+func Create(value interface{}) *gorm.DB {
+	return mustGetDefaultDB().Create(value)
+}
