@@ -13,18 +13,22 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 )
 
-func (g *Generator) goTypeName(def *typemap.MessageDefinition) string {
+func goTypeName(pkg string, def *typemap.MessageDefinition) (string, error) {
 	var prefix string
-	if pkg := goPackageName(def.File); pkg != g.pkg {
-		prefix = pkg + "."
+	if messagePkg, err := goPackageName(def.File); err != nil {
+		return "", fmt.Errorf("message %s comes from file %s without the go_package option set", def.Descriptor.GetName(), def.File.GetName())
+	} else if messagePkg != pkg {
+		prefix = messagePkg + "."
 	}
 
+	// Prepend the name with parent name(s) in
+	// the case of a nested field in a struct
 	var name string
 	for _, parent := range def.Lineage() {
 		name += camelCase(parent.Descriptor.GetName()) + "_"
 	}
 	name += camelCase(def.Descriptor.GetName())
-	return prefix + name
+	return prefix + name, nil
 }
 
 // goFileName returns the output name for the generated Go file
@@ -37,20 +41,24 @@ func goFileName(d *descriptor.FileDescriptorProto) string {
 	return name
 }
 
-func goPackageName(d *descriptor.FileDescriptorProto) string {
-	_, pkg, ok := goPackageOption(d)
-	if !ok {
-		panic(fmt.Sprintf("File %s does not have option go_package set", d.GetName()))
+func goPackageName(d *descriptor.FileDescriptorProto) (string, error) {
+	if _, pkg, ok := goPackageOption(d); !ok {
+		return "", fmt.Errorf("file %s does not have option go_package set", d.GetName())
+	} else {
+		return pkg, nil
 	}
-
-	return pkg
 }
 
 // goPackageOption interprets the file's go_package option.
-// If there is no go_package, it returns ("", "", false).
-// If there's a simple name, it returns ("", pkg, true).
-// If the option implies an import path, it returns (impPath, pkg, true).
-func goPackageOption(f *descriptor.FileDescriptorProto) (string, string, bool) {
+//   - If there is no go_package, it returns ("", "", false)
+//   - If there's a simple name, it returns ("", pkg, true)
+//   - If the option implies an import path, it returns (impPath, pkg, true)
+// e.g. "github.com/.../service.foo/proto" would return
+// ("github.com/.../service.foo/proto", "proto", true)
+// Use a semi-colon to specify a custom package name, e.g.
+// "github.com/.../service.foo/proto;fooproto" which would return
+// ("github.com/.../service.foot/proto", "fooproto", true).
+func  goPackageOption(f *descriptor.FileDescriptorProto) (string, string, bool) {
 	opt := f.GetOptions().GetGoPackage()
 	if opt == "" {
 		return "", "", false

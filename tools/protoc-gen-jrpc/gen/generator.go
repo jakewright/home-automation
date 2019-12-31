@@ -12,6 +12,54 @@ import (
 	jrpcproto "github.com/jakewright/home-automation/tools/protoc-gen-jrpc/proto"
 )
 
+func Generate(req *plugin.CodeGeneratorRequest) *plugin.CodeGeneratorResponse {
+	if len(req.FileToGenerate) != 1 {
+		err := "JRPC only supports single proto files per service"
+		return &plugin.CodeGeneratorResponse{Error: &err}
+	}
+
+	// Iterate over all proto descriptors to find the one
+	// that we're actually supposed to generate code for.
+	// The others are just the things it imports.
+	var protoFileToGenerate *descriptor.FileDescriptorProto
+	allProtoFiles := req.ProtoFile
+	for _, file := range allProtoFiles {
+		if file.GetName() == req.FileToGenerate[0] {
+			protoFileToGenerate = file
+			break
+		}
+	}
+	if protoFileToGenerate == nil {
+		panic("protoFileToGenerate should not be nil at this point")
+	}
+}
+
+func templateDataFromFile(file *descriptor.FileDescriptorProto, files []*descriptor.FileDescriptorProto) (*templateData, error) {
+	if len(file.Service) < 1 {
+		stderr("No services in file %s; skipping...", file.GetName())
+		return nil, nil
+	}
+	if len(file.Service) > 1 {
+		stderr("Too many services in file %s; skipping...", file.GetName())
+		return nil, nil
+	}
+
+	registry := typemap.New(files)
+
+	registry.MethodInputDefinition()
+
+	packageName, err := goPackageName(file)
+	if err != nil {
+		return nil, err
+	}
+
+	packageComment, err :=
+
+	return &templateData {
+		PackageName: packageName,
+	}, nil
+}
+
 type Generator struct {
 	reg *typemap.Registry
 	pkg string
@@ -46,7 +94,7 @@ func (g *Generator) Generate(req *plugin.CodeGeneratorRequest) *plugin.CodeGener
 	return rsp
 }
 
-// Generate converts a proto file descriptor into a JRPC file descriptor
+// generate converts a proto file descriptor into a JRPC file descriptor
 func (g *Generator) generate(file *descriptor.FileDescriptorProto, files []*descriptor.FileDescriptorProto) *jrpc.FileDescriptor {
 	if len(file.Service) < 1 {
 		stderr("No services in file %s; skipping...", file.GetName())
@@ -80,23 +128,24 @@ func (g *Generator) generate(file *descriptor.FileDescriptorProto, files []*desc
 		}
 		handler := opts.(*jrpcproto.Handler)
 
-		method := &jrpc.Method{
+		rpc := &jrpc.RPC{
+			Name:         m.GetName(),
 			URL:          router.Name + handler.Path,
 			HTTPMethod:   handler.Method,
 			RequestType:  g.goTypeName(g.reg.MethodInputDefinition(m)),
 			ResponseType: g.goTypeName(g.reg.MethodOutputDefinition(m)),
 		}
 
-		jFile.Service.Methods = append(jFile.Service.Methods, method)
+		jFile.Service.RPCs = append(jFile.Service.RPCs, rpc)
 	}
 
 	return jFile
 }
 
-func (g *Generator) generatePackageComment(file *descriptor.FileDescriptorProto) []string {
-	fileComments, err := g.reg.FileComments(file)
+func goPackageComment(registry *typemap.Registry, file *descriptor.FileDescriptorProto) ([]string, error) {
+	fileComments, err := registry.FileComments(file)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var packageComment []string
@@ -111,7 +160,7 @@ func (g *Generator) generatePackageComment(file *descriptor.FileDescriptorProto)
 		}
 	}
 
-	return packageComment
+	return packageComment, nil
 }
 
 func (g *Generator) generateImports(file *descriptor.FileDescriptorProto) []*jrpc.Import {
