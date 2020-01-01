@@ -1,4 +1,4 @@
-package proto
+package protoparse
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/golang/protobuf/proto"
-
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
 const (
@@ -35,17 +35,20 @@ const (
 	methodOutputPath = 3 // output_type
 )
 
-type Proto struct {
-	Files []*File
-}
-
+// File represents a parsed proto file
 type File struct {
-	// Name is the TODO
+	// Name is the relative path and filename of the proto file
 	Name string
 
-	ImportPath      string
-	ProtoPackage    string
-	GoPackage       string
+	// ProtoPackage is the name defined in the proto's package statement
+	ProtoPackage string
+
+	// GoImportPath is the go import path of the package as defined by the go_package option
+	GoImportPath string
+
+	// GoPackage is the name defined by the go_package option
+	GoPackage string
+
 	PackageComments *Comments
 	Imports         []*Import
 
@@ -55,6 +58,15 @@ type File struct {
 	descriptor *descriptor.FileDescriptorProto
 }
 
+func (f *File) GetPackageComments() *Comments {
+	if f.PackageComments != nil {
+		return f.PackageComments
+	}
+
+	return &Comments{}
+}
+
+// Service represents a service definition in a proto file
 type Service struct {
 	Name    string
 	Methods []*Method
@@ -66,10 +78,20 @@ type Service struct {
 	descriptor *descriptor.ServiceDescriptorProto
 }
 
+// GetExtension can be used to get custom options set on a service
 func (s *Service) GetExtension(extension *proto.ExtensionDesc) (interface{}, error) {
 	return proto.GetExtension(s.descriptor, extension)
 }
 
+func (s *Service) GetComments() *Comments {
+	if s.Comments != nil {
+		return s.Comments
+	}
+
+	return &Comments{}
+}
+
+// Method represents a method defined in a service
 type Method struct {
 	Name       string
 	InputType  *Message
@@ -82,10 +104,20 @@ type Method struct {
 	descriptor *descriptor.MethodDescriptorProto
 }
 
+// GetExtension can be used to get custom options set on a method
 func (m *Method) GetExtension(extension *proto.ExtensionDesc) (interface{}, error) {
 	return proto.GetExtension(m.descriptor, extension)
 }
 
+func (m *Method) GetComments() *Comments {
+	if m.Comments != nil {
+		return m.Comments
+	}
+
+	return &Comments{}
+}
+
+// Message represents a message type defined in a proto file
 type Message struct {
 	// Name is the simple name of the message
 	Name string
@@ -93,6 +125,9 @@ type Message struct {
 	// ProtoName is the dot-delimited, fully-
 	// qualified protobuf name of the message.
 	ProtoName string
+
+	// GoTypeName is the name of the go type generated for this message
+	GoTypeName string
 
 	// Comments defines the comments attached to the message
 	Comments *Comments
@@ -108,23 +143,48 @@ type Message struct {
 	descriptor *descriptor.DescriptorProto
 }
 
-type Comments struct {
-	Leading         string
-	LeadingDetached []string
-	Trailing        string
+func (m *Message) GetComments() *Comments {
+	if m.Comments != nil {
+		return m.Comments
+	}
+
+	return &Comments{}
 }
 
+func (m *Message) GetParent() *Message {
+	if m.Parent != nil {
+		return m.Parent
+	}
+
+	return &Message{}
+}
+
+// Comments holds the set of comments associated with an entity
+type Comments struct {
+	// Leading are the comment lines directly above the line of code
+	Leading []string
+
+	// Leading detached are comment lines above
+	// the line of code but not directly touching
+	LeadingDetached [][]string
+
+	// Trailing are comment lines directly under the line of code
+	Trailing []string
+}
+
+// Import describes a go import
 type Import struct {
 	Alias string
 	Path  string
 }
 
-func Parse(fileDescriptors []*descriptor.FileDescriptorProto) (*Proto, error) {
+// Parse turns a CodeGeneratorRequest into a parsed set of Files
+func Parse(req *plugin_go.CodeGeneratorRequest) ([]*File, error) {
 	// Create a slice of Files. For now, services and messages
 	// will be empty but we will populate them later.
-	files := make([]*File, len(fileDescriptors))
-	for i, fd := range fileDescriptors {
-		importPath, goPackage, ok := readGoPackageOption(fd)
+	files := make([]*File, len(req.ProtoFile))
+	for i, fd := range req.ProtoFile {
+		goImportPath, goPackage, ok := readGoPackageOption(fd)
 		if !ok {
 			return nil, fmt.Errorf("go_package option is not set in file %s", fd.GetName())
 		}
@@ -134,14 +194,15 @@ func Parse(fileDescriptors []*descriptor.FileDescriptorProto) (*Proto, error) {
 		files[i] = &File{
 			Name:            fd.GetName(),
 			ProtoPackage:    fd.GetPackage(),
-			ImportPath:      importPath,
+			GoImportPath:    goImportPath,
 			GoPackage:       goPackage,
 			PackageComments: comments,
 			descriptor:      fd,
 		}
 	}
 
-	// Index all of the files by name
+	// Index all of the files by name. This is needed so we
+	// can correctly handle public imports when parsing messages.
 	filesByName := make(map[string]*File)
 	for _, f := range files {
 		filesByName[f.Name] = f
@@ -161,7 +222,17 @@ func Parse(fileDescriptors []*descriptor.FileDescriptorProto) (*Proto, error) {
 		f.Services, f.Imports = parseServices(f, messagesByProtoName)
 	}
 
-	return &Proto{Files: files}, nil
+	// Pull out the files to generate. The rest are just imports.
+	var filesToGenerate []*File
+	for _, f := range files {
+		for _, name := range req.FileToGenerate {
+			if f.Name == name {
+				filesToGenerate = append(filesToGenerate, f)
+			}
+		}
+	}
+
+	return filesToGenerate, nil
 }
 
 func readGoPackageOption(fd *descriptor.FileDescriptorProto) (string, string, bool) {
@@ -239,10 +310,14 @@ func parseMessage(f *File, md *descriptor.DescriptorProto, index int, parent *Me
 		path = append(parent.path, messageMessagePath, int32(index))
 	}
 
-	// Create the fully-qualified proto name
+	// Create the fully-qualified proto name and the go type name.
+	// TODO if the message names are not camelcase in the proto file,
+	// the go type name will not necessarily come out right.
 	protoName := "." + md.GetName()
+	goTypeName := md.GetName()
 	for p := parent; p != nil; p = p.Parent {
 		protoName = "." + p.Name + protoName
+		goTypeName = p.Name + "_" + goTypeName
 	}
 	if pkg := f.ProtoPackage; pkg != "" {
 		protoName = "." + pkg + protoName
@@ -250,8 +325,10 @@ func parseMessage(f *File, md *descriptor.DescriptorProto, index int, parent *Me
 
 	message := &Message{
 		Name:       md.GetName(),
+		File:       f,
 		Parent:     parent,
 		ProtoName:  protoName,
+		GoTypeName: goTypeName,
 		Comments:   commentsAtPath(path, f.descriptor),
 		path:       path,
 		descriptor: md,
@@ -325,7 +402,7 @@ func createImport(importFile, dstFile *File) *Import {
 	}
 
 	var alias string
-	path := importFile.ImportPath
+	path := importFile.GoImportPath
 
 	// If the go package is different to the import path, we need an alias.
 	if !strings.HasSuffix(path, "/"+importFile.GoPackage) {
@@ -344,17 +421,32 @@ func commentsAtPath(path []int32, fd *descriptor.FileDescriptorProto) *Comments 
 	}
 
 	for _, l := range fd.SourceCodeInfo.Location {
-		pathEqual(path, l.Path)
-		{
+		if pathEqual(path, l.Path) {
+			var leadingDetached [][]string
+			for _, s := range l.GetLeadingDetachedComments() {
+				leadingDetached = append(leadingDetached, normalizeComment(s))
+			}
+
 			return &Comments{
-				Leading:         l.GetLeadingComments(),
-				LeadingDetached: l.GetLeadingDetachedComments(),
-				Trailing:        l.GetTrailingComments(),
+				Leading:         normalizeComment(l.GetLeadingComments()),
+				LeadingDetached: leadingDetached,
+				Trailing:        normalizeComment(l.GetTrailingComments()),
 			}
 		}
 	}
 
 	return &Comments{}
+}
+
+// normalizeComment splits a comment line
+// by \n characters and trims the leading space
+func normalizeComment(s string) []string {
+	var lines []string
+	for _, line := range strings.Split(s, "\n") {
+		line = strings.TrimPrefix(line, " ")
+		lines = append(lines, line)
+	}
+	return lines
 }
 
 func pathEqual(path1, path2 []int32) bool {
