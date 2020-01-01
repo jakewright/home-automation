@@ -49,15 +49,23 @@ type File struct {
 	// GoPackage is the name defined by the go_package option
 	GoPackage string
 
+	// PackageComments are comments on the package definition
 	PackageComments *Comments
-	Imports         []*Import
 
+	// Imports is the list of go imports this file needs for its service types
+	Imports []*Import
+
+	// Services are the services defined in the proto file
 	Services []*Service
+
+	// Messages are the messages defined in the proto
+	// file and any messages from public imports
 	Messages []*Message
 
 	descriptor *descriptor.FileDescriptorProto
 }
 
+// GetPackageComments is a nil-safe getter for PackageComments
 func (f *File) GetPackageComments() *Comments {
 	if f.PackageComments != nil {
 		return f.PackageComments
@@ -68,10 +76,13 @@ func (f *File) GetPackageComments() *Comments {
 
 // Service represents a service definition in a proto file
 type Service struct {
-	Name    string
+	// Name is the simple name of the service
+	Name string
+
+	// Methods are the methods (RPCs) defined in this service
 	Methods []*Method
 
-	// Comments defines the comments attached to the message
+	// Comments defines the comments attached to the service
 	Comments *Comments
 
 	path       []int32
@@ -83,6 +94,7 @@ func (s *Service) GetExtension(extension *proto.ExtensionDesc) (interface{}, err
 	return proto.GetExtension(s.descriptor, extension)
 }
 
+// GetComments is a nil-safe getter for Comments
 func (s *Service) GetComments() *Comments {
 	if s.Comments != nil {
 		return s.Comments
@@ -93,8 +105,13 @@ func (s *Service) GetComments() *Comments {
 
 // Method represents a method defined in a service
 type Method struct {
-	Name       string
-	InputType  *Message
+	// Name is the simple name for this method
+	Name string
+
+	// InputType is the message defined as the input type
+	InputType *Message
+
+	// OutputType is the message defined as the output type
 	OutputType *Message
 
 	// Comments defines the comments attached to the method
@@ -109,6 +126,7 @@ func (m *Method) GetExtension(extension *proto.ExtensionDesc) (interface{}, erro
 	return proto.GetExtension(m.descriptor, extension)
 }
 
+// GetComments is a nil-safe getter for Comments
 func (m *Method) GetComments() *Comments {
 	if m.Comments != nil {
 		return m.Comments
@@ -143,6 +161,7 @@ type Message struct {
 	descriptor *descriptor.DescriptorProto
 }
 
+// GetComments is a nil-safe getter for Comments
 func (m *Message) GetComments() *Comments {
 	if m.Comments != nil {
 		return m.Comments
@@ -151,6 +170,7 @@ func (m *Message) GetComments() *Comments {
 	return &Comments{}
 }
 
+// GetParent is a nil-safe getter for Parent
 func (m *Message) GetParent() *Message {
 	if m.Parent != nil {
 		return m.Parent
@@ -174,8 +194,11 @@ type Comments struct {
 
 // Import describes a go import
 type Import struct {
+	// Alias is the import alias if one is required
 	Alias string
-	Path  string
+
+	// Path is the path to be imported
+	Path string
 }
 
 // Parse turns a CodeGeneratorRequest into a parsed set of Files
