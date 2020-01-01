@@ -91,7 +91,7 @@ type Service struct {
 
 // GetExtension can be used to get custom options set on a service
 func (s *Service) GetExtension(extension *proto.ExtensionDesc) (interface{}, error) {
-	return proto.GetExtension(s.descriptor, extension)
+	return proto.GetExtension(s.descriptor.Options, extension)
 }
 
 // GetComments is a nil-safe getter for Comments
@@ -123,7 +123,7 @@ type Method struct {
 
 // GetExtension can be used to get custom options set on a method
 func (m *Method) GetExtension(extension *proto.ExtensionDesc) (interface{}, error) {
-	return proto.GetExtension(m.descriptor, extension)
+	return proto.GetExtension(m.descriptor.Options, extension)
 }
 
 // GetComments is a nil-safe getter for Comments

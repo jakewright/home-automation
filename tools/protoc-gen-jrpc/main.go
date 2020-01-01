@@ -5,26 +5,28 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/jakewright/home-automation/tools/protoc-gen-jrpc/gen"
-
 	"github.com/golang/protobuf/proto"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
 func main() {
 	req := readRequest(os.Stdin)
-	g := gen.Generator{}
-	rsp := g.Generate(req)
+
+	rsp, err := generate(req)
+	if err != nil {
+		panic(err)
+	}
+
 	writeResponse(os.Stdout, rsp)
 }
 
-func readRequest(r io.Reader) *plugin.CodeGeneratorRequest {
+func readRequest(r io.Reader) *plugin_go.CodeGeneratorRequest {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		panic(err)
 	}
 
-	var req plugin.CodeGeneratorRequest
+	var req plugin_go.CodeGeneratorRequest
 	if err := proto.Unmarshal(b, &req); err != nil {
 		panic(err)
 	}
@@ -36,7 +38,7 @@ func readRequest(r io.Reader) *plugin.CodeGeneratorRequest {
 	return &req
 }
 
-func writeResponse(w io.Writer, rsp *plugin.CodeGeneratorResponse) {
+func writeResponse(w io.Writer, rsp *plugin_go.CodeGeneratorResponse) {
 	b, err := proto.Marshal(rsp)
 	if err != nil {
 		panic(err)
