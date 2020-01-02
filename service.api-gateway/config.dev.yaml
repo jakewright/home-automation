@@ -64,3 +64,14 @@ apis:
         enabled: true
         config:
           attempts: 1
+
+  service.scene:
+    name: Scene Service
+    prefix: service.scene
+    upstream_url: http://service.scene
+    allow_cross_origin: true
+    plugins:
+      - name: retry
+        enabled: true
+        config:
+          attempts: 1
