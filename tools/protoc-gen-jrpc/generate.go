@@ -94,6 +94,7 @@ func createTemplateData(file *protoparse.File, service *protoparse.Service) (*da
 			InputType:  inputType,
 			OutputType: outputType,
 			HTTPMethod: handler.Method,
+			Path:       handler.Path,
 			URL:        router.Name + handler.Path,
 		}
 	}

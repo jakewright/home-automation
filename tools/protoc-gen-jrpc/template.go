@@ -21,6 +21,7 @@ type method struct {
 	InputType  string
 	OutputType string
 	HTTPMethod string
+	Path       string
 	URL        string
 }
 
@@ -58,11 +59,15 @@ func NewRouter() *{{ .RouterName }} {
 	}
 
 	{{ range .Methods }}
-		rr.Router.Handle("{{ .HTTPMethod }}", "{{ .URL }}", func(w http.ResponseWriter, r *http.Request) {
+		rr.Router.Handle("{{ .HTTPMethod }}", "{{ .Path }}", func(w http.ResponseWriter, r *http.Request) {
 			body := &{{ .InputType }}{}
 			if err := request.Decode(r, body); err != nil {
 				response.WriteJSON(w, err)
 				return
+			}
+
+			if rr.{{ .Name }} == nil {
+				slog.Panic("No handler exists for {{ .HTTPMethod }} {{ .URL }}")
 			}
 
 			rsp, err := rr.{{ .Name }}(body)
