@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS service_scene_scenes (
 );
 
 CREATE TABLE IF NOT EXISTS service_scene_actions (
-    id INT AUTO_INCREMENT PRIMARY_KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     scene_id INT NOT NULL,
     stage INT NOT NULL, -- Ordering within the scene
-    index INT NOT NULL, -- Ordering within the stage
+    sequence INT NOT NULL, -- Ordering within the stage
 
-    function VARCHAR(64), -- e.g. sleep()
+    func VARCHAR(64), -- e.g. sleep()
     controller_name VARCHAR(64),
     command VARCHAR(64),
     property VARCHAR(64),
