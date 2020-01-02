@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package sceneproto;
+option go_package = "github.com/jakewright/home-automation/service.scene/proto;sceneproto";
+
+// This is needed to support the custom options
+import "github.com/jakewright/home-automation/tools/protoc-gen-jrpc/proto/jrpc.proto";
+
+
+service Scene {
+    option (router).name = "service.scene";
+
+    rpc CreateScene (CreateSceneRequest) returns (CreateSceneResponse) {
+        option (handler).method = "POST";
+        option (handler).path = "/scenes";
+    }
+}
+
+message CreateSceneRequest {
+    string name = 1;
+}
+
+message CreateSceneResponse {
+
+}
