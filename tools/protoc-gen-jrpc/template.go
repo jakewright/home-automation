@@ -51,9 +51,11 @@ type {{ .RouterName }} struct {
 	{{- end }}
 }
 
-// Init must be called before serving requests
-func (rr *{{ .RouterName }}) Init() {
-	rr.Router = router.New()
+// NewRouter returns a router that is ready to add handlers to
+func NewRouter() *{{ .RouterName }} {
+	rr := &{{ .RouterName }}{
+		Router: router.New(),
+	}
 
 	{{ range .Methods }}
 		rr.Router.Handle("{{ .HTTPMethod }}", "{{ .URL }}", func(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +74,9 @@ func (rr *{{ .RouterName }}) Init() {
 
 			response.WriteJSON(w, rsp)
 		})
-	{{ end -}}
+	{{ end }}
+
+	return rr
 }
 
 {{ range .Methods }}
