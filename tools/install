@@ -16,6 +16,10 @@ printf "hooks "
 cp -pR ./tools/hooks/ ./.git/hooks
 printf "$GREEN$TICK$RESET\n"
 
+printf "protoc-gen-jrpc "
+go install ./tools/protoc-gen-jrpc
+printf "$GREEN$TICK$RESET\n"
+
 printf "run "
 go install -ldflags "-X main.BuildDirectory=$(pwd)" ./tools/run
 printf "$GREEN$TICK$RESET\n"
