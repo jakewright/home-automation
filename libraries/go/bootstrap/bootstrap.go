@@ -148,7 +148,7 @@ func initDatabase(opts *Opts, svc *Service) error {
 	if err != nil {
 		return err
 	}
-	prefix = re.ReplaceAllString(opts.ServiceName, "")
+	prefix = re.ReplaceAllString(prefix, "")
 
 	// Set a default table prefix
 	gorm.DefaultTableNameHandler = func(_ *gorm.DB, defaultTableName string) string {
