@@ -51,6 +51,11 @@ func (r *Router) Stop(ctx context.Context) error {
 	return r.r.Shutdown(ctx)
 }
 
+// Handle adds a route to the router
+func (r *Router) Handle(method, path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
+	r.r.Handle(method, path, handler, middlewares...)
+}
+
 // Get is a helper function to add a GET route
 func (r *Router) Get(path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
 	r.r.Get(path, handler, middlewares...)
