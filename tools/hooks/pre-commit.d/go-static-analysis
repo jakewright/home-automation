@@ -37,12 +37,21 @@ do
   if [[ $? == 1 ]]; then
     PASS=false
   fi
+done
 
-  # Run govet on the staged file and check the exit status
-  go vet $FILE
-  if [[ $? != 0 ]]; then
-    PASS=false
-  fi
+# Get the directory name of each file and take unique values
+# https://unix.stackexchange.com/a/503948
+STAGES_PACKAGES=$STAGED_FILES | xargs -I {} dirname {} | uniq
+
+# Assume the directory names are the packages and run go vet
+# on them all. Go vet does not work properly with single files.
+for PACKAGE in $STAGED_PACKAGES
+do
+    # Run govet on the staged package and check the exit status
+    go vet $PACKAGE
+    if [[ $? != 0 ]]; then
+      PASS=false
+    fi
 done
 
 if ! $PASS; then
