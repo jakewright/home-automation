@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"go/format"
 	"path"
 
@@ -19,13 +18,13 @@ func generate(req *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResp
 		return nil, err
 	}
 
+	// Return silently if this isn't a valid service proto
 	if len(files) != 1 {
-		return nil, fmt.Errorf("unsupported number of files to generate %d", len(files))
+		return nil, nil
 	}
 	file := files[0]
-
 	if len(file.Services) != 1 {
-		return nil, fmt.Errorf("unsupported number of services defined %d", len(file.Services))
+		return nil, nil
 	}
 	service := file.Services[0]
 

@@ -79,6 +79,12 @@ for f in $files; do
     f_base=${f%".proto"}
     
     # Run goimports on all of the files we expect to have been generated
-    goimports -w "$f_base.pb.go" "$f_base.rpc.go"
+    if [[ -f "$f_base.pb.go" ]]; then
+        goimports -w "$f_base.pb.go"
+    fi
+    if [[ -f "$f_base.rpc.go" ]]; then
+        goimports -w "$f_base.rpc.go"
+    fi
+
     printf "$GREEN$TICK$RESET\n"
 done
