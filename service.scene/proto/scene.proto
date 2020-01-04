@@ -6,8 +6,6 @@ option go_package = "github.com/jakewright/home-automation/service.scene/proto;s
 // This is needed to support the custom options
 import "github.com/jakewright/home-automation/tools/protoc-gen-jrpc/proto/jrpc.proto";
 
-import "google/protobuf/timestamp.proto";
-
 service scene {
     option (router).name = "service.scene";
 
@@ -15,13 +13,36 @@ service scene {
         option (handler).method = "POST";
         option (handler).path = "/scenes";
     }
+
+    rpc DeleteScene (DeleteSceneRequest) returns (DeleteSceneResponse) {
+        option (handler).method = "DELETE";
+        option (handler).path = "/scene";
+    }
 }
 
 message Scene {
     uint32 id = 1;
-    google.protobuf.Timestamp created_at = 2;
-    string updated_at = 3;
-    string deleted_at = 4;
+    string name = 2;
+    repeated Action actions = 3;
+    string created_at = 4;
+    string updated_at = 5;
+    string deleted_at = 6;
+}
+
+message Action {
+    uint32 id = 1;
+    int32 stage = 2;
+    int32 sequence = 3;
+
+    string func = 4;
+    string controller_name = 5;
+    string command = 6;
+    string property = 7;
+    string property_value = 8;
+
+    string created_at = 9;
+    string updated_at = 10;
+    string deleted_at = 11;
 }
 
 message CreateSceneRequest {
@@ -40,5 +61,12 @@ message CreateSceneRequest {
 }
 
 message CreateSceneResponse {
+    Scene scene = 1;
+}
 
+message DeleteSceneRequest {
+    int32 scene_id = 1;
+}
+
+message DeleteSceneResponse {
 }

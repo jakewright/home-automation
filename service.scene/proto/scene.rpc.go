@@ -16,6 +16,7 @@ import (
 type sceneRouter struct {
 	*router.Router
 	CreateScene func(*CreateSceneRequest) (*CreateSceneResponse, error)
+	DeleteScene func(*DeleteSceneRequest) (*DeleteSceneResponse, error)
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -45,6 +46,27 @@ func NewRouter() *sceneRouter {
 		response.WriteJSON(w, rsp)
 	})
 
+	rr.Router.Handle("DELETE", "/scene", func(w http.ResponseWriter, r *http.Request) {
+		body := &DeleteSceneRequest{}
+		if err := request.Decode(r, body); err != nil {
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if rr.DeleteScene == nil {
+			slog.Panic("No handler exists for DELETE service.scene/scene")
+		}
+
+		rsp, err := rr.DeleteScene(body)
+		if err != nil {
+			slog.Error("Failed to handle request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		response.WriteJSON(w, rsp)
+	})
+
 	return rr
 }
 
@@ -57,6 +79,19 @@ func (m *CreateSceneRequest) Do() (*CreateSceneResponse, error) {
 	}
 
 	rsp := &CreateSceneResponse{}
+	_, err := rpc.Do(req, rsp)
+	return rsp, err
+}
+
+// Do makes performs the request
+func (m *DeleteSceneRequest) Do() (*DeleteSceneResponse, error) {
+	req := &rpc.Request{
+		Method: "DELETE",
+		URL:    "service.scene/scene",
+		Body:   m,
+	}
+
+	rsp := &DeleteSceneResponse{}
 	_, err := rpc.Do(req, rsp)
 	return rsp, err
 }

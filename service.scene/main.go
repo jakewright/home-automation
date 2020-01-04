@@ -18,6 +18,7 @@ func main() {
 
 	r := sceneproto.NewRouter()
 	r.CreateScene = handler.HandleCreateScene
+	r.DeleteScene = handler.HandleDeleteScene
 
 	svc.Run(r)
 }

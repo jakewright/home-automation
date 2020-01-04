@@ -25,7 +25,7 @@ func Create(value interface{}) error {
 	return mustGetDefaultDB().Create(value).Error
 }
 
-// Create inserts value into the database
-func Create(value interface{}) *gorm.DB {
-	return mustGetDefaultDB().Create(value)
+// Delete deletes a value from the database
+func Delete(value interface{}, where ...interface{}) error {
+	return mustGetDefaultDB().Delete(value, where...).Error
 }
