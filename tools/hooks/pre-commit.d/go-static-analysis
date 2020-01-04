@@ -8,6 +8,7 @@ fi
 
 GOLINT=$GOPATH/bin/golint
 GOIMPORTS=$GOPATH/bin/goimports
+ERRCHECK=$GOPATH/bin/errcheck
 
 # Check for golint
 if [[ ! -x "$GOLINT" ]]; then
@@ -18,6 +19,12 @@ fi
 # Check for goimports
 if [[ ! -x "$GOIMPORTS" ]]; then
   printf "\033[41mPlease install goimports\033[0m go get golang.org/x/tools/cmd/goimports\n"
+  exit 1
+fi
+
+# Check for errcheck
+if [[ ! -x "$ERRCHECK" ]]; then
+  printf "\033[41mPlease install errcheck\033[0m go get -u github.com/kisielk/errcheck\n"
   exit 1
 fi
 
@@ -41,14 +48,20 @@ done
 
 # Get the directory name of each file and take unique values
 # https://unix.stackexchange.com/a/503948
-STAGES_PACKAGES=$STAGED_FILES | xargs -I {} dirname {} | uniq
+STAGED_PACKAGES=$(echo "$STAGED_GO_FILES" | xargs -I {} dirname {} | uniq)
 
-# Assume the directory names are the packages and run go vet
-# on them all. Go vet does not work properly with single files.
+# Assume the directory names are the packages. The following
+# tools do not work properly on single files.
 for PACKAGE in $STAGED_PACKAGES
 do
     # Run govet on the staged package and check the exit status
-    go vet $PACKAGE
+    go vet "./$PACKAGE"
+    if [[ $? != 0 ]]; then
+      PASS=false
+    fi
+
+    # Run errcheck on the staged package and check the exit status
+    errcheck "./$PACKAGE"
     if [[ $? != 0 ]]; then
       PASS=false
     fi

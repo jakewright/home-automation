@@ -34,6 +34,12 @@ jobs:
         go get -u golang.org/x/lint/golint    
         golint -set_exit_status ./...
 
+    - name: errcheck
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        go get -u github.com/kisielk/errcheck
+        errcheck ./...
+
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
