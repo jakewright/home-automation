@@ -136,7 +136,7 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 	rsp := &Response{Response: rawRsp}
 
 	// Read the body into a byte array
-	defer rawRsp.Body.Close()
+	defer func() { _ = rawRsp.Body.Close() }()
 	body, err := ioutil.ReadAll(rawRsp.Body)
 	if err != nil {
 		return rsp, err
