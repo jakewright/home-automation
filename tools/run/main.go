@@ -244,8 +244,8 @@ func runWithInput(stdin, command string, args ...string) string {
 	}
 
 	go func() {
-		defer pipe.Close()
-		io.WriteString(pipe, stdin)
+		defer func() { _ = pipe.Close() }()
+		_, _ = io.WriteString(pipe, stdin)
 	}()
 
 	out, err := cmd.CombinedOutput()

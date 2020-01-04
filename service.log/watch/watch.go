@@ -46,7 +46,7 @@ func (w *Watcher) Start() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to create file watcher")
 	}
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 	w.watcher = watcher
 
 	// Start watching the log file directory so we

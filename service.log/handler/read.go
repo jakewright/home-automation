@@ -134,7 +134,7 @@ func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		slog.Error("Failed to create websocket upgrader: %v", err, metadata)
 		return
 	}
-	defer ws.Close()
+	defer func() { _ = ws.Close() }()
 
 	// A loop must be started that reads and discards messages until a non-nil
 	// error is received so that close, ping and pong messages are processed.
@@ -243,7 +243,7 @@ func parseQuery(body *readRequest) (*repository.LogQuery, error) {
 func readLoop(c *websocket.Conn) {
 	for {
 		if _, _, err := c.NextReader(); err != nil {
-			c.Close()
+			_ = c.Close()
 			break
 		}
 	}
