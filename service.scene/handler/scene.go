@@ -6,14 +6,14 @@ import (
 	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
 )
 
-// HandleCreateScene creates a new scene in the database
+// HandleCreateScene persists a new scene
 func HandleCreateScene(body *sceneproto.CreateSceneRequest) (*sceneproto.CreateSceneResponse, error) {
 	scene := &domain.Scene{
 		Name:    body.Name,
 		Actions: nil,
 	}
 
-	if err := database.Create(scene).Error; err != nil {
+	if err := database.Create(scene); err != nil {
 		return nil, err
 	}
 

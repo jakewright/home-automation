@@ -6,8 +6,9 @@ option go_package = "github.com/jakewright/home-automation/service.scene/proto;s
 // This is needed to support the custom options
 import "github.com/jakewright/home-automation/tools/protoc-gen-jrpc/proto/jrpc.proto";
 
+import "google/protobuf/timestamp.proto";
 
-service Scene {
+service scene {
     option (router).name = "service.scene";
 
     rpc CreateScene (CreateSceneRequest) returns (CreateSceneResponse) {
@@ -16,8 +17,26 @@ service Scene {
     }
 }
 
+message Scene {
+    uint32 id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    string updated_at = 3;
+    string deleted_at = 4;
+}
+
 message CreateSceneRequest {
+    message Action {
+        int32 stage = 1;
+        int32 sequence = 2;
+        string func = 3;
+        string controller_name = 4;
+        string command = 5;
+        string property = 6;
+        string property_value = 7;
+    }
+
     string name = 1;
+    repeated Action actions = 2;
 }
 
 message CreateSceneResponse {
