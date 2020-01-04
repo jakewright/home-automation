@@ -16,6 +16,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	if rsp == nil {
+		return // Nothing to do
+	}
 
 	writeResponse(os.Stdout, rsp)
 }

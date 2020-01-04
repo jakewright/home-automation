@@ -16,8 +16,13 @@ func mustGetDefaultDB() *gorm.DB {
 }
 
 // Find finds records that match given conditions
-func Find(out interface{}, where ...interface{}) *gorm.DB {
-	return mustGetDefaultDB().Find(out, where...)
+func Find(out interface{}, where ...interface{}) error {
+	return mustGetDefaultDB().Find(out, where...).Error
+}
+
+// Create inserts value into the database
+func Create(value interface{}) error {
+	return mustGetDefaultDB().Create(value).Error
 }
 
 // Create inserts value into the database
