@@ -102,6 +102,9 @@ func createTemplateData(file *protoparse.File, service *protoparse.Service) (*da
 	}
 
 	imports := append(file.Imports,
+		&protoparse.Import{Alias: "", Path: "encoding/json"},
+		&protoparse.Import{Alias: "", Path: "net/http"},
+		&protoparse.Import{Alias: "", Path: "time"},
 		&protoparse.Import{Alias: "", Path: "github.com/jakewright/home-automation/libraries/go/request"},
 		&protoparse.Import{Alias: "", Path: "github.com/jakewright/home-automation/libraries/go/response"},
 		&protoparse.Import{Alias: "", Path: "github.com/jakewright/home-automation/libraries/go/router"},

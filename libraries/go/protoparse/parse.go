@@ -150,6 +150,7 @@ type Message struct {
 	// Comments defines the comments attached to the message
 	Comments *Comments
 
+	// Fields are the fields defined in the message
 	Fields []*Field
 
 	// File is the file in which the message was defined (or the file
