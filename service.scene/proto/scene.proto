@@ -14,11 +14,28 @@ service scene {
         option (handler).path = "/scenes";
     }
 
+    rpc ReadScene (ReadSceneRequest) returns (ReadSceneResponse) {
+        option (handler).method = "GET";
+        option (handler).path = "/scene";
+    }
+
+    rpc ListScenes (ListScenesRequest) returns (ListScenesResponse) {
+        option (handler).method = "GET";
+        option (handler).path = "/scenes";
+    }
+
     rpc DeleteScene (DeleteSceneRequest) returns (DeleteSceneResponse) {
         option (handler).method = "DELETE";
         option (handler).path = "/scene";
     }
+
+    rpc SetScene (SetSceneRequest) returns (SetSceneResponse) {
+        option (handler).method = "POST";
+        option (handler).path = "/scene/set";
+    }
 }
+
+// ---- Domain messages ---- //
 
 message Scene {
     uint32 id = 1;
@@ -45,6 +62,8 @@ message Action {
     string deleted_at = 11;
 }
 
+// ---- Request & Response messages ---- //
+
 message CreateSceneRequest {
     message Action {
         int32 stage = 1;
@@ -64,9 +83,31 @@ message CreateSceneResponse {
     Scene scene = 1;
 }
 
+message ReadSceneRequest {
+    uint32 scene_id = 1;
+}
+
+message ReadSceneResponse {
+    Scene scene = 1;
+}
+
+message ListScenesRequest {
+}
+
+message ListScenesResponse {
+    repeated Scene scenes = 1;
+}
+
 message DeleteSceneRequest {
     int32 scene_id = 1;
 }
 
 message DeleteSceneResponse {
+}
+
+message SetSceneRequest {
+    uint32 scene_id = 1;
+}
+
+message SetSceneResponse {
 }

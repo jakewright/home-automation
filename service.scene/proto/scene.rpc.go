@@ -16,7 +16,10 @@ import (
 type sceneRouter struct {
 	*router.Router
 	CreateScene func(*CreateSceneRequest) (*CreateSceneResponse, error)
+	ReadScene   func(*ReadSceneRequest) (*ReadSceneResponse, error)
+	ListScenes  func(*ListScenesRequest) (*ListScenesResponse, error)
 	DeleteScene func(*DeleteSceneRequest) (*DeleteSceneResponse, error)
+	SetScene    func(*SetSceneRequest) (*SetSceneResponse, error)
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -37,6 +40,48 @@ func NewRouter() *sceneRouter {
 		}
 
 		rsp, err := rr.CreateScene(body)
+		if err != nil {
+			slog.Error("Failed to handle request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		response.WriteJSON(w, rsp)
+	})
+
+	rr.Router.Handle("GET", "/scene", func(w http.ResponseWriter, r *http.Request) {
+		body := &ReadSceneRequest{}
+		if err := request.Decode(r, body); err != nil {
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if rr.ReadScene == nil {
+			slog.Panic("No handler exists for GET service.scene/scene")
+		}
+
+		rsp, err := rr.ReadScene(body)
+		if err != nil {
+			slog.Error("Failed to handle request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		response.WriteJSON(w, rsp)
+	})
+
+	rr.Router.Handle("GET", "/scenes", func(w http.ResponseWriter, r *http.Request) {
+		body := &ListScenesRequest{}
+		if err := request.Decode(r, body); err != nil {
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if rr.ListScenes == nil {
+			slog.Panic("No handler exists for GET service.scene/scenes")
+		}
+
+		rsp, err := rr.ListScenes(body)
 		if err != nil {
 			slog.Error("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
@@ -67,6 +112,27 @@ func NewRouter() *sceneRouter {
 		response.WriteJSON(w, rsp)
 	})
 
+	rr.Router.Handle("POST", "/scene/set", func(w http.ResponseWriter, r *http.Request) {
+		body := &SetSceneRequest{}
+		if err := request.Decode(r, body); err != nil {
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if rr.SetScene == nil {
+			slog.Panic("No handler exists for POST service.scene/scene/set")
+		}
+
+		rsp, err := rr.SetScene(body)
+		if err != nil {
+			slog.Error("Failed to handle request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		response.WriteJSON(w, rsp)
+	})
+
 	return rr
 }
 
@@ -84,6 +150,32 @@ func (m *CreateSceneRequest) Do() (*CreateSceneResponse, error) {
 }
 
 // Do makes performs the request
+func (m *ReadSceneRequest) Do() (*ReadSceneResponse, error) {
+	req := &rpc.Request{
+		Method: "GET",
+		URL:    "service.scene/scene",
+		Body:   m,
+	}
+
+	rsp := &ReadSceneResponse{}
+	_, err := rpc.Do(req, rsp)
+	return rsp, err
+}
+
+// Do makes performs the request
+func (m *ListScenesRequest) Do() (*ListScenesResponse, error) {
+	req := &rpc.Request{
+		Method: "GET",
+		URL:    "service.scene/scenes",
+		Body:   m,
+	}
+
+	rsp := &ListScenesResponse{}
+	_, err := rpc.Do(req, rsp)
+	return rsp, err
+}
+
+// Do makes performs the request
 func (m *DeleteSceneRequest) Do() (*DeleteSceneResponse, error) {
 	req := &rpc.Request{
 		Method: "DELETE",
@@ -92,6 +184,19 @@ func (m *DeleteSceneRequest) Do() (*DeleteSceneResponse, error) {
 	}
 
 	rsp := &DeleteSceneResponse{}
+	_, err := rpc.Do(req, rsp)
+	return rsp, err
+}
+
+// Do makes performs the request
+func (m *SetSceneRequest) Do() (*SetSceneResponse, error) {
+	req := &rpc.Request{
+		Method: "POST",
+		URL:    "service.scene/scene/set",
+		Body:   m,
+	}
+
+	rsp := &SetSceneResponse{}
 	_, err := rpc.Do(req, rsp)
 	return rsp, err
 }
