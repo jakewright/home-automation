@@ -20,3 +20,7 @@ message Handler {
 extend google.protobuf.MethodOptions {
     Handler handler = 51000;
 }
+
+extend google.protobuf.FieldOptions {
+    bool time = 52000;
+}

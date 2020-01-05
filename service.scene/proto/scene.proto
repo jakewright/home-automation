@@ -41,9 +41,9 @@ message Scene {
     uint32 id = 1;
     string name = 2;
     repeated Action actions = 3;
-    string created_at = 4;
-    string updated_at = 5;
-    string deleted_at = 6;
+    string created_at = 4 [(time) = true];
+    string updated_at = 5 [(time) = true];
+    string deleted_at = 6 [(time) = true];
 }
 
 message Action {
@@ -57,9 +57,9 @@ message Action {
     string property = 7;
     string property_value = 8;
 
-    string created_at = 9;
-    string updated_at = 10;
-    string deleted_at = 11;
+    string created_at = 9 [(time) = true];
+    string updated_at = 10 [(time) = true];
+    string deleted_at = 11 [(time) = true];
 }
 
 // ---- Request & Response messages ---- //

@@ -114,11 +114,39 @@ func createTemplateData(file *protoparse.File, service *protoparse.Service) (*da
 		return nil, err
 	}
 
+	var messages []*message
+	for _, m := range file.Messages {
+		var timeFields []string
+		for _, f := range m.Fields {
+			opts, err := f.GetExtension(jrpcproto.E_Time)
+			if err != nil {
+				return nil, err
+			}
+			if set := opts.(*bool); set != nil && *set {
+				if f.TypeName != "TYPE_STRING" {
+					return nil, fmt.Errorf("time option can only be set on string fields but field %s has type %s", f.Name, f.TypeName)
+				}
+
+				timeFields = append(timeFields, f.GoName)
+			}
+		}
+
+		if len(timeFields) == 0 {
+			continue
+		}
+
+		messages = append(messages, &message{
+			Name:       m.GoTypeName,
+			TimeFields: timeFields,
+		})
+	}
+
 	return &data{
 		PackageName: file.GoPackage,
 		RouterName:  routerName,
 		Imports:     imports,
 		Methods:     methods,
+		Messages:    messages,
 	}, nil
 }
 
