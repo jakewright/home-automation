@@ -3,9 +3,7 @@
 package sceneproto
 
 import (
-	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
@@ -31,19 +29,25 @@ func NewRouter() *SceneRouter {
 	}
 
 	rr.Router.Handle("POST", "/scenes", func(w http.ResponseWriter, r *http.Request) {
-		body := &CreateSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
-			response.WriteJSON(w, err)
-			return
-		}
-
 		if rr.CreateScene == nil {
 			slog.Panic("No handler exists for POST service.scene/scenes")
 		}
 
+		body := &CreateSceneRequest{}
+		if err := request.Decode(r, body); err != nil {
+			slog.Error("Failed to decode request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if err := body.Validate(); err != nil {
+			slog.Error("Failed to validate request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
 		rsp, err := rr.CreateScene(body)
 		if err != nil {
-			slog.Error("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -52,19 +56,25 @@ func NewRouter() *SceneRouter {
 	})
 
 	rr.Router.Handle("GET", "/scene", func(w http.ResponseWriter, r *http.Request) {
-		body := &ReadSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
-			response.WriteJSON(w, err)
-			return
-		}
-
 		if rr.ReadScene == nil {
 			slog.Panic("No handler exists for GET service.scene/scene")
 		}
 
+		body := &ReadSceneRequest{}
+		if err := request.Decode(r, body); err != nil {
+			slog.Error("Failed to decode request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if err := body.Validate(); err != nil {
+			slog.Error("Failed to validate request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
 		rsp, err := rr.ReadScene(body)
 		if err != nil {
-			slog.Error("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -73,19 +83,25 @@ func NewRouter() *SceneRouter {
 	})
 
 	rr.Router.Handle("GET", "/scenes", func(w http.ResponseWriter, r *http.Request) {
-		body := &ListScenesRequest{}
-		if err := request.Decode(r, body); err != nil {
-			response.WriteJSON(w, err)
-			return
-		}
-
 		if rr.ListScenes == nil {
 			slog.Panic("No handler exists for GET service.scene/scenes")
 		}
 
+		body := &ListScenesRequest{}
+		if err := request.Decode(r, body); err != nil {
+			slog.Error("Failed to decode request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if err := body.Validate(); err != nil {
+			slog.Error("Failed to validate request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
 		rsp, err := rr.ListScenes(body)
 		if err != nil {
-			slog.Error("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -94,19 +110,25 @@ func NewRouter() *SceneRouter {
 	})
 
 	rr.Router.Handle("DELETE", "/scene", func(w http.ResponseWriter, r *http.Request) {
-		body := &DeleteSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
-			response.WriteJSON(w, err)
-			return
-		}
-
 		if rr.DeleteScene == nil {
 			slog.Panic("No handler exists for DELETE service.scene/scene")
 		}
 
+		body := &DeleteSceneRequest{}
+		if err := request.Decode(r, body); err != nil {
+			slog.Error("Failed to decode request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if err := body.Validate(); err != nil {
+			slog.Error("Failed to validate request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
 		rsp, err := rr.DeleteScene(body)
 		if err != nil {
-			slog.Error("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -115,19 +137,25 @@ func NewRouter() *SceneRouter {
 	})
 
 	rr.Router.Handle("POST", "/scene/set", func(w http.ResponseWriter, r *http.Request) {
-		body := &SetSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
-			response.WriteJSON(w, err)
-			return
-		}
-
 		if rr.SetScene == nil {
 			slog.Panic("No handler exists for POST service.scene/scene/set")
 		}
 
+		body := &SetSceneRequest{}
+		if err := request.Decode(r, body); err != nil {
+			slog.Error("Failed to decode request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if err := body.Validate(); err != nil {
+			slog.Error("Failed to validate request: %v", err)
+			response.WriteJSON(w, err)
+			return
+		}
+
 		rsp, err := rr.SetScene(body)
 		if err != nil {
-			slog.Error("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -201,134 +229,4 @@ func (m *SetSceneRequest) Do() (*SetSceneResponse, error) {
 	rsp := &SetSceneResponse{}
 	_, err := rpc.Do(req, rsp)
 	return rsp, err
-}
-
-// UnmarshalJSON unmarshals normally but validates fields
-func (m *Scene) UnmarshalJSON(data []byte) error {
-	type Alias Scene
-	a := (*Alias)(m)
-	if err := json.Unmarshal(data, a); err != nil {
-		return err
-	}
-
-	if m.CreatedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.CreatedAt); err != nil {
-			return err
-		}
-	}
-
-	if m.UpdatedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.UpdatedAt); err != nil {
-			return err
-		}
-	}
-
-	if m.DeletedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.DeletedAt); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// UnmarshalJSON unmarshals normally but validates fields
-func (m *Action) UnmarshalJSON(data []byte) error {
-	type Alias Action
-	a := (*Alias)(m)
-	if err := json.Unmarshal(data, a); err != nil {
-		return err
-	}
-
-	if m.CreatedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.CreatedAt); err != nil {
-			return err
-		}
-	}
-
-	if m.UpdatedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.UpdatedAt); err != nil {
-			return err
-		}
-	}
-
-	if m.DeletedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.DeletedAt); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Get CreatedAtTime parses CreatedAt as a time
-func (m *Scene) GetCreatedAtTime() time.Time {
-	if m.GetCreatedAt() == "" {
-		return time.Time{}
-	}
-
-	// Ignore the error because it will have already
-	// been validated by the unmarshal function
-	t, _ := time.Parse(time.RFC3339Nano, m.GetCreatedAt())
-	return t
-}
-
-// Get UpdatedAtTime parses UpdatedAt as a time
-func (m *Scene) GetUpdatedAtTime() time.Time {
-	if m.GetUpdatedAt() == "" {
-		return time.Time{}
-	}
-
-	// Ignore the error because it will have already
-	// been validated by the unmarshal function
-	t, _ := time.Parse(time.RFC3339Nano, m.GetUpdatedAt())
-	return t
-}
-
-// Get DeletedAtTime parses DeletedAt as a time
-func (m *Scene) GetDeletedAtTime() time.Time {
-	if m.GetDeletedAt() == "" {
-		return time.Time{}
-	}
-
-	// Ignore the error because it will have already
-	// been validated by the unmarshal function
-	t, _ := time.Parse(time.RFC3339Nano, m.GetDeletedAt())
-	return t
-}
-
-// Get CreatedAtTime parses CreatedAt as a time
-func (m *Action) GetCreatedAtTime() time.Time {
-	if m.GetCreatedAt() == "" {
-		return time.Time{}
-	}
-
-	// Ignore the error because it will have already
-	// been validated by the unmarshal function
-	t, _ := time.Parse(time.RFC3339Nano, m.GetCreatedAt())
-	return t
-}
-
-// Get UpdatedAtTime parses UpdatedAt as a time
-func (m *Action) GetUpdatedAtTime() time.Time {
-	if m.GetUpdatedAt() == "" {
-		return time.Time{}
-	}
-
-	// Ignore the error because it will have already
-	// been validated by the unmarshal function
-	t, _ := time.Parse(time.RFC3339Nano, m.GetUpdatedAt())
-	return t
-}
-
-// Get DeletedAtTime parses DeletedAt as a time
-func (m *Action) GetDeletedAtTime() time.Time {
-	if m.GetDeletedAt() == "" {
-		return time.Time{}
-	}
-
-	// Ignore the error because it will have already
-	// been validated by the unmarshal function
-	t, _ := time.Parse(time.RFC3339Nano, m.GetDeletedAt())
-	return t
 }

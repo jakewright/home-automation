@@ -169,11 +169,17 @@ type Field struct {
 	// Name is the name from the proto file e.g. email_address
 	Name string
 
+	// Repeated is true if this field has the repeated label
+	Repeated bool
+
 	// GoName is the name the field will get in the go struct e.g. EmailAddress
 	GoName string
 
 	// TypeName is the name of the type e.g. TYPE_STRING
 	TypeName string
+
+	// Type is the message if TypeName == TYPE_MESSAGE
+	Type *Message
 
 	descriptor *descriptor.FieldDescriptorProto
 }
@@ -264,6 +270,10 @@ func Parse(req *plugin_go.CodeGeneratorRequest) ([]*File, error) {
 		for _, msg := range f.Messages {
 			messagesByProtoName[msg.ProtoName] = msg
 		}
+	}
+
+	if err := parseMessageFields(messagesByProtoName); err != nil {
+		return nil, err
 	}
 
 	// Parse services defined in each file
@@ -372,24 +382,6 @@ func parseMessage(f *File, md *descriptor.DescriptorProto, index int, parent *Me
 		protoName = "." + pkg + protoName
 	}
 
-	fields := make([]*Field, len(md.Field))
-	for i, fd := range md.Field {
-		goName := camelCase(fd.GetName())
-
-		typeName := fd.GetTypeName()
-		if typeName == "" {
-			typeIndex := int32(fd.GetType())
-			typeName = descriptor.FieldDescriptorProto_Type_name[typeIndex]
-		}
-
-		fields[i] = &Field{
-			Name:       fd.GetName(),
-			GoName:     goName,
-			TypeName:   typeName,
-			descriptor: fd,
-		}
-	}
-
 	message := &Message{
 		Name:       md.GetName(),
 		File:       f,
@@ -397,7 +389,6 @@ func parseMessage(f *File, md *descriptor.DescriptorProto, index int, parent *Me
 		ProtoName:  protoName,
 		GoTypeName: goTypeName,
 		Comments:   commentsAtPath(path, f.descriptor),
-		Fields:     fields,
 		path:       path,
 		descriptor: md,
 	}
@@ -409,6 +400,48 @@ func parseMessage(f *File, md *descriptor.DescriptorProto, index int, parent *Me
 	}
 
 	return messages
+}
+
+// parseMessageFields has to be done after parsing the messages themselves, because
+// fields can have types that are other messages, so we need to know about all
+// messages that exist before we can parse the fields.
+func parseMessageFields(messagesByProtoName map[string]*Message) error {
+	for _, m := range messagesByProtoName {
+		fields := make([]*Field, len(m.descriptor.Field))
+		for i, fd := range m.descriptor.Field {
+			// The camelCase function is taken from the protobuf
+			// package so this should be roughly accurate
+			goName := camelCase(fd.GetName())
+
+			// Get the type name. Note that for message types
+			// this will be TYPE_MESSAGE. For the message's
+			// actual name, check field.Type (set below).
+			typeIndex := int32(fd.GetType())
+			typeName := descriptor.FieldDescriptorProto_Type_name[typeIndex]
+
+			var message *Message
+			// If this is a message type, find the message.
+			if fd.GetType() == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+				var ok bool
+				if message, ok = messagesByProtoName[fd.GetTypeName()]; !ok {
+					return fmt.Errorf("field %s has type %s but could not find a message with that name", fd.GetName(), fd.GetTypeName())
+				}
+			}
+
+			fields[i] = &Field{
+				Name:       fd.GetName(),
+				Repeated:   fd.GetLabel() == descriptor.FieldDescriptorProto_LABEL_REPEATED,
+				GoName:     goName,
+				TypeName:   typeName,
+				Type:       message,
+				descriptor: fd,
+			}
+		}
+
+		m.Fields = fields
+	}
+
+	return nil
 }
 
 func parseServices(f *File, messagesByProtoName map[string]*Message) ([]*Service, []*Import) {

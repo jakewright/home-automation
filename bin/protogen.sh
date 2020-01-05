@@ -85,6 +85,9 @@ for f in $files; do
     if [[ -f "$f_base.rpc.go" ]]; then
         goimports -w "$f_base.rpc.go"
     fi
+    if [[ -f "$f_base.validate.go" ]]; then
+        goimports -w "$f_base.validate.go"
+    fi
 
     printf "$GREEN$TICK$RESET\n"
 done
