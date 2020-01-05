@@ -2,8 +2,11 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"go/format"
 	"path"
+	"regexp"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
@@ -73,7 +76,7 @@ func createTemplateData(file *protoparse.File, service *protoparse.Service) (*da
 		// Get the handler options
 		opts, err := m.GetExtension(jrpcproto.E_Handler)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		handler := opts.(*jrpcproto.Handler)
 
@@ -106,10 +109,26 @@ func createTemplateData(file *protoparse.File, service *protoparse.Service) (*da
 		&protoparse.Import{Alias: "", Path: "github.com/jakewright/home-automation/libraries/go/slog"},
 	)
 
+	routerName, err := generateRouterName(service.Name)
+	if err != nil {
+		return nil, err
+	}
+
 	return &data{
 		PackageName: file.GoPackage,
-		RouterName:  service.Name + "Router",
+		RouterName:  routerName,
 		Imports:     imports,
 		Methods:     methods,
 	}, nil
+}
+
+func generateRouterName(serviceName string) (string, error) {
+	err := fmt.Errorf("service name should be alphanumeric camelcase ending with \"Service\"")
+
+	r := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*Service$`)
+	if ok := r.MatchString(serviceName); !ok {
+		return "", err
+	}
+
+	return strings.Title(strings.TrimSuffix(serviceName, "Service")) + "Router", nil
 }

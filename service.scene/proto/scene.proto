@@ -6,7 +6,7 @@ option go_package = "github.com/jakewright/home-automation/service.scene/proto;s
 // This is needed to support the custom options
 import "github.com/jakewright/home-automation/tools/protoc-gen-jrpc/proto/jrpc.proto";
 
-service scene {
+service SceneService {
     option (router).name = "service.scene";
 
     rpc CreateScene (CreateSceneRequest) returns (CreateSceneResponse) {

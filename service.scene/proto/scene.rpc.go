@@ -12,8 +12,8 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
-// sceneRouter wraps router.Router to provide a convenient way to set handlers
-type sceneRouter struct {
+// SceneRouter wraps router.Router to provide a convenient way to set handlers
+type SceneRouter struct {
 	*router.Router
 	CreateScene func(*CreateSceneRequest) (*CreateSceneResponse, error)
 	ReadScene   func(*ReadSceneRequest) (*ReadSceneResponse, error)
@@ -23,8 +23,8 @@ type sceneRouter struct {
 }
 
 // NewRouter returns a router that is ready to add handlers to
-func NewRouter() *sceneRouter {
-	rr := &sceneRouter{
+func NewRouter() *SceneRouter {
+	rr := &SceneRouter{
 		Router: router.New(),
 	}
 
