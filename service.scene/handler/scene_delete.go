@@ -23,7 +23,8 @@ func HandleDeleteScene(req *sceneproto.DeleteSceneRequest) (*sceneproto.DeleteSc
 		return nil, err
 	}
 
-	// Delete the actions
+	// Delete the actions. MySQL can't do this for
+	//us because GORM only soft deletes the row.
 	if len(actions) > 0 {
 		actionIDs := make([]uint, len(actions))
 		for i, a := range actions {

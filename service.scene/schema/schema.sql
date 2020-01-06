@@ -21,5 +21,8 @@ CREATE TABLE IF NOT EXISTS service_scene_actions (
 
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMP,
+
+    FOREIGN KEY (scene_id) REFERENCES service_scene_scenes(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
 );
