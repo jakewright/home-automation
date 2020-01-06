@@ -9,7 +9,7 @@ import (
 
 // HandleReadScene returns the scene with the given ID
 func HandleReadScene(req *sceneproto.ReadSceneRequest) (*sceneproto.ReadSceneResponse, error) {
-	var scene *domain.Scene
+	scene := &domain.Scene{}
 	if err := database.Find(&scene, req.SceneId); err != nil {
 		return nil, err
 	}
