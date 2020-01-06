@@ -172,6 +172,9 @@ func initDatabase(opts *Opts, svc *Service) error {
 		return err
 	}
 
+	// Always load associations
+	db.InstantSet("gorm:auto_preload", true)
+
 	svc.deferred = append(svc.deferred, func() error {
 		err := db.Close()
 		if err != nil {
