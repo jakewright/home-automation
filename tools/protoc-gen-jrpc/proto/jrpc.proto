@@ -21,6 +21,14 @@ extend google.protobuf.MethodOptions {
     Handler handler = 51000;
 }
 
+message Event {
+    string name = 1;
+}
+
+extend google.protobuf.MessageOptions {
+    Event event = 52000;
+}
+
 extend google.protobuf.FieldOptions {
-    bool time = 52000;
+    bool time = 53000;
 }

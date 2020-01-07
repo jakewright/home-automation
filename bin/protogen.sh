@@ -65,6 +65,9 @@ TICK="\xE2\x9C\x94"
 GREEN="\033[32m"
 RESET="\033[0m"
 
+# Remove old protobuf files
+find "$service_dir" -maxdepth 3 -type f -name "*.pb.go" -exec rm {} \;
+
 # Generate all of the proto files we find
 files=$(find "$service_dir" -maxdepth 3 -type f -name "*.proto")
 for f in $files; do
@@ -77,17 +80,9 @@ for f in $files; do
 
     # Remove the ".proto" from the end of the filename
     f_base=${f%".proto"}
-    
-    # Run goimports on all of the files we expect to have been generated
-    if [[ -f "$f_base.pb.go" ]]; then
-        goimports -w "$f_base.pb.go"
-    fi
-    if [[ -f "$f_base.rpc.go" ]]; then
-        goimports -w "$f_base.rpc.go"
-    fi
-    if [[ -f "$f_base.validate.go" ]]; then
-        goimports -w "$f_base.validate.go"
-    fi
 
     printf "$GREEN$TICK$RESET\n"
 done
+
+# Run goimports on all of the generated files
+find "$service_dir" -maxdepth 3 -type f -name "*.pb.go" -exec goimports -w {} \;

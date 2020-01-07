@@ -135,6 +135,11 @@ func (m *SetSceneResponse) Validate() error {
 	return nil
 }
 
+// Validate returns an error if any of the fields have bad values
+func (m *SetSceneEvent) Validate() error {
+	return nil
+}
+
 // GetCreatedAtTime parses CreatedAt as a time
 func (m *Scene) GetCreatedAtTime() time.Time {
 	if m.GetCreatedAt() == "" {

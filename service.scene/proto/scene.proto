@@ -111,3 +111,9 @@ message SetSceneRequest {
 
 message SetSceneResponse {
 }
+
+// ---- Firehose messages ---- //
+
+message SetSceneEvent {
+    option (event).name = "set-scene";
+}

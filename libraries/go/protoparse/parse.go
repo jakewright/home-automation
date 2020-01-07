@@ -164,6 +164,15 @@ type Message struct {
 	descriptor *descriptor.DescriptorProto
 }
 
+// GetExtension can be used to get custom options set on a message
+func (m *Message) GetExtension(extension *proto.ExtensionDesc) (interface{}, error) {
+	if m.descriptor.Options == nil {
+		return extension.ExtensionType, nil
+	}
+
+	return proto.GetExtension(m.descriptor.Options, extension)
+}
+
 // Field represents a field within a message
 type Field struct {
 	// Name is the name from the proto file e.g. email_address

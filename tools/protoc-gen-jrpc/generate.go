@@ -19,22 +19,36 @@ func generate(req *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResp
 
 	var responseFiles []*plugin_go.CodeGeneratorResponse_File
 
+	generators := []func(*protoparse.File) (string, []byte, error){
+		generateRouter,
+		generateValidate,
+		generateFirehose,
+	}
+
 	for _, file := range files {
-		if len(file.Services) == 1 {
-			responseFile, err := generateRouterFile(file, file.Services[0])
+		for _, generate := range generators {
+			name, b, err := generate(file)
 			if err != nil {
 				return nil, err
 			}
 
-			responseFiles = append(responseFiles, responseFile)
-		}
+			if len(b) == 0 {
+				continue
+			}
 
-		responseFile, err := generateValidateFile(file)
-		if err != nil {
-			return nil, err
-		}
+			// Format the code
+			b, err = format.Source(b)
+			if err != nil {
+				return nil, err
+			}
 
-		responseFiles = append(responseFiles, responseFile)
+			filename := path.Dir(file.Name) + "/" + name + ".pb.go"
+
+			responseFiles = append(responseFiles, &plugin_go.CodeGeneratorResponse_File{
+				Name:    &filename,
+				Content: proto.String(string(b)),
+			})
+		}
 	}
 
 	return &plugin_go.CodeGeneratorResponse{
@@ -42,64 +56,59 @@ func generate(req *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResp
 	}, nil
 }
 
-func generateRouterFile(file *protoparse.File, service *protoparse.Service) (*plugin_go.CodeGeneratorResponse_File, error) {
-	data, err := createRouterTemplateData(file, service)
+func generateRouter(file *protoparse.File) (string, []byte, error) {
+	if len(file.Services) != 1 {
+		return "", nil, nil
+	}
+
+	data, err := createRouterTemplateData(file, file.Services[0])
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
 	// Generate the code
 	buf := &bytes.Buffer{}
 	if err := routerTemplate.Execute(buf, data); err != nil {
-		panic(err)
+		return "", nil, err
 	}
 
-	// Format the code
-	b, err := format.Source(buf.Bytes())
-	if err != nil {
-		panic(err)
-	}
-
-	// Construct the filename
-	filename := file.Name
-	if ext := path.Ext(filename); ext == ".proto" {
-		filename = filename[:len(filename)-len(ext)]
-	}
-	filename += ".rpc.go"
-
-	return &plugin_go.CodeGeneratorResponse_File{
-		Name:    &filename,
-		Content: proto.String(string(b)),
-	}, nil
+	return "router", buf.Bytes(), nil
 }
 
-func generateValidateFile(file *protoparse.File) (*plugin_go.CodeGeneratorResponse_File, error) {
+func generateValidate(file *protoparse.File) (string, []byte, error) {
 	data, err := createValidateTemplateData(file)
 	if err != nil {
-		return nil, err
+		return "", nil, err
+	}
+
+	if len(data.Messages) == 0 {
+		return "", nil, nil
 	}
 
 	// Generate the code
 	buf := &bytes.Buffer{}
 	if err := validateTemplate.Execute(buf, data); err != nil {
-		panic(err)
+		return "", nil, err
 	}
 
-	// Format the code
-	b, err := format.Source(buf.Bytes())
+	return "validate", buf.Bytes(), nil
+}
+
+func generateFirehose(file *protoparse.File) (string, []byte, error) {
+	data, err := createFirehoseTemplateData(file)
 	if err != nil {
-		panic(err)
+		return "", nil, err
 	}
 
-	// Construct the filename
-	filename := file.Name
-	if ext := path.Ext(filename); ext == ".proto" {
-		filename = filename[:len(filename)-len(ext)]
+	if len(data.Events) == 0 {
+		return "", nil, nil
 	}
-	filename += ".validate.go"
 
-	return &plugin_go.CodeGeneratorResponse_File{
-		Name:    &filename,
-		Content: proto.String(string(b)),
-	}, nil
+	// Generate the code
+	buf := &bytes.Buffer{}
+	if err := firehoseTemplate.Execute(buf, data); err != nil {
+		return "", nil, err
+	}
+
+	return "firehose", buf.Bytes(), nil
 }
