@@ -17,7 +17,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 
 	// Register MySQL driver
