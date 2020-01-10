@@ -130,7 +130,10 @@ func initFirehose(svc *Service) error {
 		return err
 	}
 
-	firehose.DefaultPublisher = firehose.New(redisClient)
+	firehoseClient := firehose.NewRedisClient(redisClient)
+	svc.processes = append(svc.processes, firehoseClient)
+
+	firehose.DefaultClient = firehoseClient
 
 	return nil
 }

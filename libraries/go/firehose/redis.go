@@ -17,6 +17,7 @@ import (
 type RedisClient struct {
 	client *redis.Client
 	pubsub *redis.PubSub
+	cfg    *Config
 
 	handlers  map[string]RawHandlerFunc
 	phandlers map[string]RawHandlerFunc
@@ -25,11 +26,34 @@ type RedisClient struct {
 	mux             sync.RWMutex
 }
 
-// New returns a RedisClient
-func New(client *redis.Client) *RedisClient {
+// NewRedisClient returns a RedisClient
+func NewRedisClient(client *redis.Client) *RedisClient {
 	return &RedisClient{
-		client: client,
+		client:          client,
+		handlers:        make(map[string]RawHandlerFunc),
+		phandlers:       make(map[string]RawHandlerFunc),
+		shutdownInvoked: new(int32),
+		mux:             sync.RWMutex{},
 	}
+}
+
+// WithConfig sets the client's config
+func (c *RedisClient) WithConfig(cfg *Config) *RedisClient {
+	c.cfg = cfg
+	return c
+}
+
+func (c *RedisClient) config() *Config {
+	if c.cfg == nil {
+		return defaultConfig
+	}
+
+	return c.cfg
+}
+
+// GetName returns a friendly name for the process
+func (c *RedisClient) GetName() string {
+	return "firehose"
 }
 
 // Publish emits the given message on the given redis channel
