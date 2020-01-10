@@ -12,6 +12,7 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/database"
+	"github.com/jakewright/home-automation/libraries/go/dsync"
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/rpc"
@@ -92,6 +93,9 @@ func Init(opts *Opts) (*Service, error) {
 			return nil, err
 		}
 	}
+
+	// Set up locking
+	dsync.DefaultLocksmith = dsync.NewLocalLocksmith()
 
 	return service, nil
 }
