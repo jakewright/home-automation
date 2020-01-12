@@ -134,12 +134,6 @@ func WithMetadata(err error, metadata map[string]string) *Error {
 // code will remain the same. If the error is not an *Error, the
 // code will default to ErrInternalService.
 func Wrap(err interface{}, code, format string, a ...interface{}) *Error {
-	// This allows the wrap functions to be called
-	// without first checking whether the err is nil
-	if err == nil {
-		return nil
-	}
-
 	metadata, a := extractMetadata(format, a)
 
 	// By default, the message of the returned error is the
