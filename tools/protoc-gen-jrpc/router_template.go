@@ -65,18 +65,18 @@ func NewRouter() *{{ .RouterName }} {
 	{{ range .Methods }}
 		rr.Router.Handle("{{ .HTTPMethod }}", "{{ .Path }}", func(w http.ResponseWriter, r *http.Request) {
 			if rr.{{ .Name }} == nil {
-				slog.Panic("No handler exists for {{ .HTTPMethod }} {{ .URL }}")
+				slog.Panicf("No handler exists for {{ .HTTPMethod }} {{ .URL }}")
 			}
 
 			body := &{{ .InputType }}{}
 			if err := request.Decode(r, body); err != nil {
-				slog.Error("Failed to decode request: %v", err)
+				slog.Errorf("Failed to decode request: %v", err)
 				response.WriteJSON(w, err)
 				return
 			}
 
 			if err := body.Validate(); err != nil {
-				slog.Error("Failed to validate request: %v", err)
+				slog.Errorf("Failed to validate request: %v", err)
 				response.WriteJSON(w, err)
 				return
 			}

@@ -35,7 +35,7 @@ var DefaultProvider Provider
 
 func mustGetDefaultProvider() Provider {
 	if DefaultProvider == nil {
-		slog.Panic("Config read before default provider set")
+		slog.Panicf("Config read before default provider set")
 	}
 
 	return DefaultProvider
@@ -60,7 +60,7 @@ func (c *Config) Replace(content map[string]interface{}) {
 	defer c.l.Unlock()
 
 	if !reflect.DeepEqual(content, c.m) {
-		slog.Info("Config updated")
+		slog.Infof("Config updated")
 	}
 
 	c.m = content
@@ -118,18 +118,18 @@ func (v Value) Int(defaults ...int) int {
 		return t
 	case float64:
 		if t != float64(int(t)) {
-			slog.Panic("%v cannot be represented as an int", t)
+			slog.Panicf("%v cannot be represented as an int", t)
 		}
 
 		return int(t)
 	case string:
 		i, err := strconv.Atoi(t)
 		if err != nil {
-			slog.Panic("Failed to convert string to int: %v", err)
+			slog.Panicf("failed to convert string to int: %v", err)
 		}
 		return i
 	default:
-		slog.Panic("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
+		slog.Panicf("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
 	}
 
 	return 0 // Never hit
@@ -159,7 +159,7 @@ func (v Value) Bool(defaults ...bool) bool {
 	case string:
 		b, err := strconv.ParseBool(t)
 		if err != nil {
-			slog.Panic("Failed to parse bool: %v", err)
+			slog.Panicf("failed to parse bool: %v", err)
 		}
 		return b
 
@@ -167,7 +167,7 @@ func (v Value) Bool(defaults ...bool) bool {
 		return t
 
 	default:
-		slog.Panic("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
+		slog.Panicf("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
 	}
 
 	return false
@@ -187,11 +187,11 @@ func (v Value) Duration(defaults ...time.Duration) time.Duration {
 	case string:
 		d, err := time.ParseDuration(t)
 		if err != nil {
-			slog.Panic("Failed to parse duration: %v", err)
+			slog.Panicf("Failed to parse duration: %v", err)
 		}
 		return d
 	default:
-		slog.Panic("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
+		slog.Panicf("%v is of unsupported type %v", t, reflect.TypeOf(t).String())
 	}
 
 	return 0

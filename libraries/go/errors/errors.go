@@ -110,18 +110,33 @@ func Unauthorized(format string, a ...interface{}) *Error {
 	return newError(ErrUnauthorized, format, a)
 }
 
-// Wrap prepends a new message onto an existing error to add more context.
-// Optionally, the last parameter can be a map[string]string containing
-// metadata. If the error-to-wrap is already an *Error, the metadata will
-// me merged and the existing code will remain the same. If the error
-// is not an *Error, the code will default to ErrInternalService.
-func Wrap(err error, format string, a ...interface{}) *Error {
-	return WrapWithCode(err, "", format, a...)
+// WithCode wraps the error with a new code
+func WithCode(err error, code string) *Error {
+	return Wrap(err, code, "")
 }
 
-// WrapWithCode wraps the given error in the same way as Wrap but allows
-// the code to be set/overridden.
-func WrapWithCode(err error, code, format string, a ...interface{}) *Error {
+// WithMessage wraps the error with an extra message
+func WithMessage(err error, format string, a ...interface{}) *Error {
+	return Wrap(err, "", format, a...)
+}
+
+// WithMetadata will wrap the error with extra metadata
+func WithMetadata(err error, metadata map[string]string) *Error {
+	return Wrap(err, "", "", metadata)
+}
+
+// Wrap wraps the given error. Optionally, the last parameter can be a
+// map[string]string containing metadata. If the error-to-wrap is
+// already an *Error, the metadata will me merged and the existing
+// code will remain the same. If the error is not an *Error, the
+// code will default to ErrInternalService.
+func Wrap(err error, code, format string, a ...interface{}) *Error {
+	// This allows the wrap functions to be called
+	// without first checking whether the err is nil
+	if err == nil {
+		return nil
+	}
+
 	metadata, a := extractMetadata(format, a)
 
 	// By default, the message of the returned error is the
@@ -132,7 +147,7 @@ func WrapWithCode(err error, code, format string, a ...interface{}) *Error {
 		msg = fmt.Sprintf(format, a...) + ": " + msg
 	}
 
-	// If the message to wrap is already an *Error
+	// If the error to wrap is already an *Error
 	switch v := err.(type) {
 	case *Error:
 		v.Message = msg

@@ -43,7 +43,7 @@ type readRequest struct {
 func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	query, metadata, err := decodeBody(r)
 	if err != nil {
-		slog.Error("Failed to decode body: %v", err)
+		slog.Errorf("Failed to decode body: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -58,7 +58,7 @@ func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
 
 	events, err := h.LogRepository.Find(query)
 	if err != nil {
-		slog.Error("Failed to find events: %v", err, metadata)
+		slog.Errorf("Failed to find events: %v", err, metadata)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -98,7 +98,7 @@ func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
 
 	t, err := template.ParseFiles(path.Join(h.TemplateDirectory, "index.html"))
 	if err != nil {
-		slog.Error("Failed to parse template: %v", err)
+		slog.Errorf("Failed to parse template: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -106,7 +106,7 @@ func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	err = t.Execute(&buf, rsp)
 	if err != nil {
-		slog.Error("Failed to execute template: %v", err)
+		slog.Errorf("Failed to execute template: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -124,14 +124,14 @@ var upgrader = websocket.Upgrader{
 func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	query, metadata, err := decodeBody(r)
 	if err != nil {
-		slog.Error("Failed to decode body: %v", err)
+		slog.Errorf("Failed to decode body: %v", err)
 		return
 	}
 
 	// Upgrade the request to a WebSocket connection
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		slog.Error("Failed to create websocket upgrader: %v", err, metadata)
+		slog.Errorf("Failed to create websocket upgrader: %v", err, metadata)
 		return
 	}
 	defer func() { _ = ws.Close() }()
@@ -149,7 +149,7 @@ func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	events := make(chan *domain.Event, 50)
 	err = h.Watcher.Subscribe(events, query)
 	if err != nil {
-		slog.Error("Failed to subscribe to the watcher: %v", err, metadata)
+		slog.Errorf("Failed to subscribe to the watcher: %v", err, metadata)
 		return
 	}
 	defer func() {
@@ -160,19 +160,19 @@ func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		select {
 		case event, ok := <-events:
 			if !ok {
-				slog.Error("Events channel unexpectedly closed")
+				slog.Errorf("Events channel unexpectedly closed")
 				return
 			}
 
 			formattedEvent := event.Format()
 			b, err := json.Marshal(formattedEvent)
 			if err != nil {
-				slog.Error("Failed to marshal event: %v", err, metadata)
+				slog.Errorf("Failed to marshal event: %v", err, metadata)
 				continue
 			}
 
 			if err := ws.WriteMessage(websocket.TextMessage, b); err != nil {
-				slog.Error("Failed to write message to websocket: %v", err, metadata)
+				slog.Errorf("Failed to write message to websocket: %v", err, metadata)
 				return
 			}
 		case <-done:
@@ -219,14 +219,14 @@ func parseQuery(body *readRequest) (*repository.LogQuery, error) {
 	if body.SinceTime != "" {
 		sinceTime, err = time.Parse(htmlTimeFormat, body.SinceTime)
 		if err != nil {
-			return nil, errors.WrapWithCode(err, errors.ErrBadRequest, "failed to parse since_time")
+			return nil, errors.Wrap(err, errors.ErrBadRequest, "failed to parse since_time")
 		}
 	}
 
 	if body.UntilTime != "" {
 		untilTime, err = time.Parse(htmlTimeFormat, body.UntilTime)
 		if err != nil {
-			return nil, errors.WrapWithCode(err, errors.ErrBadRequest, "failed to parse until_time")
+			return nil, errors.Wrap(err, errors.ErrBadRequest, "failed to parse until_time")
 		}
 	}
 

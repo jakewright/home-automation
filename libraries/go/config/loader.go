@@ -37,7 +37,7 @@ func (l *Loader) Load() error {
 		if _, err = rpc.Get("service.config/read/"+l.ServiceName, &content); err == nil {
 			break
 		}
-		slog.Error("Failed to load config [attempt %d of %d]: %v", i+1, maxRetries, err)
+		slog.Errorf("Failed to load config [attempt %d of %d]: %v", i+1, maxRetries, err)
 		time.Sleep(backoff)
 	}
 

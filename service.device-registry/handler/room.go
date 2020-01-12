@@ -25,7 +25,7 @@ type getRoomRequest struct {
 func (h *RoomHandler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
 	rooms, err := h.RoomRepository.FindAll()
 	if err != nil {
-		slog.Error("Failed to find rooms: %v", err)
+		slog.Errorf("Failed to find rooms: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -34,7 +34,7 @@ func (h *RoomHandler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
 	for _, room := range rooms {
 		devices, err := h.DeviceRepository.FindByRoom(room.ID)
 		if err != nil {
-			slog.Error("Failed to find devices for room '%s': %v", room.ID, err)
+			slog.Errorf("Failed to find devices for room '%s': %v", room.ID, err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -48,14 +48,14 @@ func (h *RoomHandler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
 func (h *RoomHandler) HandleGetRoom(w http.ResponseWriter, r *http.Request) {
 	body := getRoomRequest{}
 	if err := request.Decode(r, &body); err != nil {
-		slog.Error("Failed to decode body: %v", err)
+		slog.Errorf("Failed to decode body: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
 
 	room, err := h.RoomRepository.Find(body.RoomID)
 	if err != nil {
-		slog.Error("Failed to find room '%s': %v", body.RoomID, err)
+		slog.Errorf("Failed to find room '%s': %v", body.RoomID, err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -69,7 +69,7 @@ func (h *RoomHandler) HandleGetRoom(w http.ResponseWriter, r *http.Request) {
 	// Decorate the room with its devices
 	devices, err := h.DeviceRepository.FindByRoom(body.RoomID)
 	if err != nil {
-		slog.Error("Failed to find devices for room '%s': %v", body.RoomID, err)
+		slog.Errorf("Failed to find devices for room '%s': %v", body.RoomID, err)
 		response.WriteJSON(w, err)
 		return
 	}

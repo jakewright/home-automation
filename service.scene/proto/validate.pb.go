@@ -18,19 +18,19 @@ func (m *Scene) Validate() error {
 
 	if m.CreatedAt != "" {
 		if _, err := time.Parse(time.RFC3339Nano, m.CreatedAt); err != nil {
-			return errors.WrapWithCode(err, errors.ErrBadRequest, "invalid time string in field created_at")
+			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field created_at")
 		}
 	}
 
 	if m.UpdatedAt != "" {
 		if _, err := time.Parse(time.RFC3339Nano, m.UpdatedAt); err != nil {
-			return errors.WrapWithCode(err, errors.ErrBadRequest, "invalid time string in field updated_at")
+			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field updated_at")
 		}
 	}
 
 	if m.DeletedAt != "" {
 		if _, err := time.Parse(time.RFC3339Nano, m.DeletedAt); err != nil {
-			return errors.WrapWithCode(err, errors.ErrBadRequest, "invalid time string in field deleted_at")
+			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field deleted_at")
 		}
 	}
 
@@ -41,19 +41,19 @@ func (m *Scene) Validate() error {
 func (m *Action) Validate() error {
 	if m.CreatedAt != "" {
 		if _, err := time.Parse(time.RFC3339Nano, m.CreatedAt); err != nil {
-			return errors.WrapWithCode(err, errors.ErrBadRequest, "invalid time string in field created_at")
+			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field created_at")
 		}
 	}
 
 	if m.UpdatedAt != "" {
 		if _, err := time.Parse(time.RFC3339Nano, m.UpdatedAt); err != nil {
-			return errors.WrapWithCode(err, errors.ErrBadRequest, "invalid time string in field updated_at")
+			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field updated_at")
 		}
 	}
 
 	if m.DeletedAt != "" {
 		if _, err := time.Parse(time.RFC3339Nano, m.DeletedAt); err != nil {
-			return errors.WrapWithCode(err, errors.ErrBadRequest, "invalid time string in field deleted_at")
+			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field deleted_at")
 		}
 	}
 

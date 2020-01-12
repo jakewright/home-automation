@@ -28,7 +28,7 @@ var DefaultLocksmith Locksmith
 
 func mustGetDefaultLocksmith() Locksmith {
 	if DefaultLocksmith == nil {
-		slog.Panic("dsync used before default locksmith set")
+		slog.Panicf("dsync used before default locksmith set")
 	}
 
 	return DefaultLocksmith

@@ -31,7 +31,7 @@ type getDeviceRequest struct {
 func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request) {
 	body := listRequest{}
 	if err := request.Decode(r, &body); err != nil {
-		slog.Error("Failed to decode body: %v", err)
+		slog.Errorf("Failed to decode body: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -44,7 +44,7 @@ func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request
 		devices, err = h.DeviceRepository.FindAll()
 	}
 	if err != nil {
-		slog.Error("Failed to read devices: %v", err)
+		slog.Errorf("Failed to read devices: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -53,12 +53,12 @@ func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request
 	for _, device := range devices {
 		room, err := h.RoomRepository.Find(device.RoomID)
 		if err != nil {
-			slog.Error("Failed to read rooms: %v", err)
+			slog.Errorf("Failed to read rooms: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
 		if room == nil {
-			slog.Error("Failed to find room %q", device.RoomID)
+			slog.Errorf("Failed to find room %q", device.RoomID)
 			response.WriteJSON(w, errors.InternalService("Failed to find room %q", device.RoomID))
 			return
 		}
@@ -72,14 +72,14 @@ func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request
 func (h *DeviceHandler) HandleGetDevice(w http.ResponseWriter, r *http.Request) {
 	body := getDeviceRequest{}
 	if err := request.Decode(r, &body); err != nil {
-		slog.Error("Failed to decode body: %v", err)
+		slog.Errorf("Failed to decode body: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
 
 	device, err := h.DeviceRepository.Find(body.DeviceID)
 	if err != nil {
-		slog.Error("Failed to find device '%s': %v", body.DeviceID, err)
+		slog.Errorf("Failed to find device '%s': %v", body.DeviceID, err)
 		response.WriteJSON(w, err)
 		return
 	}
@@ -93,13 +93,13 @@ func (h *DeviceHandler) HandleGetDevice(w http.ResponseWriter, r *http.Request) 
 	// Decorate device with room
 	room, err := h.RoomRepository.Find(device.RoomID)
 	if err != nil {
-		slog.Error("Failed to read rooms: %v", err)
+		slog.Errorf("Failed to read rooms: %v", err)
 		response.WriteJSON(w, err)
 		return
 	}
 
 	if room == nil {
-		slog.Error("Failed to find room %q", device.RoomID)
+		slog.Errorf("Failed to find room %q", device.RoomID)
 		response.WriteJSON(w, errors.InternalService("Failed to find room %q", device.RoomID))
 		return
 	}

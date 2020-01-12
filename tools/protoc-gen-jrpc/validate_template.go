@@ -56,7 +56,7 @@ package {{ .PackageName }}
 			{{ if $field.Time }}
 				if m.{{ $field.GoName }} != "" {
 					if _, err := time.Parse(time.RFC3339Nano, m.{{ $field.GoName }}); err != nil {
-						return errors.WrapWithCode(err, errors.ErrBadRequest, "invalid time string in field {{ $field.JSONName }}")
+						return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field {{ $field.JSONName }}")
 					}
 				}
 

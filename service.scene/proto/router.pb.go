@@ -30,18 +30,18 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("POST", "/scenes", func(w http.ResponseWriter, r *http.Request) {
 		if rr.CreateScene == nil {
-			slog.Panic("No handler exists for POST service.scene/scenes")
+			slog.Panicf("No handler exists for POST service.scene/scenes")
 		}
 
 		body := &CreateSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Error("Failed to decode request: %v", err)
+			slog.Errorf("Failed to decode request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Error("Failed to validate request: %v", err)
+			slog.Errorf("Failed to validate request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -57,18 +57,18 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("GET", "/scene", func(w http.ResponseWriter, r *http.Request) {
 		if rr.ReadScene == nil {
-			slog.Panic("No handler exists for GET service.scene/scene")
+			slog.Panicf("No handler exists for GET service.scene/scene")
 		}
 
 		body := &ReadSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Error("Failed to decode request: %v", err)
+			slog.Errorf("Failed to decode request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Error("Failed to validate request: %v", err)
+			slog.Errorf("Failed to validate request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -84,18 +84,18 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("GET", "/scenes", func(w http.ResponseWriter, r *http.Request) {
 		if rr.ListScenes == nil {
-			slog.Panic("No handler exists for GET service.scene/scenes")
+			slog.Panicf("No handler exists for GET service.scene/scenes")
 		}
 
 		body := &ListScenesRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Error("Failed to decode request: %v", err)
+			slog.Errorf("Failed to decode request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Error("Failed to validate request: %v", err)
+			slog.Errorf("Failed to validate request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -111,18 +111,18 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("DELETE", "/scene", func(w http.ResponseWriter, r *http.Request) {
 		if rr.DeleteScene == nil {
-			slog.Panic("No handler exists for DELETE service.scene/scene")
+			slog.Panicf("No handler exists for DELETE service.scene/scene")
 		}
 
 		body := &DeleteSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Error("Failed to decode request: %v", err)
+			slog.Errorf("Failed to decode request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Error("Failed to validate request: %v", err)
+			slog.Errorf("Failed to validate request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -138,18 +138,18 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("POST", "/scene/set", func(w http.ResponseWriter, r *http.Request) {
 		if rr.SetScene == nil {
-			slog.Panic("No handler exists for POST service.scene/scene/set")
+			slog.Panicf("No handler exists for POST service.scene/scene/set")
 		}
 
 		body := &SetSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Error("Failed to decode request: %v", err)
+			slog.Errorf("Failed to decode request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Error("Failed to validate request: %v", err)
+			slog.Errorf("Failed to validate request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}

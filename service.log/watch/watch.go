@@ -44,7 +44,7 @@ func (w *Watcher) Start() error {
 	// that the Stop method can call Close() on it
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return errors.Wrap(err, "failed to create file watcher")
+		return errors.WithMessage(err, "failed to create file watcher")
 	}
 	defer func() { _ = watcher.Close() }()
 	w.watcher = watcher
@@ -52,9 +52,9 @@ func (w *Watcher) Start() error {
 	// Start watching the log file directory so we
 	// are notified when new log files are created
 	if err = watcher.Add(w.LogRepository.LogDirectory); err != nil {
-		return errors.Wrap(err, "failed to watch log directory")
+		return errors.WithMessage(err, "failed to watch log directory")
 	}
-	slog.Info("Watching %s for changes", w.LogRepository.LogDirectory)
+	slog.Infof("Watching %s for changes", w.LogRepository.LogDirectory)
 
 	// Create a notification channel with a buffer of 1 so
 	// that we can always queue a new event while the current
@@ -101,13 +101,13 @@ func (w *Watcher) Start() error {
 
 			// It's unclear what state the watcher will be in if we receive
 			// any errors so just return, which will trigger Close()
-			return errors.Wrap(err, "received error from watcher")
+			return errors.WithMessage(err, "received error from watcher")
 		}
 	}
 }
 
 // Stop stops watching for log file changes
-func (w *Watcher) Stop(ctx context.Context) error {
+func (w *Watcher) Stop(_ context.Context) error {
 	w.ticker.Stop()
 	close(w.notify)
 
@@ -170,7 +170,7 @@ func (w *Watcher) findAndSendEvents() {
 		// Get all new events for this subscriber
 		events, err := w.LogRepository.Find(q)
 		if err != nil {
-			slog.Error("Failed to get events for subscriber: %v", err)
+			slog.Errorf("Failed to get events for subscriber: %v", err)
 			continue
 		}
 

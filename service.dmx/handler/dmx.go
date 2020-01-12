@@ -5,13 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jakewright/home-automation/libraries/go/firehose"
-	"github.com/jakewright/home-automation/service.dmx/domain"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
-	"github.com/jakewright/home-automation/service.dmx/ola"
-
+	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/response"
+	"github.com/jakewright/home-automation/service.dmx/domain"
+	"github.com/jakewright/home-automation/service.dmx/ola"
 )
 
 // DMXHandler handles device requests
@@ -56,24 +55,24 @@ func (h *DMXHandler) Update(w http.ResponseWriter, r *http.Request) {
 	defer func() { _ = r.Body.Close() }()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		response.WriteJSON(w, errors.Wrap(err, "failed to read request body"))
+		response.WriteJSON(w, errors.WithMessage(err, "failed to read request body"))
 		return
 	}
 
 	changed, err := fixture.SetProperties(body)
 	if err != nil {
-		response.WriteJSON(w, errors.Wrap(err, "failed to update fixture"))
+		response.WriteJSON(w, errors.WithMessage(err, "failed to update fixture"))
 		return
 	}
 
 	if err := ola.SetDMX(h.Universe.Number, h.Universe.DMXValues()); err != nil {
-		response.WriteJSON(w, errors.Wrap(err, "failed to set DMX values"))
+		response.WriteJSON(w, errors.WithMessage(err, "failed to set DMX values"))
 		return
 	}
 
 	if changed {
 		if err := firehose.Publish("device-state-changed."+deviceID, fixture); err != nil {
-			response.WriteJSON(w, errors.Wrap(err, "failed to emit event"))
+			response.WriteJSON(w, errors.WithMessage(err, "failed to emit event"))
 			return
 		}
 	}

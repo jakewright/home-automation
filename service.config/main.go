@@ -22,19 +22,19 @@ func main() {
 
 	_, err := configService.Reload()
 	if err != nil {
-		slog.Panic("Failed to load config: %v", err)
+		slog.Panicf("Failed to load config: %v", err)
 	}
 
 	selfConfig, err := c.Get("service.config")
 	if err != nil {
-		slog.Panic("Error reading own config: %v", err)
+		slog.Panicf("Error reading own config: %v", err)
 	}
 
 	config.DefaultProvider = config.New(selfConfig)
 
 	if config.Get("polling.enabled").Bool(false) {
 		interval := config.Get("polling.interval").Int(30000)
-		slog.Info("Polling for config changes every %d milliseconds", interval)
+		slog.Infof("Polling for config changes every %d milliseconds", interval)
 		go configService.Watch(time.Millisecond * time.Duration(interval))
 	}
 

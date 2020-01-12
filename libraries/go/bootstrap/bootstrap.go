@@ -77,7 +77,7 @@ func Init(opts *Opts) (*Service, error) {
 	if err := configLoader.Load(); err != nil {
 		return nil, err
 	}
-	slog.Info("Config loaded")
+	slog.Infof("Config loaded")
 	service.processes = append(service.processes, configLoader)
 
 	// Connect to Redis
@@ -109,7 +109,7 @@ func initFirehose(svc *Service) error {
 	}
 
 	addr := fmt.Sprintf("%s:%d", host, port)
-	slog.Info("Connecting to Redis at address %s", addr)
+	slog.Infof("Connecting to Redis at address %s", addr)
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:            addr,
 		Password:        "",
@@ -122,9 +122,9 @@ func initFirehose(svc *Service) error {
 	svc.deferred = append(svc.deferred, func() error {
 		err := redisClient.Close()
 		if err != nil {
-			slog.Error("Failed to close Redis connection: %v", err)
+			slog.Errorf("Failed to close Redis connection: %v", err)
 		} else {
-			slog.Debug("Closed Redis connection")
+			slog.Debugf("Closed Redis connection")
 		}
 		return err
 	})
@@ -185,9 +185,9 @@ func initDatabase(opts *Opts, svc *Service) error {
 	svc.deferred = append(svc.deferred, func() error {
 		err := db.Close()
 		if err != nil {
-			slog.Error("Failed to close MySQL connection: %v", err)
+			slog.Errorf("Failed to close MySQL connection: %v", err)
 		} else {
-			slog.Debug("Closed MySQL connection")
+			slog.Debugf("Closed MySQL connection")
 		}
 		return err
 	})
@@ -227,10 +227,10 @@ func (s *Service) Run(processes ...Process) {
 		go func() {
 			defer wg.Done()
 			if err := process.Start(); err != nil {
-				slog.Error("Process %s stopped with error: %v", process.GetName(), err)
+				slog.Errorf("Process %s stopped with error: %v", process.GetName(), err)
 				code = 1
 			} else {
-				slog.Debug("Process %s stopped", process.GetName())
+				slog.Debugf("Process %s stopped", process.GetName())
 			}
 		}()
 	}
@@ -245,10 +245,10 @@ func (s *Service) Run(processes ...Process) {
 	// Wait for all processes to return or for a signal
 	select {
 	case <-done:
-		slog.Warn("All processes stopped prematurely")
+		slog.Warnf("All processes stopped prematurely")
 		return
 	case s := <-sig:
-		slog.Info("Received %v signal", s)
+		slog.Infof("Received %v signal", s)
 	}
 
 	// A short timeout because Docker will kill us after 10 seconds anyway
@@ -263,7 +263,7 @@ func (s *Service) Run(processes ...Process) {
 		go func() {
 			defer wg.Done()
 			if err := process.Stop(ctx); err != nil {
-				slog.Error("Failed to stop %s gracefully: %v", process.GetName(), err)
+				slog.Errorf("Failed to stop %s gracefully: %v", process.GetName(), err)
 				code = 1
 			}
 		}()
@@ -271,5 +271,5 @@ func (s *Service) Run(processes ...Process) {
 
 	// Wait for processes to terminate
 	wg.Wait()
-	slog.Info("All processes stopped")
+	slog.Infof("All processes stopped")
 }

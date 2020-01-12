@@ -20,6 +20,21 @@ type Event struct {
 	Metadata  map[string]string
 }
 
+func newEvent(severity Severity, v interface{}) *Event {
+	var metadata map[string]string
+
+	if provider, ok := v.(metadataProvider); ok {
+		metadata = provider.GetMetadata()
+	}
+
+	return &Event{
+		Timestamp: time.Now(),
+		Severity:  severity,
+		Message:   fmt.Sprint(v),
+		Metadata:  metadata,
+	}
+}
+
 func newEventFromFormat(severity Severity, format string, a ...interface{}) *Event {
 	var metadata map[string]string
 
@@ -31,7 +46,7 @@ func newEventFromFormat(severity Severity, format string, a ...interface{}) *Eve
 			var ok bool
 			metadata, ok = a[len(a)-1].(map[string]string)
 			if !ok {
-				Panic("Failed to assert metadata type")
+				panic("failed to assert metadata type")
 			}
 			a = a[:operandCount]
 		}

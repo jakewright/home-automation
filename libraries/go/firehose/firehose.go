@@ -24,7 +24,7 @@ type Client interface {
 	config() *Config
 }
 
-// DefaultPublisher is a global instance of Publisher
+// DefaultClient is a global instance of Client
 var DefaultClient Client
 
 func mustGetDefaultClient() Client {
@@ -72,7 +72,7 @@ func Subscribe(channel string, handler HandlerFunc) {
 			}
 
 			if res.err != nil {
-				slog.Error("Failed to handle event [attempt %d, %s...]: %v", e.attempts, action, res.err, params)
+				slog.Errorf("Failed to handle event [attempt %d, %s...]: %v", e.attempts, action, res.err, params)
 			}
 
 			if !res.retry {
@@ -83,7 +83,7 @@ func Subscribe(channel string, handler HandlerFunc) {
 			time.Sleep(c.config().Backoff)
 		}
 
-		slog.Error("Failed to handle event [attempt %d, final]: %v", e.attempts, res.err, params)
+		slog.Errorf("Failed to handle event [attempt %d, final]: %v", e.attempts, res.err, params)
 	}
 
 	c.Subscribe(channel, wrappedHandler)

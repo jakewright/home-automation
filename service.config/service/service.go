@@ -22,7 +22,7 @@ type ConfigService struct {
 func (s *ConfigService) Watch(d time.Duration) {
 	for {
 		if _, err := s.Reload(); err != nil {
-			slog.Error("Failed to reload config: %v", err)
+			slog.Errorf("Failed to reload config: %v", err)
 		}
 
 		time.Sleep(d)
@@ -42,7 +42,7 @@ func (s *ConfigService) Reload() (bool, error) {
 	}
 
 	if reloaded {
-		slog.Info("Config reloaded")
+		slog.Infof("Config reloaded")
 	}
 
 	return reloaded, nil

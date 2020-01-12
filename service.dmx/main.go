@@ -17,7 +17,7 @@ func main() {
 	})
 
 	if err != nil {
-		slog.Panic("Failed to initialise service: %v", err)
+		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
 	universeNumber := config.Get("universe.number").Int()
@@ -29,7 +29,7 @@ func main() {
 	}
 
 	if err := l.FetchDevices(); err != nil {
-		slog.Panic("Failed to load devices: %v", err)
+		slog.Panicf("Failed to load devices: %v", err)
 	}
 
 	h := handler.DMXHandler{Universe: u}

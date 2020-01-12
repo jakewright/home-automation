@@ -16,17 +16,17 @@ func main() {
 	})
 
 	if err != nil {
-		slog.Panic("Failed to initialise service: %v", err)
+		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
 	logDirectory := config.Get("logDirectory").String()
 	if logDirectory == "" {
-		slog.Panic("logDirectory not set in config")
+		slog.Panicf("logDirectory not set in config")
 	}
 
 	templateDirectory := config.Get("templateDirectory").String()
 	if templateDirectory == "" {
-		slog.Panic("templateDirectory not set in config")
+		slog.Panicf("templateDirectory not set in config")
 	}
 
 	logRepository := &repository.LogRepository{

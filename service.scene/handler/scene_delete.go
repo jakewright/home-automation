@@ -41,7 +41,7 @@ func HandleDeleteScene(req *sceneproto.DeleteSceneRequest) (*sceneproto.DeleteSc
 		return nil, err
 	}
 
-	slog.Info("Deleted scene %d", req.SceneId)
+	slog.Infof("Deleted scene %d", req.SceneId)
 
 	return &sceneproto.DeleteSceneResponse{}, nil
 }

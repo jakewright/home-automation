@@ -33,11 +33,11 @@ func WriteJSON(w http.ResponseWriter, data interface{}) {
 	if e, ok := data.(*errors.Error); ok {
 		status = e.HTTPStatus()
 		payload.Message = e.Error()
-		slog.Error(e.Error(), e.GetMetadata())
+		slog.Errorf(e.Error(), e.GetMetadata())
 	} else if e, ok := (data).(error); ok {
 		status = http.StatusInternalServerError
 		payload.Message = e.Error()
-		slog.Error(e.Error())
+		slog.Errorf(e.Error())
 	} else {
 		payload.Data = data
 	}
@@ -51,12 +51,12 @@ func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	rsp, err := json.Marshal(&payload)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.Error("Failed to marshal response payload: %v", err)
+		slog.Errorf("Failed to marshal response payload: %v", err)
 		return
 	}
 
 	w.WriteHeader(status)
 	if _, err := fmt.Fprint(w, string(rsp)); err != nil {
-		slog.Error("Failed to write response: %v", err)
+		slog.Errorf("Failed to write response: %v", err)
 	}
 }

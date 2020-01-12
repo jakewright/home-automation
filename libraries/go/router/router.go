@@ -34,7 +34,7 @@ func (r *Router) GetName() string {
 // Start will listen for TCP connections on the port defined in config
 func (r *Router) Start() error {
 	port := config.Get("port").Int(80)
-	slog.Info("Listening on port %d", port)
+	slog.Infof("Listening on port %d", port)
 	err := r.r.ListenAndServe(fmt.Sprintf(":%d", port))
 
 	// This error will always be returned after Shutdown is called so swallow it here

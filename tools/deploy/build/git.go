@@ -15,25 +15,25 @@ const (
 
 func checkout(reference string) error {
 	if err := cacheDir(); err != nil {
-		return errors.Wrap(err, "failed to create cache directory")
+		return errors.WithMessage(err, "failed to create cache directory")
 	}
 
 	// If the clone directory does not exist
 	if _, err := os.Stat(mirrorDirectory); err != nil && os.IsNotExist(err) {
 		// Clone the repository
 		if err := util.Exec("git", "clone", repository, mirrorDirectory); err != nil {
-			return errors.Wrap(err, "failed to clone repository")
+			return errors.WithMessage(err, "failed to clone repository")
 		}
 	}
 
 	// Change the working directory to the git clone
 	if err := os.Chdir(mirrorDirectory); err != nil {
-		return errors.Wrap(err, "failed to change working directory to mirror directory")
+		return errors.WithMessage(err, "failed to change working directory to mirror directory")
 	}
 
 	// Checkout the commit or branch
 	if err := util.Exec("git", "checkout", reference); err != nil {
-		return errors.Wrap(err, "failed to checkout reference '%s'", reference)
+		return errors.WithMessage(err, "failed to checkout reference '%s'", reference)
 	}
 
 	return nil

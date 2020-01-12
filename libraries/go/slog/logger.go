@@ -16,28 +16,33 @@ func mustGetDefaultLogger() Logger {
 	return DefaultLogger
 }
 
-// Debug logs with DEBUG severity
-func Debug(format string, a ...interface{}) {
+// Debugf logs with DEBUG severity
+func Debugf(format string, a ...interface{}) {
 	mustGetDefaultLogger().Log(newEventFromFormat(DebugSeverity, format, a...))
 }
 
-// Info logs with INFO severity
-func Info(format string, a ...interface{}) {
+// Infof logs with INFO severity
+func Infof(format string, a ...interface{}) {
 	mustGetDefaultLogger().Log(newEventFromFormat(InfoSeverity, format, a...))
 }
 
-// Warn logs with WARNING severity
-func Warn(format string, a ...interface{}) {
+// Warnf logs with WARNING severity
+func Warnf(format string, a ...interface{}) {
 	mustGetDefaultLogger().Log(newEventFromFormat(WarnSeverity, format, a...))
 }
 
-// Error logs with ERROR severity
-func Error(format string, a ...interface{}) {
+// Errorf logs with ERROR severity
+func Errorf(format string, a ...interface{}) {
 	mustGetDefaultLogger().Log(newEventFromFormat(ErrorSeverity, format, a...))
 }
 
-// Panic logs with ERROR severity and then panics
-func Panic(format string, a ...interface{}) {
-	Error(format, a...)
+// Error logs with ERROR severity
+func Error(v interface{}) {
+	mustGetDefaultLogger().Log(newEvent(ErrorSeverity, v))
+}
+
+// Panicf logs with ERROR severity and then panics
+func Panicf(format string, a ...interface{}) {
+	Errorf(format, a...)
 	panic(newEventFromFormat(ErrorSeverity, format, a...))
 }

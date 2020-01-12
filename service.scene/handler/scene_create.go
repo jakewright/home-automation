@@ -31,7 +31,7 @@ func HandleCreateScene(req *sceneproto.CreateSceneRequest) (*sceneproto.CreateSc
 		return nil, err
 	}
 
-	slog.Info("Created new scene %d", scene.ID)
+	slog.Infof("Created new scene %d", scene.ID)
 
 	return &sceneproto.CreateSceneResponse{
 		Scene: scene.ToProto(),

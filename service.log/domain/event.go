@@ -78,11 +78,11 @@ func NewEventFromBytes(b []byte) *Event {
 
 	if err := json.Unmarshal(b, &e); err != nil {
 		// Ignore errors because there's no guarantee it's even JSON
-		slog.Warn("Failed to unmarshal event: %v", err)
+		slog.Warnf("Failed to unmarshal event: %v", err)
 	}
 
 	if e.Timestamp.IsZero() {
-		slog.Warn("Event timestamp was zero: %v", string(e.Raw))
+		slog.Warnf("Event timestamp was zero: %v", string(e.Raw))
 	}
 
 	return &e

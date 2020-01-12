@@ -25,7 +25,7 @@ func ParseHexColor(s string) (c color.RGBA, err error) {
 	}
 
 	if err != nil {
-		err = errors.WrapWithCode(err, errors.ErrBadRequest, "failed to parse hex color code", map[string]string{
+		err = errors.Wrap(err, errors.ErrBadRequest, "failed to parse hex color code", map[string]string{
 			"color_code": s,
 		})
 	}

@@ -76,7 +76,7 @@ func (c *RedisClient) Subscribe(channel string, handler RawHandlerFunc) {
 	defer c.mux.Unlock()
 
 	if _, ok := c.handlers[channel]; ok {
-		slog.Panic("Multiple handlers subscribed to the same channel")
+		slog.Panicf("Multiple handlers subscribed to the same channel")
 	}
 
 	c.handlers[channel] = handler
@@ -108,7 +108,7 @@ func (c *RedisClient) Start() error {
 	for subs := 0; subs < len(channels)+len(patterns); {
 		msg, err := c.pubsub.ReceiveTimeout(time.Second * 10)
 		if err != nil {
-			return errors.Wrap(err, "Timeout while waiting for Redis subscription confirmation")
+			return errors.WithMessage(err, "Timeout while waiting for Redis subscription confirmation")
 		}
 
 		switch v := msg.(type) {
@@ -118,9 +118,9 @@ func (c *RedisClient) Start() error {
 			subs++
 			switch v.Kind {
 			case "subscribe":
-				slog.Info("Subscribed to Redis channel %s", v.Channel)
+				slog.Infof("Subscribed to Redis channel %s", v.Channel)
 			case "psubscribe":
-				slog.Info("Subscribed to Redis pattern %s", v.Channel)
+				slog.Infof("Subscribed to Redis pattern %s", v.Channel)
 			case "unsubscribe":
 				return errors.InternalService("Unexpectedly unsubscribed from Redis channel %s", v.Channel)
 			case "punsubscribe":
@@ -144,7 +144,7 @@ func (c *RedisClient) Start() error {
 			"pattern": msg.Pattern,
 		}
 
-		slog.Debug("Received Redis message", params)
+		slog.Debugf("Received Redis message", params)
 
 		event := Event{
 			Channel: msg.Channel,
@@ -156,7 +156,7 @@ func (c *RedisClient) Start() error {
 
 		// If there's a handler for this channel
 		if handler, ok := c.handlers[msg.Channel]; ok {
-			slog.Debug("Dispatching Redis message to handler", params)
+			slog.Debugf("Dispatching Redis message to handler", params)
 
 			wg.Add(1)
 			go func(e Event) {
@@ -167,7 +167,7 @@ func (c *RedisClient) Start() error {
 
 		// If there's a handler for this pattern
 		if handler, ok := c.phandlers[msg.Pattern]; ok {
-			slog.Debug("Dispatching Redis message to phandler", params)
+			slog.Debugf("Dispatching Redis message to phandler", params)
 
 			wg.Add(1)
 			go func(e Event) {

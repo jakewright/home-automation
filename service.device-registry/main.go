@@ -15,18 +15,18 @@ func main() {
 	})
 
 	if err != nil {
-		slog.Panic("Failed to initialise service: %v", err)
+		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
 	configFilename := config.Get("configFilename").String()
 	reloadInterval := config.Get("reloadInterval").Duration()
 
 	if configFilename == "" {
-		slog.Panic("configFilename is empty")
+		slog.Panicf("configFilename is empty")
 	}
 
 	if reloadInterval == 0 {
-		slog.Panic("reloadInterval is empty")
+		slog.Panicf("reloadInterval is empty")
 	}
 
 	dr := &repository.DeviceRepository{

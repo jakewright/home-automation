@@ -13,7 +13,7 @@ func main() {
 		Database:    true,
 	})
 	if err != nil {
-		slog.Panic("Failed to initialise service: %v", err)
+		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
 	r := sceneproto.NewRouter()

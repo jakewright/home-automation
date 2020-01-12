@@ -32,7 +32,7 @@ func (l *Loader) FetchDevices() error {
 
 		fixture, err := domain.NewFixtureFromDeviceHeader(device)
 		if err != nil {
-			return errors.Wrap(err, "failed to create fixture")
+			return errors.WithMessage(err, "failed to create fixture")
 		}
 
 		l.Universe.AddFixture(fixture)
