@@ -102,7 +102,6 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 	var jsonBody []byte
 	var err error
 	if request.Body != nil {
-		fmt.Println("Body is not nil")
 		jsonBody, err = json.Marshal(request.Body)
 		if err != nil {
 			return nil, err
@@ -119,13 +118,15 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 		absURL = fmt.Sprintf("%s/%s", c.Base, strings.TrimLeft(request.URL, "/"))
 	}
 
-	client := &http.Client{}
-	req, err := http.NewRequest(request.Method, absURL, bytes.NewReader(jsonBody))
+	// Construct the request
+	req, err := http.NewRequest(request.Method, absURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 	// Make the request
+	client := &http.Client{}
 	rawRsp, err := client.Do(req)
 	if err != nil {
 		return nil, err
