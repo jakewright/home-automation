@@ -46,3 +46,9 @@ func Panicf(format string, a ...interface{}) {
 	Errorf(format, a...)
 	panic(newEventFromFormat(ErrorSeverity, format, a...))
 }
+
+// Panic logs with ERROR severity and then panics
+func Panic(v interface{}) {
+	Error(v)
+	panic(newEvent(ErrorSeverity, v))
+}

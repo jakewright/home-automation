@@ -49,6 +49,8 @@ func (e *Error) HTTPStatus() int {
 		return http.StatusRequestTimeout
 	case ErrUnauthorized:
 		return http.StatusUnauthorized
+	case ErrPanic:
+		return http.StatusInternalServerError
 	default:
 		return http.StatusInternalServerError
 	}
@@ -68,6 +70,7 @@ const (
 	ErrPreconditionFailed = "precondition_failed"
 	ErrTimeout            = "timeout"
 	ErrUnauthorized       = "unauthorized"
+	ErrPanic              = "panic"
 )
 
 // InternalService creates a new error to represent an internal service error
@@ -130,7 +133,7 @@ func WithMetadata(err error, metadata map[string]string) *Error {
 // already an *Error, the metadata will me merged and the existing
 // code will remain the same. If the error is not an *Error, the
 // code will default to ErrInternalService.
-func Wrap(err error, code, format string, a ...interface{}) *Error {
+func Wrap(err interface{}, code, format string, a ...interface{}) *Error {
 	// This allows the wrap functions to be called
 	// without first checking whether the err is nil
 	if err == nil {
@@ -142,7 +145,14 @@ func Wrap(err error, code, format string, a ...interface{}) *Error {
 	// By default, the message of the returned error is the
 	// error-to-wrap's message. If the given format is not
 	// the empty string, the message becomes: new message: old message.
-	msg := err.Error()
+	var msg string
+	switch v := err.(type) {
+	case error:
+		msg = v.Error()
+	default:
+		msg = fmt.Sprint(v)
+	}
+
 	if format != "" {
 		msg = fmt.Sprintf(format, a...) + ": " + msg
 	}

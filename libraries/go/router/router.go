@@ -18,12 +18,15 @@ type Router struct {
 	shutdownInvoked *int32
 }
 
-// New returns a new router
+// New returns a new router initialised with default middleware
 func New() *Router {
-	return &Router{
+	r := &Router{
 		r:               muxinator.NewRouter(),
 		shutdownInvoked: new(int32),
 	}
+
+	r.AddMiddleware(panicRecovery)
+	return r
 }
 
 // GetName returns a friendly name for the process
@@ -49,6 +52,12 @@ func (r *Router) Start() error {
 func (r *Router) Stop(ctx context.Context) error {
 	atomic.StoreInt32(r.shutdownInvoked, 1)
 	return r.r.Shutdown(ctx)
+}
+
+// AddMiddleware adds middleware that will be applied to every request.
+// Middleware handlers are executed in the order defined.
+func (r *Router) AddMiddleware(middlewares ...muxinator.Middleware) {
+	r.r.AddMiddleware(middlewares...)
 }
 
 // Handle adds a route to the router
