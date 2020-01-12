@@ -65,6 +65,6 @@ func Lock(resource string, args ...interface{}) (Locker, error) {
 	case err := <-c:
 		return locker, err
 	case <-time.After(time.Second * 5):
-		return nil, errors.PreconditionFailed("Failed to acquire lock in time")
+		return nil, errors.Timeout("Failed to acquire lock in time")
 	}
 }
