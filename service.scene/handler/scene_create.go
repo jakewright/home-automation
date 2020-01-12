@@ -16,9 +16,15 @@ func HandleCreateScene(req *sceneproto.CreateSceneRequest) (*sceneproto.CreateSc
 			Sequence:       int(a.Sequence),
 			Func:           a.Func,
 			ControllerName: a.ControllerName,
+			DeviceID:       a.DeviceId,
 			Command:        a.Command,
-			Property:       a.PropertyValue,
+			Property:       a.Property,
 			PropertyValue:  a.PropertyValue,
+			PropertyType:   a.PropertyType,
+		}
+
+		if err := actions[i].Validate(); err != nil {
+			return nil, err
 		}
 	}
 

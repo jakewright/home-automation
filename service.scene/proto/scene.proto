@@ -53,13 +53,15 @@ message Action {
 
     string func = 4;
     string controller_name = 5;
-    string command = 6;
-    string property = 7;
-    string property_value = 8;
+    string device_id = 6;
+    string command = 7;
+    string property = 8;
+    string property_value = 9;
+    string property_type = 10;
 
-    string created_at = 9 [(time) = true];
-    string updated_at = 10 [(time) = true];
-    string deleted_at = 11 [(time) = true];
+    string created_at = 11 [(time) = true];
+    string updated_at = 12 [(time) = true];
+    string deleted_at = 13 [(time) = true];
 }
 
 // ---- Request & Response messages ---- //
@@ -70,9 +72,11 @@ message CreateSceneRequest {
         int32 sequence = 2;
         string func = 3;
         string controller_name = 4;
-        string command = 5;
-        string property = 6;
-        string property_value = 7;
+        string device_id = 5;
+        string command = 6;
+        string property = 7;
+        string property_value = 8;
+        string property_type = 9;
     }
 
     string name = 1;

@@ -15,9 +15,11 @@ CREATE TABLE IF NOT EXISTS service_scene_actions (
 
     func VARCHAR(64), -- e.g. sleep()
     controller_name VARCHAR(64),
+    device_id VARCHAR(64),
     command VARCHAR(64),
     property VARCHAR(64),
     property_value VARCHAR(64),
+    property_type VARCHAR(64),
 
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),

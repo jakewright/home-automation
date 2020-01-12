@@ -44,19 +44,31 @@ func (a *Action) Validate() error {
 		return errors.BadRequest("exactly one of func, command and property should be set")
 	}
 
-	if a.Func != "" {
+	switch {
+	case a.Stage == 0:
+		return errors.BadRequest("stage should be set to 1 or more")
+	case a.Sequence == 0:
+		return errors.BadRequest("sequence should be set to 1 or more")
+	case a.Func == "" && a.ControllerName == "":
+		return errors.BadRequest("controller_name should be set if setting property or calling command")
+	case a.Func == "" && a.DeviceID == "":
+		return errors.BadRequest("device_id should be set if setting property or calling command")
+	case a.Property != "" && a.PropertyType != propertyTypeNull && a.PropertyValue == "":
+		return errors.BadRequest("property_value cannot be blank unless property_type is \"null\"")
+	case a.Property != "" && a.PropertyType == "":
+		return errors.BadRequest("property_type should be set if setting property")
+
+	case a.Func != "":
 		if _, err := a.parseFunc(); err != nil {
 			return err
 		}
-	}
 
-	if a.Command != "" {
+	case a.Command != "":
 		if _, err := a.parseCommand(); err != nil {
 			return err
 		}
-	}
 
-	if a.Property != "" {
+	case a.Property != "":
 		if _, err := a.parseProperty(); err != nil {
 			return err
 		}
