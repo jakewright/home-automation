@@ -21,23 +21,29 @@ func mustGetDefaultDB() *gorm.DB {
 // Find finds records that match given conditions
 func Find(out interface{}, where ...interface{}) error {
 	if err := mustGetDefaultDB().Find(out, where...).Error; err != nil {
-		return errors.WithMessage(err, "failed to execute find")
+		if gorm.IsRecordNotFoundError(err) {
+			return errors.WithCode(err, errors.ErrNotFound)
+		}
+
+		return errors.Wrap(err, errors.ErrInternalService, "failed to execute find")
 	}
+
 	return nil
 }
 
 // Create inserts value into the database
 func Create(value interface{}) error {
 	if err := mustGetDefaultDB().Create(value).Error; err != nil {
-		return errors.WithMessage(err, "failed to execute create")
+		return errors.Wrap(err, errors.ErrInternalService, "failed to execute create")
 	}
 	return nil
 }
 
 // Delete deletes a value from the database
 func Delete(value interface{}, where ...interface{}) error {
-	if err := mustGetDefaultDB().Delete(value, where...).Error; err != nil {
-		return errors.WithMessage(err, "failed to execute delete")
+	// Unscoped() disables soft delete
+	if err := mustGetDefaultDB().Unscoped().Delete(value, where...).Error; err != nil {
+		return errors.Wrap(err, errors.ErrInternalService, "failed to execute delete")
 	}
 	return nil
 }
