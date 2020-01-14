@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/util"
@@ -24,7 +22,6 @@ const (
 
 // Action is a single step in a scene
 type Action struct {
-	gorm.Model
 	SceneID  int
 	Stage    int
 	Sequence int
@@ -36,6 +33,10 @@ type Action struct {
 	Property       string
 	PropertyValue  string
 	PropertyType   string
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
 }
 
 // Validate checks that the action makes sense
@@ -171,7 +172,6 @@ func marshalPropertyValue(t, v string) (interface{}, error) {
 // ToProto marshals to the proto type
 func (a *Action) ToProto() *sceneproto.Action {
 	return &sceneproto.Action{
-		Id:             uint32(a.ID),
 		Stage:          int32(a.Stage),
 		Sequence:       int32(a.Sequence),
 		Func:           a.Func,

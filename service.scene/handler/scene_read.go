@@ -11,11 +11,7 @@ import (
 func HandleReadScene(req *sceneproto.ReadSceneRequest) (*sceneproto.ReadSceneResponse, error) {
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, req.SceneId); err != nil {
-		return nil, err
-	}
-
-	if scene == nil {
-		return nil, errors.NotFound("Scene not found")
+		return nil, errors.WithMessage(err, "failed to find")
 	}
 
 	return &sceneproto.ReadSceneResponse{

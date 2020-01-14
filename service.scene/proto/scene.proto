@@ -47,7 +47,6 @@ message Scene {
 }
 
 message Action {
-    uint32 id = 1;
     int32 stage = 2;
     int32 sequence = 3;
 

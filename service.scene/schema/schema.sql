@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS service_scene_scenes (
 );
 
 CREATE TABLE IF NOT EXISTS service_scene_actions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
     scene_id INT NOT NULL,
     stage INT NOT NULL, -- Ordering within the scene
     sequence INT NOT NULL, -- Ordering within the stage
@@ -24,6 +23,8 @@ CREATE TABLE IF NOT EXISTS service_scene_actions (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     deleted_at TIMESTAMP,
+
+    PRIMARY KEY (scene_id, stage, sequence),
 
     FOREIGN KEY (scene_id) REFERENCES service_scene_scenes(id)
         ON UPDATE CASCADE ON DELETE CASCADE
