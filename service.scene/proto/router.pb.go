@@ -48,6 +48,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.CreateScene(body)
 		if err != nil {
+			slog.Errorf("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -75,6 +76,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.ReadScene(body)
 		if err != nil {
+			slog.Errorf("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -102,6 +104,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.ListScenes(body)
 		if err != nil {
+			slog.Errorf("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -129,6 +132,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.DeleteScene(body)
 		if err != nil {
+			slog.Errorf("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -156,6 +160,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.SetScene(body)
 		if err != nil {
+			slog.Errorf("Failed to handle request: %v", err)
 			response.WriteJSON(w, err)
 			return
 		}

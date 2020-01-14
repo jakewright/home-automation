@@ -83,6 +83,7 @@ func NewRouter() *{{ .RouterName }} {
 
 			rsp, err := rr.{{ .Name }}(body)
 			if err != nil {
+				slog.Errorf("Failed to handle request: %v", err)
 				response.WriteJSON(w, err)
 				return
 			}
