@@ -1,40 +1,104 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"runtime"
 	"strings"
+
+	pkgerrors "github.com/pkg/errors"
+)
+
+// Generic error codes. Each of these has their own constructor for convenience.
+const (
+	ErrBadRequest         = "bad_request"
+	ErrForbidden          = "forbidden"
+	ErrInternalService    = "internal_service"
+	ErrNotFound           = "not_found"
+	ErrPreconditionFailed = "precondition_failed"
+	ErrTimeout            = "timeout"
+	ErrUnauthorized       = "unauthorized"
+	ErrPanic              = "panic"
 )
 
 // Error is a custom error type that implements Go's error interface
 type Error struct {
-	Code     string            `json:"code"`
-	Message  string            `json:"message"`
-	Metadata map[string]string `json:"metadata"`
+	code     string
+	message  string
+	metadata map[string]string
+	cause    error
+	stack    []uintptr
+}
+
+// GetCode unwinds the error stack and returns the
+// first code encountered. If no codes exist, then
+// ErrInternalService is returned.
+func (e *Error) GetCode() string {
+	if e == nil {
+		return ""
+	}
+
+	if e.code != "" {
+		return e.code
+	}
+
+	// If there's an inner error, return its
+	// code provided it's not the empty string.
+	if v, ok := e.cause.(*Error); ok {
+		if code := v.GetCode(); code != "" {
+			return code
+		}
+	}
+
+	// Default to internal service
+	return ErrInternalService
+}
+
+// GetMessage returns the error's message. If there
+// is a cause, its error message is appended after
+// a colon, and so on.
+func (e *Error) GetMessage() string {
+	var inner string
+	if e.cause != nil {
+		switch v := e.cause.(type) {
+		case *Error:
+			inner = v.GetMessage()
+		default:
+			inner = v.Error()
+		}
+	}
+
+	return join(": ", e.message, inner)
 }
 
 // Error returns a string message of the error
 func (e *Error) Error() string {
-	switch {
-	case e == nil:
+	if e == nil {
 		return ""
-	case e.Message == "":
-		return e.Code
-	case e.Code == "":
-		return e.Message
-	default:
-		return fmt.Sprintf("%s: %s", e.Code, e.Message)
 	}
+
+	// Call GetMessage() recursively instead of
+	// Error() to avoid repeating the code
+	return join(": ", e.GetCode(), e.GetMessage())
 }
 
 // GetMetadata returns the metadata map of the error
 func (e *Error) GetMetadata() map[string]string {
-	return e.Metadata
+	if e == nil {
+		return nil
+	}
+
+	if v, ok := e.cause.(*Error); ok {
+		return mergeMetadata(v.GetMetadata(), e.metadata)
+	}
+
+	return e.metadata
 }
 
 // HTTPStatus returns an appropriate HTTP status code to use when returning the error in a response
 func (e *Error) HTTPStatus() int {
-	switch e.Code {
+	switch e.GetCode() {
 	case ErrBadRequest:
 		return http.StatusBadRequest
 	case ErrForbidden:
@@ -56,75 +120,83 @@ func (e *Error) HTTPStatus() int {
 	}
 }
 
+// StackTrace returns the stack of Frames from
+// innermost (newest) to outermost (oldest)
+func (e *Error) StackTrace() pkgerrors.StackTrace {
+	f := make([]pkgerrors.Frame, len(e.stack))
+	for i := 0; i < len(f); i++ {
+		f[i] = pkgerrors.Frame(e.stack[i])
+	}
+	return f
+}
+
 // Matches returns whether the string returned from error.Error() contains the given param string
 func (e *Error) Matches(match string) bool {
+	// TODO make this useful
 	return strings.Contains(e.Error(), match)
 }
 
-// Generic error codes. Each of these has their own constructor for convenience.
-const (
-	ErrBadRequest         = "bad_request"
-	ErrForbidden          = "forbidden"
-	ErrInternalService    = "internal_service"
-	ErrNotFound           = "not_found"
-	ErrPreconditionFailed = "precondition_failed"
-	ErrTimeout            = "timeout"
-	ErrUnauthorized       = "unauthorized"
-	ErrPanic              = "panic"
-)
-
 // InternalService creates a new error to represent an internal service error
 func InternalService(format string, a ...interface{}) *Error {
-	return newError(ErrInternalService, format, a)
+	return newError(ErrInternalService, format, a, nil)
 }
 
 // BadRequest creates a new error to represent an error caused by the client sending
 // an invalid request. This is non-retryable unless the request is modified.
 func BadRequest(format string, a ...interface{}) *Error {
-	return newError(ErrBadRequest, format, a)
+	return newError(ErrBadRequest, format, a, nil)
 }
 
 // Forbidden creates a new error representing a resource that cannot be accessed with
 // the current authorisation credentials. The user may need authorising, or if authorised,
 // may not be permitted to perform this action.
 func Forbidden(format string, a ...interface{}) *Error {
-	return newError(ErrForbidden, format, a)
+	return newError(ErrForbidden, format, a, nil)
 }
 
 // NotFound creates a new error representing a resource that cannot be found
 func NotFound(format string, a ...interface{}) *Error {
-	return newError(ErrNotFound, format, a)
+	return newError(ErrNotFound, format, a, nil)
 }
 
 // PreconditionFailed creates a new error indicating that one or more conditions
 // given in the request evaluated to false when tested on the server
 func PreconditionFailed(format string, a ...interface{}) *Error {
-	return newError(ErrPreconditionFailed, format, a)
+	return newError(ErrPreconditionFailed, format, a, nil)
 }
 
 // Timeout creates a new error representing a timeout from client to server
 func Timeout(format string, a ...interface{}) *Error {
-	return newError(ErrTimeout, format, a)
+	return newError(ErrTimeout, format, a, nil)
 }
 
 // Unauthorized creates a new error indicating that authentication is required,
 // but has either failed or not been provided.
 func Unauthorized(format string, a ...interface{}) *Error {
-	return newError(ErrUnauthorized, format, a)
+	return newError(ErrUnauthorized, format, a, nil)
+}
+
+// Is returns whether the code matches that of the error
+func Is(err error, code string) bool {
+	if v, ok := err.(*Error); ok {
+		return v.GetCode() == code
+	}
+
+	return false
 }
 
 // WithCode wraps the error with a new code
-func WithCode(err error, code string) *Error {
+func WithCode(err interface{}, code string) *Error {
 	return Wrap(err, code, "")
 }
 
 // WithMessage wraps the error with an extra message
-func WithMessage(err error, format string, a ...interface{}) *Error {
+func WithMessage(err interface{}, format string, a ...interface{}) *Error {
 	return Wrap(err, "", format, a...)
 }
 
 // WithMetadata will wrap the error with extra metadata
-func WithMetadata(err error, metadata map[string]string) *Error {
+func WithMetadata(err interface{}, metadata map[string]string) *Error {
 	return Wrap(err, "", "", metadata)
 }
 
@@ -134,49 +206,25 @@ func WithMetadata(err error, metadata map[string]string) *Error {
 // code will remain the same. If the error is not an *Error, the
 // code will default to ErrInternalService.
 func Wrap(err interface{}, code, format string, a ...interface{}) *Error {
-	metadata, a := extractMetadata(format, a)
-
-	// By default, the message of the returned error is the
-	// error-to-wrap's message. If the given format is not
-	// the empty string, the message becomes: new message: old message.
-	var msg string
+	// Accepting an interface allows us to wrap
+	// things like the result of recover().
+	var cause error
 	switch v := err.(type) {
 	case error:
-		msg = v.Error()
+		cause = v
 	default:
-		msg = fmt.Sprint(v)
+		cause = errors.New(fmt.Sprint(v))
 	}
 
-	if format != "" {
-		msg = fmt.Sprintf(format, a...) + ": " + msg
-	}
-
-	// If the error to wrap is already an *Error
-	switch v := err.(type) {
-	case *Error:
-		v.Message = msg
-		v.Metadata = mergeMetadata(v.Metadata, metadata)
-
-		if code != "" {
-			v.Code = code
-		}
-
-		return v
-	}
-
-	if code == "" {
-		code = ErrInternalService
-	}
-
-	return &Error{code, msg, metadata}
+	return newError(code, format, a, cause)
 }
 
 // newError returns a new Error with the given code. The message is formatted using Sprintf.
 // If the last parameter is a map[string]string, it is assumed to be the error params.
-func newError(code, format string, a []interface{}) *Error {
+func newError(code, format string, a []interface{}, cause error) *Error {
 	metadata, a := extractMetadata(format, a)
 	message := fmt.Sprintf(format, a...)
-	return &Error{code, message, metadata}
+	return &Error{code, message, metadata, cause, stack()}
 }
 
 func extractMetadata(format string, a []interface{}) (map[string]string, []interface{}) {
@@ -213,4 +261,29 @@ func mergeMetadata(current, new map[string]string) map[string]string {
 	}
 
 	return current
+}
+
+// join concatenates the elements of parts, placing sep
+// in between each element. Empty strings are ignored.
+func join(sep string, parts ...string) string {
+	var str string
+	for i, p := range parts {
+		if p == "" {
+			continue
+		}
+
+		if i > 0 {
+			str += sep
+		}
+
+		str += p
+	}
+	return str
+}
+
+func stack() []uintptr {
+	const depth = 32
+	var pcs [depth]uintptr
+	n := runtime.Callers(0, pcs[:])
+	return pcs[0:n]
 }
