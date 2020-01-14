@@ -6,10 +6,16 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type metadataProvider interface {
 	GetMetadata() map[string]string
+}
+
+type stackTracer interface {
+	StackTrace() errors.StackTrace
 }
 
 // Event represents a single log event
@@ -21,22 +27,11 @@ type Event struct {
 }
 
 func newEvent(severity Severity, v interface{}) *Event {
-	var metadata map[string]string
-
-	if provider, ok := v.(metadataProvider); ok {
-		metadata = provider.GetMetadata()
-	}
-
-	return &Event{
-		Timestamp: time.Now(),
-		Severity:  severity,
-		Message:   fmt.Sprint(v),
-		Metadata:  metadata,
-	}
+	return newEventFromFormat(severity, "%v", v)
 }
 
 func newEventFromFormat(severity Severity, format string, a ...interface{}) *Event {
-	var metadata map[string]string
+	metadata := make(map[string]string)
 
 	if len(a) > 0 {
 		// If we have too many parameters for the formatting directive,
@@ -59,6 +54,9 @@ func newEventFromFormat(severity Severity, format string, a ...interface{}) *Eve
 	for _, param := range a {
 		if param, ok := param.(metadataProvider); ok {
 			metadata = mergeMetadata(metadata, param.GetMetadata())
+		}
+		if param, ok := param.(stackTracer); ok {
+			metadata["stack"] = fmt.Sprintf("%+v", param.StackTrace())
 		}
 	}
 
