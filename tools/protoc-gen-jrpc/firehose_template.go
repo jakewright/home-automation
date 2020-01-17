@@ -42,6 +42,20 @@ import "github.com/jakewright/home-automation/libraries/go/firehose"
 
 		return firehose.Publish("{{ .EventName }}", e)
 	}
+
+	type {{ .TypeName }}Handler func(*{{ .TypeName }}) firehose.Result
+
+	func (h {{ .TypeName }}Handler) EventName() string {
+		return "{{ .EventName }}"
+	}
+
+	func (h {{ .TypeName }}Handler) HandleEvent(e *firehose.Event) firehose.Result {
+		var body {{ .TypeName }}
+		if err := json.Unmarshal(e.Payload, &body); err != nil {
+			return firehose.Discard(errors.WithMessage(err, "failed to unmarshal payload"))
+		}
+		return h(&body)
+	}
 {{ end }}
 `
 

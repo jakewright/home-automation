@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/errors"
-	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/service.scene/domain"
 	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
 )
@@ -19,11 +18,9 @@ func HandleSetScene(body *sceneproto.SetSceneRequest) (*sceneproto.SetSceneRespo
 		return nil, errors.NotFound("Scene not found")
 	}
 
-	if err := firehose.Publish("set-scene", struct {
-		SceneID uint32 `json:"scene_id"`
-	}{
-		SceneID: body.SceneId,
-	}); err != nil {
+	if err := (&sceneproto.SetSceneEvent{
+		SceneId: body.SceneId,
+	}).Publish(); err != nil {
 		return nil, err
 	}
 

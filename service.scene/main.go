@@ -19,7 +19,7 @@ func main() {
 		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
-	firehose.Subscribe("set-scene", consumer.HandleSetSceneEvent)
+	firehose.Subscribe(consumer.HandleSetSceneEvent)
 
 	r := sceneproto.NewRouter()
 	r.CreateScene = handler.HandleCreateScene

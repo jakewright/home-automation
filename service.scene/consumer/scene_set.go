@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"encoding/json"
 	"sort"
 	"strconv"
 
@@ -13,23 +12,17 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.scene/domain"
+	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
 )
 
 // HandleSetSceneEvent sets the scene
-func HandleSetSceneEvent(event *firehose.Event) firehose.Result {
-	var body struct {
-		SceneID uint32 `json:"scene_id"`
-	}
-	if err := json.Unmarshal(event.Payload, &body); err != nil {
-		return firehose.Discard(errors.WithMessage(err, "failed to unmarshal payload"))
-	}
-
+var HandleSetSceneEvent sceneproto.SetSceneEventHandler = func(body *sceneproto.SetSceneEvent) firehose.Result {
 	metadata := map[string]string{
-		"scene_id": strconv.Itoa(int(body.SceneID)),
+		"scene_id": strconv.Itoa(int(body.SceneId)),
 	}
 
 	scene := &domain.Scene{}
-	if err := database.Find(&scene, body.SceneID); err != nil {
+	if err := database.Find(&scene, body.SceneId); err != nil {
 		return firehose.Discard(errors.WithMetadata(err, metadata))
 	}
 
@@ -38,13 +31,13 @@ func HandleSetSceneEvent(event *firehose.Event) firehose.Result {
 		return firehose.Discard(err)
 	}
 
-	lock, err := dsync.Lock("scene", body.SceneID)
+	lock, err := dsync.Lock("scene", body.SceneId)
 	if err != nil {
 		return firehose.Fail(errors.WithMetadata(err, metadata))
 	}
 	defer lock.Unlock()
 
-	slog.Infof("Setting scene %d...", body.SceneID)
+	slog.Infof("Setting scene %d...", body.SceneId)
 
 	// Organise the actions into stages
 	stages := constructStages(scene)

@@ -118,5 +118,6 @@ message SetSceneResponse {
 // ---- Firehose messages ---- //
 
 message SetSceneEvent {
+    uint32 scene_id = 1;
     option (event).name = "set-scene";
 }

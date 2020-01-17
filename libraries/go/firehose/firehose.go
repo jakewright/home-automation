@@ -40,9 +40,14 @@ func Publish(channel string, message interface{}) error {
 	return mustGetDefaultClient().Publish(channel, message)
 }
 
-// Subscribe offers syntactic sugar over the DefaultSubscriber's
+// Subscribe subscribes the handler its event
+func Subscribe(handler Handler) {
+	SubscribeChannel(handler.EventName(), handler.HandleEvent)
+}
+
+// SubscribeChannel offers syntactic sugar over the DefaultSubscriber's
 // Subscribe function. Namely, it takes a HandlerFunc
-func Subscribe(channel string, handler HandlerFunc) {
+func SubscribeChannel(channel string, handler HandlerFunc) {
 	c := mustGetDefaultClient()
 
 	wrappedHandler := func(e *Event) {
@@ -89,7 +94,13 @@ func Subscribe(channel string, handler HandlerFunc) {
 	c.Subscribe(channel, wrappedHandler)
 }
 
-// HandlerFunc is used by the syntactic sugar Subscribe() func
+// Handler wraps HandlerFunc
+type Handler interface {
+	EventName() string
+	HandleEvent(*Event) Result
+}
+
+// HandlerFunc is used by the syntactic sugar SubscribeFunc() func
 type HandlerFunc func(*Event) Result
 
 // RawHandlerFunc is what a Subscriber dispatches messages to

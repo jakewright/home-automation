@@ -2,7 +2,12 @@
 
 package sceneproto
 
-import "github.com/jakewright/home-automation/libraries/go/firehose"
+import (
+	"encoding/json"
+
+	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/pkg/errors"
+)
 
 // Publish publishes the event to the Firehose
 func (e *SetSceneEvent) Publish() error {
@@ -11,4 +16,18 @@ func (e *SetSceneEvent) Publish() error {
 	}
 
 	return firehose.Publish("set-scene", e)
+}
+
+type SetSceneEventHandler func(*SetSceneEvent) firehose.Result
+
+func (h SetSceneEventHandler) EventName() string {
+	return "set-scene"
+}
+
+func (h SetSceneEventHandler) HandleEvent(e *firehose.Event) firehose.Result {
+	var body SetSceneEvent
+	if err := json.Unmarshal(e.Payload, &body); err != nil {
+		return firehose.Discard(errors.WithMessage(err, "failed to unmarshal payload"))
+	}
+	return h(&body)
 }
