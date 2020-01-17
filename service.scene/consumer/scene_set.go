@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strconv"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/dsync"
 	"github.com/jakewright/home-automation/libraries/go/errors"
@@ -47,13 +49,13 @@ func HandleSetSceneEvent(event *firehose.Event) firehose.Result {
 	// Organise the actions into stages
 	stages := constructStages(scene)
 
-	// Todo perform each stage concurrently
-
 	for _, stage := range stages {
+		var g errgroup.Group
 		for _, action := range stage {
-			if err := action.Perform(); err != nil {
-				return firehose.Fail(err)
-			}
+			g.Go(action.Perform)
+		}
+		if err := g.Wait(); err != nil {
+			return firehose.Fail(err)
 		}
 	}
 
