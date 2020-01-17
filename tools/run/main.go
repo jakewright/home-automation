@@ -35,8 +35,11 @@ USAGE
 	Build a service or set of services
 	  build service.name group
 
-	Apply all schema files. Optionally limited to a single service.
-	  schema apply [service.name]
+	Apply all schema files for a set of services (default all)
+	  schema apply [service.name] group
+
+	Seed mock data for a set of services (default all)
+	  schema seed [service.name] group
 
 GROUPS
 	core
@@ -137,20 +140,11 @@ func schema(args []string) {
 		log.Fatal(usage)
 	}
 
-	var service string
-	if len(args) > 1 {
-		service = args[1]
+	services := getServices(args[1:])
+	if len(services) == 0 {
+		services = getAllServiceNames()
 	}
 
-	switch args[0] {
-	case "apply":
-		applySchema(service)
-	default:
-		log.Fatal(usage)
-	}
-}
-
-func applySchema(service string) {
 	running := false
 
 	// If the MySQL container exists
@@ -172,14 +166,18 @@ func applySchema(service string) {
 		time.Sleep(time.Second * 5)
 	}
 
-	log.Printf("Applying schema...\n")
-
-	var services []string
-	if service != "" {
-		services = []string{service}
-	} else {
-		services = getAllServiceNames()
+	switch args[0] {
+	case "apply":
+		applySchema(services, containerID)
+	case "seed":
+		seedData(services, containerID)
+	default:
+		log.Fatal(usage)
 	}
+}
+
+func applySchema(services []string, containerID string) {
+	log.Printf("Applying schema...\n")
 
 	for _, name := range services {
 		schema := getServiceSchema(name)
@@ -191,6 +189,24 @@ func applySchema(service string) {
 
 		args := []string{"exec", "-i", containerID, "sh", "-c", "exec mysql -uroot -psecret"}
 		runWithInput(schema, "docker", args...)
+
+		fmt.Printf(" %s%s%s\n", green, tick, reset)
+	}
+}
+
+func seedData(services []string, containerID string) {
+	log.Printf("Seeding data...\n")
+
+	for _, name := range services {
+		sql := getServiceMockSQL(name)
+		if sql == "" {
+			continue
+		}
+
+		fmt.Printf(name)
+
+		args := []string{"exec", "-i", containerID, "sh", "-c", "exec mysql -uroot -psecret"}
+		runWithInput(sql, "docker", args...)
 
 		fmt.Printf(" %s%s%s\n", green, tick, reset)
 	}
@@ -221,7 +237,24 @@ func getAllServiceNames() []string {
 
 func getServiceSchema(service string) string {
 	filename := "./" + service + "/schema/schema.sql"
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return ""
+	} else if err != nil {
+		log.Fatal(err)
+	}
 
+	a := "USE home_automation;\n\n"
+
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return a + string(b)
+}
+
+func getServiceMockSQL(service string) string {
+	filename := "./" + service + "/schema/mock_data.sql"
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return ""
 	} else if err != nil {
