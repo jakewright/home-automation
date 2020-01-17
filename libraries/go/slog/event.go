@@ -74,8 +74,8 @@ func (e *Event) String() string {
 		fmt.Println("Failed to marshal metadata")
 	}
 
-	// If the JSON came out as "null", don't bother writing anything.
-	if bytes.Equal(metadata, []byte("null")) {
+	// If the JSON came out as "null" or "{}", don't bother writing anything.
+	if bytes.Equal(metadata, []byte("null")) || bytes.Equal(metadata, []byte("{}")) {
 		metadata = nil
 	}
 
