@@ -5,6 +5,7 @@ package userproto
 import (
 	"net/http"
 
+	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/router"
@@ -31,20 +32,23 @@ func NewRouter() *UserRouter {
 
 		body := &GetUserRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Errorf("Failed to decode request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Errorf("Failed to validate request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		rsp, err := rr.GetUser(body)
 		if err != nil {
-			slog.Errorf("Failed to handle request: %v", err)
+			err = errors.WithMessage(err, "failed to handle request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}

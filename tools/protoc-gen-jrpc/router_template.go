@@ -70,20 +70,23 @@ func NewRouter() *{{ .RouterName }} {
 
 			body := &{{ .InputType }}{}
 			if err := request.Decode(r, body); err != nil {
-				slog.Errorf("Failed to decode request: %v", err)
+				err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+				slog.Error(err)
 				response.WriteJSON(w, err)
 				return
 			}
 
 			if err := body.Validate(); err != nil {
-				slog.Errorf("Failed to validate request: %v", err)
+				err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+				slog.Error(err)
 				response.WriteJSON(w, err)
 				return
 			}
 
 			rsp, err := rr.{{ .Name }}(body)
 			if err != nil {
-				slog.Errorf("Failed to handle request: %v", err)
+				err = errors.WithMessage(err, "failed to handle request")
+				slog.Error(err)
 				response.WriteJSON(w, err)
 				return
 			}

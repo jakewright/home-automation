@@ -95,6 +95,7 @@ message ReadSceneResponse {
 }
 
 message ListScenesRequest {
+    uint32 owner_id = 1;
 }
 
 message ListScenesResponse {

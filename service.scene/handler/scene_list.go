@@ -8,8 +8,13 @@ import (
 
 // HandleListScenes lists all scenes in the database
 func HandleListScenes(req *sceneproto.ListScenesRequest) (*sceneproto.ListScenesResponse, error) {
+	where := make(map[string]interface{})
+	if req.OwnerId > 0 {
+		where["owner_id"] = req.OwnerId
+	}
+
 	var scenes []*domain.Scene
-	if err := database.Find(&scenes); err != nil {
+	if err := database.Find(&scenes, where); err != nil {
 		return nil, err
 	}
 

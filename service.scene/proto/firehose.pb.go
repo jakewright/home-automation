@@ -5,8 +5,8 @@ package sceneproto
 import (
 	"encoding/json"
 
+	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
-	"github.com/pkg/errors"
 )
 
 // Publish publishes the event to the Firehose

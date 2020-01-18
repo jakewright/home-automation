@@ -9,8 +9,9 @@ import (
 
 // Scene represents a set of actions
 type Scene struct {
-	ID        uint
+	ID        uint32
 	Name      string
+	OwnerID   uint32
 	Actions   []*Action
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -24,8 +25,9 @@ func (s *Scene) ToProto() *sceneproto.Scene {
 	}
 
 	return &sceneproto.Scene{
-		Id:        uint32(s.ID),
+		Id:        s.ID,
 		Name:      s.Name,
+		OwnerId:   s.OwnerID,
 		Actions:   actions,
 		CreatedAt: util.TimeToProto(s.CreatedAt),
 		UpdatedAt: util.TimeToProto(s.UpdatedAt),

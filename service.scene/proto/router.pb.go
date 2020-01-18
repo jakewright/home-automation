@@ -5,6 +5,7 @@ package sceneproto
 import (
 	"net/http"
 
+	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/router"
@@ -35,20 +36,23 @@ func NewRouter() *SceneRouter {
 
 		body := &CreateSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Errorf("Failed to decode request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Errorf("Failed to validate request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		rsp, err := rr.CreateScene(body)
 		if err != nil {
-			slog.Errorf("Failed to handle request: %v", err)
+			err = errors.WithMessage(err, "failed to handle request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -63,20 +67,23 @@ func NewRouter() *SceneRouter {
 
 		body := &ReadSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Errorf("Failed to decode request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Errorf("Failed to validate request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		rsp, err := rr.ReadScene(body)
 		if err != nil {
-			slog.Errorf("Failed to handle request: %v", err)
+			err = errors.WithMessage(err, "failed to handle request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -91,20 +98,23 @@ func NewRouter() *SceneRouter {
 
 		body := &ListScenesRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Errorf("Failed to decode request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Errorf("Failed to validate request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		rsp, err := rr.ListScenes(body)
 		if err != nil {
-			slog.Errorf("Failed to handle request: %v", err)
+			err = errors.WithMessage(err, "failed to handle request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -119,20 +129,23 @@ func NewRouter() *SceneRouter {
 
 		body := &DeleteSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Errorf("Failed to decode request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Errorf("Failed to validate request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		rsp, err := rr.DeleteScene(body)
 		if err != nil {
-			slog.Errorf("Failed to handle request: %v", err)
+			err = errors.WithMessage(err, "failed to handle request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
@@ -147,20 +160,23 @@ func NewRouter() *SceneRouter {
 
 		body := &SetSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			slog.Errorf("Failed to decode request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			slog.Errorf("Failed to validate request: %v", err)
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		rsp, err := rr.SetScene(body)
 		if err != nil {
-			slog.Errorf("Failed to handle request: %v", err)
+			err = errors.WithMessage(err, "failed to handle request")
+			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
