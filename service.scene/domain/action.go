@@ -36,7 +36,6 @@ type Action struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt *time.Time
 }
 
 // Validate checks that the action makes sense
@@ -181,6 +180,5 @@ func (a *Action) ToProto() *sceneproto.Action {
 		PropertyValue:  a.PropertyValue,
 		CreatedAt:      util.TimeToProto(a.CreatedAt),
 		UpdatedAt:      util.TimeToProto(a.UpdatedAt),
-		DeletedAt:      util.PTimeToProto(a.DeletedAt),
 	}
 }

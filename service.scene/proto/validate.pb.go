@@ -28,12 +28,6 @@ func (m *Scene) Validate() error {
 		}
 	}
 
-	if m.DeletedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.DeletedAt); err != nil {
-			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field deleted_at")
-		}
-	}
-
 	return nil
 }
 
@@ -48,12 +42,6 @@ func (m *Action) Validate() error {
 	if m.UpdatedAt != "" {
 		if _, err := time.Parse(time.RFC3339Nano, m.UpdatedAt); err != nil {
 			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field updated_at")
-		}
-	}
-
-	if m.DeletedAt != "" {
-		if _, err := time.Parse(time.RFC3339Nano, m.DeletedAt); err != nil {
-			return errors.Wrap(err, errors.ErrBadRequest, "invalid time string in field deleted_at")
 		}
 	}
 
@@ -170,21 +158,6 @@ func (m *Scene) GetUpdatedAtTime() time.Time {
 	return t
 }
 
-// GetDeletedAtTime parses DeletedAt as a time
-func (m *Scene) GetDeletedAtTime() time.Time {
-	if m.GetDeletedAt() == "" {
-		return time.Time{}
-	}
-
-	t, err := time.Parse(time.RFC3339Nano, m.GetDeletedAt())
-	if err != nil {
-		// Panic because this should not happen
-		// if Validate() has already been called
-		panic(err)
-	}
-	return t
-}
-
 // GetCreatedAtTime parses CreatedAt as a time
 func (m *Action) GetCreatedAtTime() time.Time {
 	if m.GetCreatedAt() == "" {
@@ -207,21 +180,6 @@ func (m *Action) GetUpdatedAtTime() time.Time {
 	}
 
 	t, err := time.Parse(time.RFC3339Nano, m.GetUpdatedAt())
-	if err != nil {
-		// Panic because this should not happen
-		// if Validate() has already been called
-		panic(err)
-	}
-	return t
-}
-
-// GetDeletedAtTime parses DeletedAt as a time
-func (m *Action) GetDeletedAtTime() time.Time {
-	if m.GetDeletedAt() == "" {
-		return time.Time{}
-	}
-
-	t, err := time.Parse(time.RFC3339Nano, m.GetDeletedAt())
 	if err != nil {
 		// Panic because this should not happen
 		// if Validate() has already been called

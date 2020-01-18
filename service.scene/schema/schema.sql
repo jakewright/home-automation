@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS service_scene_scenes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(64),
+    name VARCHAR(64) NOT NULL,
+    owner_id INT NOT NULL,
 
     created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-    deleted_at TIMESTAMP
+    updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
 
 CREATE TABLE IF NOT EXISTS service_scene_actions (
@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS service_scene_actions (
 
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-    deleted_at TIMESTAMP,
 
     PRIMARY KEY (scene_id, stage, sequence),
 

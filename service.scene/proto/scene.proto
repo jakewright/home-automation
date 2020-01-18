@@ -40,10 +40,10 @@ service SceneService {
 message Scene {
     uint32 id = 1;
     string name = 2;
-    repeated Action actions = 3;
-    string created_at = 4 [(time) = true];
-    string updated_at = 5 [(time) = true];
-    string deleted_at = 6 [(time) = true];
+    uint32 owner_id = 3;
+    repeated Action actions = 4;
+    string created_at = 5 [(time) = true];
+    string updated_at = 6 [(time) = true];
 }
 
 message Action {
@@ -60,7 +60,6 @@ message Action {
 
     string created_at = 11 [(time) = true];
     string updated_at = 12 [(time) = true];
-    string deleted_at = 13 [(time) = true];
 }
 
 // ---- Request & Response messages ---- //
@@ -79,7 +78,8 @@ message CreateSceneRequest {
     }
 
     string name = 1;
-    repeated Action actions = 2;
+    uint32 owner_id = 2;
+    repeated Action actions = 3;
 }
 
 message CreateSceneResponse {

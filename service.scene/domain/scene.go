@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/jinzhu/gorm"
+	"time"
 
 	"github.com/jakewright/home-automation/libraries/go/util"
 	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
@@ -9,9 +9,11 @@ import (
 
 // Scene represents a set of actions
 type Scene struct {
-	gorm.Model
-	Name    string
-	Actions []*Action
+	ID        uint
+	Name      string
+	Actions   []*Action
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // ToProto marshals to the proto type
@@ -27,6 +29,5 @@ func (s *Scene) ToProto() *sceneproto.Scene {
 		Actions:   actions,
 		CreatedAt: util.TimeToProto(s.CreatedAt),
 		UpdatedAt: util.TimeToProto(s.UpdatedAt),
-		DeletedAt: util.PTimeToProto(s.DeletedAt),
 	}
 }
