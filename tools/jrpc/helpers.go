@@ -93,10 +93,7 @@ func fieldToType(field *svcdef.Field, defPath string, imports map[string]*svcdef
 		typ = "[]" + typ
 	}
 
-	// Use pointers for message types by default
-	isMessageType := strings.HasPrefix(field.QualifiedType, ".")
-
-	if field.Optional || isMessageType {
+	if field.Optional {
 		typ = "*" + typ
 	}
 

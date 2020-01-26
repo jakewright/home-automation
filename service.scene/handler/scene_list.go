@@ -3,11 +3,11 @@ package handler
 import (
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/service.scene/domain"
-	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
+	"github.com/jakewright/home-automation/service.scene/external"
 )
 
-// HandleListScenes lists all scenes in the database
-func HandleListScenes(req *sceneproto.ListScenesRequest) (*sceneproto.ListScenesResponse, error) {
+// HandleListScenes lists all scenes in the external
+func HandleListScenes(req *external.ListScenesRequest) (*external.ListScenesResponse, error) {
 	where := make(map[string]interface{})
 	if req.OwnerId > 0 {
 		where["owner_id"] = req.OwnerId
@@ -18,12 +18,12 @@ func HandleListScenes(req *sceneproto.ListScenesRequest) (*sceneproto.ListScenes
 		return nil, err
 	}
 
-	protos := make([]*sceneproto.Scene, len(scenes))
+	protos := make([]external.Scene, len(scenes))
 	for i, s := range scenes {
 		protos[i] = s.ToProto()
 	}
 
-	return &sceneproto.ListScenesResponse{
+	return &external.ListScenesResponse{
 		Scenes: protos,
 	}, nil
 }

@@ -4,11 +4,11 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/service.scene/domain"
-	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
+	"github.com/jakewright/home-automation/service.scene/external"
 )
 
 // HandleSetScene emits an event to trigger the scene to be set asynchronously
-func HandleSetScene(body *sceneproto.SetSceneRequest) (*sceneproto.SetSceneResponse, error) {
+func HandleSetScene(body *external.SetSceneRequest) (*external.SetSceneResponse, error) {
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, body.SceneId); err != nil {
 		return nil, err
@@ -18,11 +18,11 @@ func HandleSetScene(body *sceneproto.SetSceneRequest) (*sceneproto.SetSceneRespo
 		return nil, errors.NotFound("Scene not found")
 	}
 
-	if err := (&sceneproto.SetSceneEvent{
+	if err := (&external.SetSceneEvent{
 		SceneId: body.SceneId,
 	}).Publish(); err != nil {
 		return nil, err
 	}
 
-	return &sceneproto.SetSceneResponse{}, nil
+	return &external.SetSceneResponse{}, nil
 }

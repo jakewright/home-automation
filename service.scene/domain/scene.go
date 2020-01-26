@@ -3,8 +3,7 @@ package domain
 import (
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/util"
-	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
+	"github.com/jakewright/home-automation/service.scene/external"
 )
 
 // Scene represents a set of actions
@@ -18,18 +17,18 @@ type Scene struct {
 }
 
 // ToProto marshals to the proto type
-func (s *Scene) ToProto() *sceneproto.Scene {
-	actions := make([]*sceneproto.Action, len(s.Actions))
+func (s *Scene) ToProto() external.Scene {
+	actions := make([]external.Action, len(s.Actions))
 	for i, a := range s.Actions {
 		actions[i] = a.ToProto()
 	}
 
-	return &sceneproto.Scene{
+	return external.Scene{
 		Id:        s.ID,
 		Name:      s.Name,
 		OwnerId:   s.OwnerID,
 		Actions:   actions,
-		CreatedAt: util.TimeToProto(s.CreatedAt),
-		UpdatedAt: util.TimeToProto(s.UpdatedAt),
+		CreatedAt: s.CreatedAt,
+		UpdatedAt: s.UpdatedAt,
 	}
 }

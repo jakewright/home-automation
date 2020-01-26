@@ -5,11 +5,11 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.scene/domain"
-	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
+	"github.com/jakewright/home-automation/service.scene/external"
 )
 
 // HandleDeleteScene deletes a scene and associated actions
-func HandleDeleteScene(req *sceneproto.DeleteSceneRequest) (*sceneproto.DeleteSceneResponse, error) {
+func HandleDeleteScene(req *external.DeleteSceneRequest) (*external.DeleteSceneResponse, error) {
 	if req.SceneId == 0 {
 		return nil, errors.BadRequest("scene_id empty")
 	}
@@ -20,5 +20,5 @@ func HandleDeleteScene(req *sceneproto.DeleteSceneRequest) (*sceneproto.DeleteSc
 	}
 
 	slog.Infof("Deleted scene %d", req.SceneId)
-	return &sceneproto.DeleteSceneResponse{}, nil
+	return &external.DeleteSceneResponse{}, nil
 }

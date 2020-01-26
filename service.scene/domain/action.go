@@ -9,7 +9,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/util"
-	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
+	"github.com/jakewright/home-automation/service.scene/external"
 )
 
 const (
@@ -169,8 +169,8 @@ func marshalPropertyValue(t, v string) (interface{}, error) {
 }
 
 // ToProto marshals to the proto type
-func (a *Action) ToProto() *sceneproto.Action {
-	return &sceneproto.Action{
+func (a *Action) ToProto() external.Action {
+	return external.Action{
 		Stage:          int32(a.Stage),
 		Sequence:       int32(a.Sequence),
 		Func:           a.Func,
@@ -178,7 +178,7 @@ func (a *Action) ToProto() *sceneproto.Action {
 		Command:        a.Command,
 		Property:       a.Property,
 		PropertyValue:  a.PropertyValue,
-		CreatedAt:      util.TimeToProto(a.CreatedAt),
-		UpdatedAt:      util.TimeToProto(a.UpdatedAt),
+		CreatedAt:      a.CreatedAt,
+		UpdatedAt:      a.UpdatedAt,
 	}
 }

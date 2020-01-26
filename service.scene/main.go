@@ -6,8 +6,9 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.scene/consumer"
 	"github.com/jakewright/home-automation/service.scene/handler"
-	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
 )
+
+//go:generate jrpc scene.def
 
 func main() {
 	svc, err := bootstrap.Init(&bootstrap.Opts{
@@ -21,7 +22,7 @@ func main() {
 
 	firehose.Subscribe(consumer.HandleSetSceneEvent)
 
-	r := sceneproto.NewRouter()
+	r := handler.NewRouter()
 	r.CreateScene = handler.HandleCreateScene
 	r.ReadScene = handler.HandleReadScene
 	r.ListScenes = handler.HandleListScenes

@@ -1,0 +1,118 @@
+service Scene {
+    path = "service.scene"
+
+    rpc CreateScene(CreateSceneRequest) CreateSceneResponse {
+        method = "POST"
+        path = "/scenes"
+    }
+
+    rpc ReadScene(ReadSceneRequest) ReadSceneResponse {
+        method = "GET"
+        path = "/scene"
+    }
+
+    rpc ListScenes(ListScenesRequest) ListScenesResponse {
+        method = "GET"
+        path = "/scenes"
+    }
+
+    rpc DeleteScene(DeleteSceneRequest) DeleteSceneResponse {
+        method = "DELETE"
+        path = "/scene"
+    }
+
+    rpc SetScene(SetSceneRequest) SetSceneResponse {
+        method = "POST"
+        path = "/scene/set"
+    }
+}
+
+
+// ---- Domain messages ---- //
+
+message Scene {
+    uint32 id
+    string name
+    uint32 owner_id
+    []Action actions
+    time created_at
+    time updated_at
+}
+
+message Action {
+    int32 stage
+    int32 sequence
+
+    string func
+    string controller_name
+    string device_id
+    string command
+    string property
+    string property_value
+    string property_type
+
+    time created_at
+    time updated_at
+}
+
+// ---- Request & Response messages ---- //
+
+message CreateSceneRequest {
+    message Action {
+        int32 stage
+        int32 sequence
+        string func
+        string controller_name
+        string device_id
+        string command
+        string property
+        string property_value
+        string property_type
+    }
+
+    string name (required)
+    uint32 owner_id (required)
+    []Action actions (required)
+}
+
+message CreateSceneResponse {
+    Scene scene
+}
+
+message ReadSceneRequest {
+    uint32 scene_id
+}
+
+message ReadSceneResponse {
+    Scene scene
+}
+
+message ListScenesRequest {
+    uint32 owner_id
+}
+
+message ListScenesResponse {
+    []Scene scenes
+}
+
+message DeleteSceneRequest {
+    int32 scene_id
+}
+
+message DeleteSceneResponse {
+}
+
+message SetSceneRequest {
+    uint32 scene_id
+}
+
+message SetSceneResponse {
+}
+
+// ---- Firehose messages ---- //
+
+message SetSceneEvent {
+    event_name = "set-scene"
+
+    uint32 scene_id
+}
