@@ -33,6 +33,7 @@ type field struct {
 
 type typesData struct {
 	PackageName string
+	PackageDir  string
 	Imports     []*imp
 	Messages    []*message
 }
@@ -113,7 +114,7 @@ package {{ .PackageName }}
 
 func createTypesTemplateData(opts *options, file *svcdef.File) (*typesData, error) {
 	// Figure out the path of the package we're generating code for
-	self, err := getGoImportPath(opts.DefPath, packageExternal)
+	self, err := getGoImportPath(opts.DefPath, packageDirExternal)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +128,8 @@ func createTypesTemplateData(opts *options, file *svcdef.File) (*typesData, erro
 	}
 
 	return &typesData{
-		PackageName: packageExternal,
+		PackageName: externalPackageName(opts),
+		PackageDir:  packageDirExternal,
 		Imports:     im.get(),
 		Messages:    messages,
 	}, nil

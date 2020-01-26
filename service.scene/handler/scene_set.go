@@ -3,12 +3,12 @@ package handler
 import (
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/errors"
+	scenedef "github.com/jakewright/home-automation/service.scene/def"
 	"github.com/jakewright/home-automation/service.scene/domain"
-	"github.com/jakewright/home-automation/service.scene/external"
 )
 
 // HandleSetScene emits an event to trigger the scene to be set asynchronously
-func HandleSetScene(body *external.SetSceneRequest) (*external.SetSceneResponse, error) {
+func HandleSetScene(body *scenedef.SetSceneRequest) (*scenedef.SetSceneResponse, error) {
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, body.SceneId); err != nil {
 		return nil, err
@@ -18,11 +18,11 @@ func HandleSetScene(body *external.SetSceneRequest) (*external.SetSceneResponse,
 		return nil, errors.NotFound("Scene not found")
 	}
 
-	if err := (&external.SetSceneEvent{
+	if err := (&scenedef.SetSceneEvent{
 		SceneId: body.SceneId,
 	}).Publish(); err != nil {
 		return nil, err
 	}
 
-	return &external.SetSceneResponse{}, nil
+	return &scenedef.SetSceneResponse{}, nil
 }

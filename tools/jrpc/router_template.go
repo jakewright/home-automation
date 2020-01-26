@@ -35,6 +35,7 @@ type imp struct {
 }
 
 type routerData struct {
+	PackageDir  string
 	PackageName string
 	RouterName  string
 	Imports     []*imp
@@ -105,7 +106,7 @@ func NewRouter() *{{ .RouterName }} {
 `
 
 func createRouterTemplateData(opts *options, file *svcdef.File) (*routerData, error) {
-	packageName := packageRouter
+	packageName := packageDirRouter
 	if opts.RouterPackageName != "" {
 		packageName = opts.RouterPackageName
 	}
@@ -164,6 +165,7 @@ func createRouterTemplateData(opts *options, file *svcdef.File) (*routerData, er
 	}
 
 	return &routerData{
+		PackageDir:  packageName,
 		PackageName: packageName,
 		RouterName:  file.Service.Name + "Router",
 		Imports:     im.get(),

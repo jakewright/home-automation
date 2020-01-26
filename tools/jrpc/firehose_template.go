@@ -24,6 +24,7 @@ type event struct {
 
 type firehoseData struct {
 	PackageName string
+	PackageDir  string
 	Events      []*event
 }
 
@@ -84,7 +85,8 @@ func createFirehoseTemplateData(opts *options, file *svcdef.File) (*firehoseData
 	}
 
 	return &firehoseData{
-		PackageName: packageExternal,
+		PackageName: externalPackageName(opts),
+		PackageDir:  packageDirExternal,
 		Events:      events,
 	}, nil
 }

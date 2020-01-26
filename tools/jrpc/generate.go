@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"golang.org/x/tools/imports"
 
@@ -10,8 +12,8 @@ import (
 )
 
 const (
-	packageExternal = "external"
-	packageRouter   = "handler"
+	packageDirExternal = "def"
+	packageDirRouter   = "handler"
 )
 
 type options struct {
@@ -43,6 +45,15 @@ func generate(defPath string, file *svcdef.File) error {
 			panic(err)
 		}
 
+		dir := filepath.Dir(filename)
+
+		// Create the directory if necessary
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			if err := os.Mkdir(dir, 0700); err != nil {
+				panic(err)
+			}
+		}
+
 		if err := ioutil.WriteFile(filename, b, 0644); err != nil {
 			panic(err)
 		}
@@ -63,7 +74,7 @@ func generateTypes(opts *options, file *svcdef.File) (string, []byte, error) {
 		return "", nil, err
 	}
 
-	return "./" + data.PackageName + "/types.go", buf.Bytes(), nil
+	return "./" + data.PackageDir + "/types.go", buf.Bytes(), nil
 }
 
 func generateRouter(opts *options, file *svcdef.File) (string, []byte, error) {
@@ -78,7 +89,7 @@ func generateRouter(opts *options, file *svcdef.File) (string, []byte, error) {
 		return "", nil, err
 	}
 
-	return "./" + data.PackageName + "/gen.go", buf.Bytes(), nil
+	return "./" + data.PackageDir + "/gen.go", buf.Bytes(), nil
 }
 
 func generateFirehose(opts *options, file *svcdef.File) (string, []byte, error) {
@@ -93,5 +104,5 @@ func generateFirehose(opts *options, file *svcdef.File) (string, []byte, error) 
 		return "", nil, err
 	}
 
-	return "./" + data.PackageName + "/firehose.go", buf.Bytes(), nil
+	return "./" + data.PackageDir + "/firehose.go", buf.Bytes(), nil
 }

@@ -23,38 +23,33 @@ func newImportManager(pkg string) *importManager {
 }
 
 func (m *importManager) add(path string) string {
+	parts := strings.Split(path, "/")
+	pkg := parts[len(parts)-1]
+
+	return m.addWithPackageName(path, pkg)
+}
+
+func (m *importManager) addWithPackageName(path, pkg string) string {
 	if path == "" || path == m.pkg {
 		return ""
 	}
 
-	parts := strings.Split(path, "/")
-	pkg := parts[len(parts)-1]
-
 	existing, ok := m.byPath[path]
 	if ok {
-		if existing.Alias != "" {
-			return existing.Alias
-		}
-
-		return pkg
+		return existing.Alias
 	}
 
-	var alias string
 	if len(m.byPkg[pkg]) > 0 {
-		alias = pkg + strconv.Itoa(len(m.byPkg[pkg]))
+		pkg = pkg + strconv.Itoa(len(m.byPkg[pkg]))
 	}
 
 	imp := &imp{
-		Alias: alias,
+		Alias: pkg,
 		Path:  path,
 	}
 
 	m.byPkg[pkg] = append(m.byPkg[pkg], imp)
 	m.byPath[path] = imp
-
-	if alias != "" {
-		return alias
-	}
 
 	return pkg
 }

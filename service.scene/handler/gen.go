@@ -3,24 +3,24 @@
 package handler
 
 import (
-	"net/http"
+	http "net/http"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	"github.com/jakewright/home-automation/service.scene/external"
+	def "github.com/jakewright/home-automation/service.scene/def"
 )
 
 // SceneRouter wraps router.Router to provide a convenient way to set handlers
 type SceneRouter struct {
 	*router.Router
-	CreateScene func(*external.CreateSceneRequest) (*external.CreateSceneResponse, error)
-	ReadScene   func(*external.ReadSceneRequest) (*external.ReadSceneResponse, error)
-	ListScenes  func(*external.ListScenesRequest) (*external.ListScenesResponse, error)
-	DeleteScene func(*external.DeleteSceneRequest) (*external.DeleteSceneResponse, error)
-	SetScene    func(*external.SetSceneRequest) (*external.SetSceneResponse, error)
+	CreateScene func(*def.CreateSceneRequest) (*def.CreateSceneResponse, error)
+	ReadScene   func(*def.ReadSceneRequest) (*def.ReadSceneResponse, error)
+	ListScenes  func(*def.ListScenesRequest) (*def.ListScenesResponse, error)
+	DeleteScene func(*def.DeleteSceneRequest) (*def.DeleteSceneResponse, error)
+	SetScene    func(*def.SetSceneRequest) (*def.SetSceneResponse, error)
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -34,7 +34,7 @@ func NewRouter() *SceneRouter {
 			slog.Panicf("No handler exists for POST service.scene/scenes")
 		}
 
-		body := &external.CreateSceneRequest{}
+		body := &def.CreateSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -65,7 +65,7 @@ func NewRouter() *SceneRouter {
 			slog.Panicf("No handler exists for GET service.scene/scene")
 		}
 
-		body := &external.ReadSceneRequest{}
+		body := &def.ReadSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -96,7 +96,7 @@ func NewRouter() *SceneRouter {
 			slog.Panicf("No handler exists for GET service.scene/scenes")
 		}
 
-		body := &external.ListScenesRequest{}
+		body := &def.ListScenesRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -127,7 +127,7 @@ func NewRouter() *SceneRouter {
 			slog.Panicf("No handler exists for DELETE service.scene/scene")
 		}
 
-		body := &external.DeleteSceneRequest{}
+		body := &def.DeleteSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -158,7 +158,7 @@ func NewRouter() *SceneRouter {
 			slog.Panicf("No handler exists for POST service.scene/scene/set")
 		}
 
-		body := &external.SetSceneRequest{}
+		body := &def.SetSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)

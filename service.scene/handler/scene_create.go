@@ -3,12 +3,12 @@ package handler
 import (
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	scenedef "github.com/jakewright/home-automation/service.scene/def"
 	"github.com/jakewright/home-automation/service.scene/domain"
-	"github.com/jakewright/home-automation/service.scene/external"
 )
 
 // HandleCreateScene persists a new scene
-func HandleCreateScene(req *external.CreateSceneRequest) (*external.CreateSceneResponse, error) {
+func HandleCreateScene(req *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
 	actions := make([]*domain.Action, len(req.Actions))
 	for i, a := range req.Actions {
 		actions[i] = &domain.Action{
@@ -39,7 +39,7 @@ func HandleCreateScene(req *external.CreateSceneRequest) (*external.CreateSceneR
 
 	slog.Infof("Created new scene %d", scene.ID)
 
-	return &external.CreateSceneResponse{
+	return &scenedef.CreateSceneResponse{
 		Scene: scene.ToProto(),
 	}, nil
 }

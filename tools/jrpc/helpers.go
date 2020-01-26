@@ -13,6 +13,11 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/svcdef"
 )
 
+// externalPackageName returns the name to use for the external package
+func externalPackageName(opts *options) string {
+	return strings.ReplaceAll(filepath.Base(opts.DefPath), ".", "")
+}
+
 func messagesFromFile(opts *options, file *svcdef.File, im *importManager) ([]*message, error) {
 	var messages []*message
 
@@ -172,7 +177,7 @@ func resolveTypeName(str, defPath string, imports map[string]*svcdef.Import, im 
 		goTypeName = strings.ReplaceAll(str[1:], ".", "_")
 
 		// By convention, the type will be defined in the external package
-		importPath, err = getGoImportPath(defPath, packageExternal)
+		importPath, err = getGoImportPath(defPath, packageDirExternal)
 		if err != nil {
 			return "", err
 		}
@@ -182,7 +187,7 @@ func resolveTypeName(str, defPath string, imports map[string]*svcdef.Import, im 
 
 		// Expect to find an import with an alias of parts[0], and again, by
 		// convention, the type name will be defined in the external package.
-		importPath, err = getGoImportPath(imports[parts[0]].Path, packageExternal)
+		importPath, err = getGoImportPath(imports[parts[0]].Path, packageDirExternal)
 		if err != nil {
 			return "", err
 		}
