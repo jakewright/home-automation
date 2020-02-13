@@ -16,8 +16,8 @@ printf "hooks "
 cp -pR ./tools/hooks/ ./.git/hooks
 printf "$GREEN$TICK$RESET\n"
 
-printf "protoc-gen-jrpc "
-go install ./tools/protoc-gen-jrpc
+printf "jrpc "
+go install ./tools/jrpc
 printf "$GREEN$TICK$RESET\n"
 
 printf "run "
