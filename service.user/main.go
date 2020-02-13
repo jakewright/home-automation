@@ -19,6 +19,7 @@ func main() {
 
 	r := handler.NewRouter()
 	r.GetUser = handler.HandleGetUser
+	r.ListUsers = handler.HandleListUsers
 
 	svc.Run(r)
 }

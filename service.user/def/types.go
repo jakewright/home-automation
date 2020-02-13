@@ -44,3 +44,28 @@ func (m *GetUserResponse) Validate() error {
 
 	return nil
 }
+
+// ListUsersRequest is defined in the .def file
+type ListUsersRequest struct {
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *ListUsersRequest) Validate() error {
+	return nil
+}
+
+// ListUsersResponse is defined in the .def file
+type ListUsersResponse struct {
+	Users []User `json:"users"`
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *ListUsersResponse) Validate() error {
+	for _, r := range m.Users {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

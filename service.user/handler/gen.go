@@ -16,7 +16,8 @@ import (
 // UserRouter wraps router.Router to provide a convenient way to set handlers
 type UserRouter struct {
 	*router.Router
-	GetUser func(*def.GetUserRequest) (*def.GetUserResponse, error)
+	GetUser   func(*def.GetUserRequest) (*def.GetUserResponse, error)
+	ListUsers func(*def.ListUsersRequest) (*def.ListUsersResponse, error)
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -46,6 +47,37 @@ func NewRouter() *UserRouter {
 		}
 
 		rsp, err := rr.GetUser(body)
+		if err != nil {
+			err = errors.WithMessage(err, "failed to handle request")
+			slog.Error(err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		response.WriteJSON(w, rsp)
+	})
+
+	rr.Router.Handle("GET", "/users", func(w http.ResponseWriter, r *http.Request) {
+		if rr.ListUsers == nil {
+			slog.Panicf("No handler exists for GET service.user/users")
+		}
+
+		body := &def.ListUsersRequest{}
+		if err := request.Decode(r, body); err != nil {
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			slog.Error(err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		if err := body.Validate(); err != nil {
+			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			slog.Error(err)
+			response.WriteJSON(w, err)
+			return
+		}
+
+		rsp, err := rr.ListUsers(body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)

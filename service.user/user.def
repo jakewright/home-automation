@@ -5,6 +5,11 @@ service User {
         method = "GET"
         path = "/user"
     }
+
+    rpc ListUsers(ListUsersRequest) ListUsersResponse {
+        method = "GET"
+        path = "/users"
+    }
 }
 
 // ---- Domain messages ---- //
@@ -24,4 +29,10 @@ message GetUserRequest {
 
 message GetUserResponse {
     User user
+}
+
+message ListUsersRequest {}
+
+message ListUsersResponse {
+    []User users
 }
