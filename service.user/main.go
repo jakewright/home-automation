@@ -3,8 +3,10 @@ package main
 import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	userproto "github.com/jakewright/home-automation/service.user/proto"
+	"github.com/jakewright/home-automation/service.user/handler"
 )
+
+//go:generate jrpc user.def
 
 func main() {
 	svc, err := bootstrap.Init(&bootstrap.Opts{
@@ -15,7 +17,8 @@ func main() {
 		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
-	r := userproto.NewRouter()
+	r := handler.NewRouter()
+	r.GetUser = handler.HandleGetUser
 
 	svc.Run(r)
 }

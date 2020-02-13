@@ -75,3 +75,14 @@ apis:
         enabled: true
         config:
           attempts: 1
+
+  service.user:
+    name: User Service
+    prefix: service.user
+    upstream_url: http://service.user
+    allow_cross_origin: true
+    plugins:
+      - name: retry
+        enabled: true
+        config:
+          attempts: 1

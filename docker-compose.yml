@@ -186,6 +186,18 @@ services:
     env_file:
       - ./.env
 
+  service.user:
+    build:
+        dockerfile: service.user/dev.dockerfile
+        context: .
+    image: home-automation-user
+    volumes:
+      - .:/app
+    ports:
+      - 7011:80
+    env_file:
+      - ./.env
+
   web.client:
     build:
       dockerfile: ./web.client/dev.dockerfile
