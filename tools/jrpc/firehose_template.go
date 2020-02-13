@@ -84,6 +84,10 @@ func createFirehoseTemplateData(opts *options, file *svcdef.File) (*firehoseData
 		})
 	}
 
+	if len(events) == 0 {
+		return nil, nil
+	}
+
 	return &firehoseData{
 		PackageName: externalPackageName(opts),
 		PackageDir:  packageDirExternal,

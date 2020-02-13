@@ -131,6 +131,10 @@ func createRouterTemplateData(opts *options, file *svcdef.File) (*routerData, er
 		return nil, fmt.Errorf("path not set on service")
 	}
 
+	if len(file.Service.RPCs) == 0 {
+		return nil, nil
+	}
+
 	endpoints := make([]*endpoint, len(file.Service.RPCs))
 
 	for i, r := range file.Service.RPCs {

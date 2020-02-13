@@ -38,6 +38,10 @@ func generate(defPath string, file *svcdef.File) error {
 			panic(err)
 		}
 
+		if filename == "" || b == nil {
+			continue
+		}
+
 		b, err = imports.Process(filename, b, &imports.Options{
 			Comments: true,
 		})
@@ -68,6 +72,10 @@ func generateTypes(opts *options, file *svcdef.File) (string, []byte, error) {
 		return "", nil, err
 	}
 
+	if data == nil {
+		return "", nil, nil
+	}
+
 	// Generate the code
 	buf := &bytes.Buffer{}
 	if err := typesTemplate.Execute(buf, data); err != nil {
@@ -83,6 +91,10 @@ func generateRouter(opts *options, file *svcdef.File) (string, []byte, error) {
 		return "", nil, err
 	}
 
+	if data == nil {
+		return "", nil, nil
+	}
+
 	// Generate the code
 	buf := &bytes.Buffer{}
 	if err := routerTemplate.Execute(buf, data); err != nil {
@@ -96,6 +108,10 @@ func generateFirehose(opts *options, file *svcdef.File) (string, []byte, error) 
 	data, err := createFirehoseTemplateData(opts, file)
 	if err != nil {
 		return "", nil, err
+	}
+
+	if data == nil {
+		return "", nil, nil
 	}
 
 	// Generate the code

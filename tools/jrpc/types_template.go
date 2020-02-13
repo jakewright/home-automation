@@ -127,6 +127,10 @@ func createTypesTemplateData(opts *options, file *svcdef.File) (*typesData, erro
 		return nil, err
 	}
 
+	if len(messages) == 0 {
+		return nil, nil
+	}
+
 	return &typesData{
 		PackageName: externalPackageName(opts),
 		PackageDir:  packageDirExternal,
