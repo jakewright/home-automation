@@ -148,12 +148,12 @@ func createRouterTemplateData(opts *options, file *svcdef.File) (*routerData, er
 			return nil, err
 		}
 
-		inType, err := resolveTypeName(r.InputType, opts.DefPath, file.Imports, im)
+		inType, _, err := resolveTypeName(r.InputType, opts.DefPath, file.Imports, im)
 		if err != nil {
 			return nil, err
 		}
 
-		outType, err := resolveTypeName(r.OutputType, opts.DefPath, file.Imports, im)
+		outType, _, err := resolveTypeName(r.OutputType, opts.DefPath, file.Imports, im)
 		if err != nil {
 			return nil, err
 		}
