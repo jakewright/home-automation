@@ -1,0 +1,76 @@
+service DeviceRegistry {
+    path = "service.device-registry"
+
+    rpc GetDevice(GetDeviceRequest) GetDeviceResponse {
+        method = "GET"
+        path = "/device"
+    }
+
+    rpc ListDevices(ListDevicesRequest) ListDevicesResponse {
+        method = "GET"
+        path = "/devices"
+    }
+
+    rpc GetRoom(GetRoomRequest) GetRoomResponse {
+        method = "GET"
+        path = "/room"
+    }
+
+    rpc ListRooms(ListRoomsRequest) ListRoomsResponse {
+        method = "GET"
+        path = "/rooms"
+    }
+}
+
+// ---- Domain messages ---- //
+
+message DeviceHeader {
+    string id
+    string name
+    string type // e.g. huelight
+    string kind // e.g. lamp
+    map[string]any attributes
+    string room_id
+    Room room
+    string controller_name
+}
+
+message Room {
+    string id
+    string name
+    []DeviceHeader devices
+}
+
+// ---- Request & Response messages ---- //
+
+message GetDeviceRequest {
+    string device_id
+}
+
+message GetDeviceResponse {
+
+}
+
+message ListDevicesRequest {
+    string controller_name
+}
+
+message ListDevicesResponse {
+
+}
+
+message GetRoomRequest {
+
+}
+
+message GetRoomResponse {
+
+}
+
+message ListRoomsRequest {
+
+}
+
+message ListRoomsResponse {
+
+}

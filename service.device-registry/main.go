@@ -9,6 +9,8 @@ import (
 	"github.com/jakewright/home-automation/service.device-registry/repository"
 )
 
+//go:generate jrpc deviceregistry.def
+
 func main() {
 	svc, err := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.device-registry",
