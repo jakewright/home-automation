@@ -64,9 +64,22 @@ func qualifyMessageTypes(messages []*Message, byQualifiedName map[string]*Messag
 	for _, m := range messages {
 		for _, f := range m.Fields {
 			var err error
-			f.QualifiedType, err = qualifyType(f.Type, m.QualifiedName, byQualifiedName)
-			if err != nil {
-				return fmt.Errorf("failed to qualify type %s on field %s in message %s", f.Type, f.Name, m.QualifiedName)
+
+			if f.Type.Map {
+				f.Type.MapKey.Qualified, err = qualifyType(f.Type.MapKey.Name, m.QualifiedName, byQualifiedName)
+				if err != nil {
+					return fmt.Errorf("failed to qualify key type %s on field %s in message %s", f.Type.Name, f.Name, m.QualifiedName)
+				}
+
+				f.Type.MapValue.Qualified, err = qualifyType(f.Type.MapValue.Name, m.QualifiedName, byQualifiedName)
+				if err != nil {
+					return fmt.Errorf("failed to qualify value type %s on field %s in message %s", f.Type.Name, f.Name, m.QualifiedName)
+				}
+			} else {
+				f.Type.Qualified, err = qualifyType(f.Type.Name, m.QualifiedName, byQualifiedName)
+				if err != nil {
+					return fmt.Errorf("failed to qualify type %s on field %s in message %s", f.Type.Name, f.Name, m.QualifiedName)
+				}
 			}
 		}
 

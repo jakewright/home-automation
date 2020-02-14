@@ -86,14 +86,14 @@ func (p *Parser) Parse() (file *File, err error) {
 	}
 
 	for _, r := range p.f.Service.RPCs {
-		r.QualifiedInputType, err = qualifyType(r.InputType, "", byQualifiedName)
+		r.InputType.Qualified, err = qualifyType(r.InputType.Name, "", byQualifiedName)
 		if err != nil {
-			p.error("failed to qualify %s input type %s: %v", r.Name, r.InputType, err)
+			p.error("failed to qualify %s input type %s: %v", r.Name, r.InputType.Name, err)
 		}
 
-		r.QualifiedOutputType, err = qualifyType(r.OutputType, "", byQualifiedName)
+		r.OutputType.Qualified, err = qualifyType(r.OutputType.Name, "", byQualifiedName)
 		if err != nil {
-			p.error("failed to qualify %s output type %s: %v", r.Name, r.OutputType, err)
+			p.error("failed to qualify %s output type %s: %v", r.Name, r.OutputType.Name, err)
 		}
 	}
 
@@ -104,7 +104,7 @@ func (p *Parser) Parse() (file *File, err error) {
 	return p.f, nil
 }
 
-// next consumes and returns the next non-space token
+// next consumes and returns the next token
 func (p *Parser) next() token {
 	// If there's a token in the buffer, return it
 	if len(p.buf) > 0 {
@@ -113,8 +113,28 @@ func (p *Parser) next() token {
 		p.l = n
 		return n
 	}
-	p.l = p.lex.nextNonSpaceToken()
+
+	p.l = p.lex.nextToken()
 	return p.l
+}
+
+// nextNonSpace consumes and returns the next non-space token
+func (p *Parser) nextNonSpace() token {
+	for {
+		if t := p.next(); t.typ != tokSpace {
+			return t
+		}
+	}
+}
+
+// nextToSpace consumes and returns all of the tokens up to the next space
+// note that the space is consumed but not returned
+func (p *Parser) nextToSpace() (ts []token) {
+	ts = append(ts, p.nextNonSpace())
+	for t := p.next(); t.typ != tokSpace; t = p.next() {
+		ts = append(ts, t)
+	}
+	return
 }
 
 func (p *Parser) peek() token {
@@ -138,7 +158,7 @@ func (p *Parser) peekn(n int) []token {
 // expect consumes and returns the next token if it matches
 // the given token type, otherwise an error is reported.
 func (p *Parser) expect(e tokenType) token {
-	t := p.next()
+	t := p.nextNonSpace()
 	if t.typ != e {
 		p.error("unexpected token %s, wanted %s", t, e)
 	}
@@ -147,7 +167,7 @@ func (p *Parser) expect(e tokenType) token {
 
 // expectOneOf is like expect but takes a slice of allowed token types
 func (p *Parser) expectOneOf(es ...tokenType) token {
-	t := p.next()
+	t := p.nextNonSpace()
 	for _, e := range es {
 		if t.typ == e {
 			return t
@@ -255,7 +275,7 @@ func parseInsideService(p *Parser) parseFn {
 		case tokRPC:
 			return parseRPC
 		case tokCloseBrace: // end of the service definition
-			p.next()
+			p.nextNonSpace()
 			return parse
 		default:
 			p.error("unexpected token inside service: %s", t)
@@ -281,9 +301,13 @@ func parseRPC(p *Parser) parseFn {
 	outType := "." + ts[5].val
 
 	rpc := &RPC{
-		Name:       ts[1].val,
-		InputType:  inType,
-		OutputType: outType,
+		Name: ts[1].val,
+		InputType: &Type{ // RPC types cannot be optional, repeated or map types
+			Name: inType,
+		},
+		OutputType: &Type{ // RPC types cannot be optional, repeated or map types
+			Name: outType,
+		},
 		// We can't fill in the fully-qualified type names yet
 		// because we probably haven't parsed all of the messages
 		Options: make(map[string]interface{}),
@@ -296,7 +320,7 @@ Loop:
 			id, val := parseOption(p)
 			rpc.Options[id] = val
 		case tokCloseBrace:
-			p.next()
+			p.nextNonSpace()
 			break Loop
 		default:
 			p.error("unexpected token in RPC: %s", t)
@@ -344,6 +368,12 @@ func parseMessage(p *Parser, parent *Message) *Message {
 
 Loop:
 	for {
+		// If this is the end of the message }
+		if p.peek().typ == tokCloseBrace {
+			p.nextNonSpace()
+			break Loop
+		}
+
 		// If this is an option
 		ps := p.peekn(2)
 		if ps[0].typ == tokIdentifier && ps[1].typ == tokAssign {
@@ -353,55 +383,77 @@ Loop:
 		}
 
 		// If this is a nested message declaration
-		if p.peekn(1)[0].typ == tokMessage {
+		if p.peek().typ == tokMessage {
 			message.AddMessage(parseMessage(p, message))
 			continue
 		}
 
-		t := p.next()
+		typ := parseType(p)
+		f := p.expect(tokIdentifier) // field name
 
-		// If this is an optional field
-		optional := false
-		if t.typ == tokAsterisk {
-			optional = true
-			t = p.next()
+		// If a field option is defined
+		var opts map[string]interface{}
+		if p.peek().typ == tokOpenParen {
+			opts = parseFieldOptions(p)
 		}
 
-		repeated := false
-		if t.typ == tokOpenBracket {
-			p.expect(tokCloseBracket)
-			repeated = true
-			t = p.next()
+		if p.peek().typ == tokComment {
+			p.expect(tokComment) // Ignore end-of-line comments
 		}
 
-		switch t.typ {
-		case tokIdentifier:
-			f := p.expect(tokIdentifier) // field name
-
-			// If a field option is defined
-			var opts map[string]interface{}
-			if p.peek().typ == tokOpenParen {
-				opts = parseFieldOptions(p)
-			}
-
-			message.Fields = append(message.Fields, &Field{
-				Name: f.val,
-				Type: t.val,
-				// We can't fill in the qualified type yet because
-				// we probably haven't parsed all of the messages yet
-				Repeated: repeated,
-				Optional: optional,
-				Options:  opts,
-			})
-
-		case tokCloseBrace:
-			break Loop
-		default:
-			p.error("unexpected token in message %s: %s", qualifiedMessageName, t)
-		}
+		message.Fields = append(message.Fields, &Field{
+			Name:    f.val,
+			Type:    typ,
+			Options: opts,
+		})
 	}
 
 	return message
+}
+
+func parseType(p *Parser) *Type {
+	t := p.expectOneOf(tokAsterisk, tokOpenBracket, tokIdentifier)
+
+	// If this is an optional field *
+	optional := false
+	if t.typ == tokAsterisk {
+		optional = true
+		t = p.expectOneOf(tokOpenBracket, tokIdentifier)
+	}
+
+	// If this is a repeated field []
+	repeated := false
+	if t.typ == tokOpenBracket {
+		repeated = true
+		p.expect(tokCloseBracket) // ]
+		t = p.expectOneOf(tokIdentifier)
+	}
+
+	name := t.val
+
+	// If this is a map type
+	mapType := false
+	var key, val *Type
+	if t.val == "map" {
+		mapType = true
+		p.expect(tokOpenBracket)
+		key = parseType(p)
+		p.expect(tokCloseBracket)
+		val = parseType(p)
+
+		name = fmt.Sprintf("map[%s]%s", key.Name, val.Name)
+	}
+
+	return &Type{
+		Name: name,
+		// We can't fill in the qualified type yet because
+		// we probably haven't parsed all of the messages yet
+		Repeated: repeated,
+		Optional: optional,
+		Map:      mapType,
+		MapKey:   key,
+		MapValue: val,
+	}
 }
 
 // parseOption returns the identifier and value from an assignment expression
@@ -462,7 +514,7 @@ func parseFieldOptions(p *Parser) map[string]interface{} {
 		// What type of option is it
 		switch ts[1].typ {
 		case tokComma, tokCloseParen: // short-hand option
-			t := p.next() // consume the identifier
+			t := p.nextNonSpace() // consume the identifier
 			opts[t.val] = true
 		case tokAssign: // normal option
 			id, val := parseOption(p)

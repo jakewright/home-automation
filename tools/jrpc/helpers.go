@@ -58,12 +58,12 @@ func newMessage(m *svcdef.Message, im *importManager, opts *options, file *svcde
 			return nil, err
 		}
 
-		goTypeName, err := fieldToType(f, opts.DefPath, file.Imports, im)
+		goTypeName, err := fieldToType(f.Type, opts.DefPath, file.Imports, im)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get field type in message %s: %v", m.QualifiedName, err)
 		}
 
-		isMessageType := strings.HasPrefix(f.QualifiedType, ".")
+		isMessageType := strings.HasPrefix(f.Type.Qualified, ".")
 		pointer := strings.HasPrefix(goTypeName, "*")
 
 		var required bool
@@ -76,7 +76,7 @@ func newMessage(m *svcdef.Message, im *importManager, opts *options, file *svcde
 			JSONName:      jsonName,
 			Type:          goTypeName,
 			IsMessageType: isMessageType,
-			Repeated:      f.Repeated,
+			Repeated:      f.Type.Repeated,
 			Required:      required,
 			Pointer:       pointer,
 		}
@@ -88,21 +88,79 @@ func newMessage(m *svcdef.Message, im *importManager, opts *options, file *svcde
 	}, nil
 }
 
-func fieldToType(field *svcdef.Field, defPath string, imports map[string]*svcdef.Import, im *importManager) (string, error) {
-	typ, err := resolveTypeName(field.QualifiedType, defPath, imports, im)
+func fieldToType(t *svcdef.Type, defPath string, imports map[string]*svcdef.Import, im *importManager) (string, error) {
+	typ, err := resolveTypeName(t, defPath, imports, im)
 	if err != nil {
-		return "", fmt.Errorf("failed to resolve type in field %s: %v", field.QualifiedType, err)
+		return "", fmt.Errorf("failed to resolve type in field %s: %v", t.Qualified, err)
 	}
 
-	if field.Repeated {
+	if t.Repeated {
 		typ = "[]" + typ
 	}
 
-	if field.Optional {
+	if t.Optional {
 		typ = "*" + typ
 	}
 
 	return typ, nil
+}
+
+// resolveTypeName will turn a fully-qualified type name into the go type and,
+// if necessary, a path that needs to be imported.
+func resolveTypeName(t *svcdef.Type, defPath string, imports map[string]*svcdef.Import, im *importManager) (string, error) {
+	if t.Map {
+		key, err := fieldToType(t.MapKey, defPath, imports, im)
+		if err != nil {
+			return "", err
+		}
+
+		val, err := fieldToType(t.MapValue, defPath, imports, im)
+		if err != nil {
+			return "", err
+		}
+
+		return "map[" + key + "]" + val, nil
+	}
+
+	var goTypeName, importPath string
+	var err error
+
+	q := t.Qualified
+
+	if strings.HasPrefix(q, ".") { // local type (message is defined in the same def file)
+		goTypeName = strings.ReplaceAll(q[1:], ".", "_")
+
+		// By convention, the type will be defined in the external package
+		importPath, err = getGoImportPath(defPath, packageDirExternal)
+		if err != nil {
+			return "", err
+		}
+
+	} else if parts := strings.SplitN(q, ".", 2); len(parts) == 2 { // imported type
+		goTypeName = strings.ReplaceAll(parts[1], ".", "_")
+
+		// Expect to find an import with an alias of parts[0], and again, by
+		// convention, the type name will be defined in the external package.
+		importPath, err = getGoImportPath(imports[parts[0]].Path, packageDirExternal)
+		if err != nil {
+			return "", err
+		}
+
+	} else { // "built-in" type
+		data, ok := typeMap[q]
+		if !ok {
+			return "", fmt.Errorf("invalid type %s", q)
+		}
+
+		goTypeName, importPath = data.GoType, data.ImportPath
+	}
+
+	alias := im.add(importPath)
+	if alias != "" {
+		goTypeName = alias + "." + goTypeName
+	}
+
+	return goTypeName, nil
 }
 
 func getGoFieldName(name string) (string, string, error) {
@@ -167,54 +225,13 @@ func getGoImportPath(defPath, pkg string) (string, error) {
 	return filepath.Join(svcImportPath, pkg), nil
 }
 
-// resolveTypeName will turn a fully-qualified type name into the go type and,
-// if necessary, a path that needs to be imported.
-func resolveTypeName(str, defPath string, imports map[string]*svcdef.Import, im *importManager) (string, error) {
-	var goTypeName, importPath string
-	var err error
-
-	if strings.HasPrefix(str, ".") { // local type (message is defined in the same def file)
-		goTypeName = strings.ReplaceAll(str[1:], ".", "_")
-
-		// By convention, the type will be defined in the external package
-		importPath, err = getGoImportPath(defPath, packageDirExternal)
-		if err != nil {
-			return "", err
-		}
-
-	} else if parts := strings.SplitN(str, ".", 2); len(parts) == 2 { // imported type
-		goTypeName = strings.ReplaceAll(parts[1], ".", "_")
-
-		// Expect to find an import with an alias of parts[0], and again, by
-		// convention, the type name will be defined in the external package.
-		importPath, err = getGoImportPath(imports[parts[0]].Path, packageDirExternal)
-		if err != nil {
-			return "", err
-		}
-
-	} else { // "built-in" type
-		data, ok := typeMap[str]
-		if !ok {
-			return "", fmt.Errorf("invalid type %s", str)
-		}
-
-		goTypeName, importPath = data.GoType, data.ImportPath
-	}
-
-	alias := im.add(importPath)
-	if alias != "" {
-		goTypeName = alias + "." + goTypeName
-	}
-
-	return goTypeName, nil
-}
-
 type typeData struct {
 	GoType     string
 	ImportPath string
 }
 
 var typeMap = map[string]typeData{
+	"any":     {"interface{}", ""},
 	"bool":    {"bool", ""},
 	"string":  {"string", ""},
 	"int32":   {"int32", ""},

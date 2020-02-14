@@ -53,28 +53,11 @@ type RPC struct {
 	// Name is the name given in the def file
 	Name string
 
-	// InputType is the simple input type name from the file
-	InputType string
+	// InputType is the input type
+	InputType *Type
 
-	// QualifiedInputType is the fully-qualified input
-	// type name. It can be
-	//   - the name of a message defined in this file
-	//     - e.g. ".Bar"
-	//   - the name of a message defined in another file
-	//     - e.g. "foo.Bar"
-	//   - a custom type for the code generator to parse
-	//     - e.g. "string"
-	// Note that svcdef has no concept of types beyond
-	// the messages defined in the file or an imported
-	// file. It's up to the code generator to understand
-	// anything else.
-	QualifiedInputType string
-
-	// OutputType is the simple output type name from the file
-	OutputType string
-
-	// QualifiedOutputType is the output version of QualifiedInputType
-	QualifiedOutputType string
+	// OutputType is the output type
+	OutputType *Type
 
 	// Options are arbitrary options defined within the RPC
 	Options map[string]interface{}
@@ -114,10 +97,19 @@ type Field struct {
 	// name is the name given in the def file
 	Name string
 
-	// Type is the simple type name given in the def file
-	Type string
+	// Type is the type of the field
+	Type *Type
 
-	// QualifiedType is the fully-qualified type name.
+	// Options are arbitrary options defined in parenthesis after the field definition
+	Options map[string]interface{}
+}
+
+// Type is a representation of a type
+type Type struct {
+	// Name is the simple type name given in the def file
+	Name string
+
+	// Qualified is the fully-qualified type name.
 	// It can be
 	//   - the name of a message defined in this file
 	//     - e.g. ".Bar", or ".Bar.Baz"
@@ -125,7 +117,10 @@ type Field struct {
 	//     - e.g. "foo.Bar"
 	//   - a custom type for the code generator to parse
 	//     - e.g. "string"
-	QualifiedType string
+	//     - in the case of a map e.g. map[string]int
+	//       the generator should use the Map* fields to
+	//       understand how to interpret the type
+	Qualified string
 
 	// Repeated is set if [] appears before the type name
 	Repeated bool
@@ -133,6 +128,12 @@ type Field struct {
 	// Optional is set if * appears before the type name
 	Optional bool
 
-	// Options are arbitrary options defined in parenthesis after the field definition
-	Options map[string]interface{}
+	// Map is true if the type is a map
+	Map bool
+
+	// MapKey is the type of the map's keys
+	MapKey *Type
+
+	// MapValue is the type of the map's values
+	MapValue *Type
 }

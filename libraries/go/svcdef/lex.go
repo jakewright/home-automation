@@ -42,52 +42,6 @@ func (t token) String() string {
 
 type tokenType string
 
-//const (
-//	tokError        tokenType = iota // error occurred; value is the text of the error
-//	tokSpace                         // whitespace
-//	tokOpenBrace                     // {
-//	tokCloseBrace                    // }
-//	tokOpenParen                     // (
-//	tokCloseParen                    // )
-//	tokOpenBracket                   // [
-//	tokCloseBracket                  // ]
-//	tokAssign                        // =
-//	tokAsterisk                      // *
-//	tokComment                       // a comment in the code
-//	tokString                        // quoted string (includes quotes)
-//	tokIdentifier                    // alphanumeric identifier
-//	tokNumber                        // an int, octal, hex or float number
-//	tokBool                          // a boolean, i.e. true or false
-//	tokImport                        // import keyword
-//	tokService                       // service keyword
-//	tokRPC                           // rpc keyword
-//	tokMessage                       // message keyword
-//	tokEOF                           // end of file
-//)
-//
-//var tokenNames = map[tokenType]string{
-//	tokError:        "error",
-//	tokSpace:        "space",
-//	tokOpenBrace:    "open_brace",
-//	tokCloseBrace:   "close_brace",
-//	tokOpenParen:    "open_paren",
-//	tokCloseParen:   "close_paren",
-//	tokOpenBracket:  "open_bracket",
-//	tokCloseBracket: "close_bracket",
-//	tokAssign:       "assign",
-//	tokAsterisk:     "asterisk",
-//	tokComment:      "comment",
-//	tokString:       "string",
-//	tokIdentifier:   "identifier",
-//	tokNumber:       "number",
-//	tokBool:         "bool",
-//	tokImport:       "import",
-//	tokService:      "service",
-//	tokRPC:          "rpc",
-//	tokMessage:      "message",
-//	tokEOF:          "eof",
-//}
-
 const (
 	tokError        tokenType = "error"         // error occurred; value is the text of the error
 	tokSpace        tokenType = "space"         // whitespace
