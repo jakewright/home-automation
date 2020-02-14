@@ -11,12 +11,12 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	scenedef "github.com/jakewright/home-automation/service.scene/def"
 	"github.com/jakewright/home-automation/service.scene/domain"
-	sceneproto "github.com/jakewright/home-automation/service.scene/proto"
 )
 
 // HandleSetSceneEvent sets the scene
-var HandleSetSceneEvent sceneproto.SetSceneEventHandler = func(body *sceneproto.SetSceneEvent) firehose.Result {
+var HandleSetSceneEvent scenedef.SetSceneEventHandler = func(body *scenedef.SetSceneEvent) firehose.Result {
 	metadata := map[string]string{
 		"scene_id": strconv.Itoa(int(body.SceneId)),
 	}
