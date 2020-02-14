@@ -8,7 +8,7 @@ import (
 
 	"github.com/jinzhu/copier"
 
-	proto "github.com/jakewright/home-automation/service.device-registry/proto"
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
 // DeviceRepository provides access to the underlying storage layer
@@ -19,13 +19,13 @@ type DeviceRepository struct {
 	// ReloadInterval is the amount of time to wait before reading from disk again
 	ReloadInterval time.Duration
 
-	devices  []*proto.DeviceHeader
+	devices  []*deviceregistrydef.DeviceHeader
 	reloaded time.Time
 	lock     sync.RWMutex
 }
 
 // FindAll returns all devices
-func (r *DeviceRepository) FindAll() ([]*proto.DeviceHeader, error) {
+func (r *DeviceRepository) FindAll() ([]*deviceregistrydef.DeviceHeader, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -33,9 +33,9 @@ func (r *DeviceRepository) FindAll() ([]*proto.DeviceHeader, error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	var devices []*proto.DeviceHeader
+	var devices []*deviceregistrydef.DeviceHeader
 	for _, device := range r.devices {
-		out := &proto.DeviceHeader{}
+		out := &deviceregistrydef.DeviceHeader{}
 		if err := copier.Copy(&out, device); err != nil {
 			return nil, err
 		}
@@ -46,7 +46,7 @@ func (r *DeviceRepository) FindAll() ([]*proto.DeviceHeader, error) {
 }
 
 // Find returns a device by ID
-func (r *DeviceRepository) Find(id string) (*proto.DeviceHeader, error) {
+func (r *DeviceRepository) Find(id string) (*deviceregistrydef.DeviceHeader, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -55,8 +55,8 @@ func (r *DeviceRepository) Find(id string) (*proto.DeviceHeader, error) {
 	defer r.lock.RUnlock()
 
 	for _, device := range r.devices {
-		if device.ID == id {
-			out := &proto.DeviceHeader{}
+		if device.Id == id {
+			out := &deviceregistrydef.DeviceHeader{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}
@@ -69,7 +69,7 @@ func (r *DeviceRepository) Find(id string) (*proto.DeviceHeader, error) {
 }
 
 // FindByController returns all devices with the given controller name
-func (r *DeviceRepository) FindByController(controllerName string) ([]*proto.DeviceHeader, error) {
+func (r *DeviceRepository) FindByController(controllerName string) ([]*deviceregistrydef.DeviceHeader, error) {
 	// Skip if we've recently reloaded
 	if err := r.reload(); err != nil {
 		return nil, err
@@ -78,10 +78,10 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*proto.Dev
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	var devices []*proto.DeviceHeader
+	var devices []*deviceregistrydef.DeviceHeader
 	for _, device := range r.devices {
 		if device.ControllerName == controllerName {
-			out := &proto.DeviceHeader{}
+			out := &deviceregistrydef.DeviceHeader{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}
@@ -93,7 +93,7 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*proto.Dev
 }
 
 // FindByRoom returns all devices for the given room
-func (r *DeviceRepository) FindByRoom(roomID string) ([]*proto.DeviceHeader, error) {
+func (r *DeviceRepository) FindByRoom(roomID string) ([]*deviceregistrydef.DeviceHeader, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -101,10 +101,10 @@ func (r *DeviceRepository) FindByRoom(roomID string) ([]*proto.DeviceHeader, err
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	var devices []*proto.DeviceHeader
+	var devices []*deviceregistrydef.DeviceHeader
 	for _, device := range r.devices {
-		if device.RoomID == roomID {
-			out := &proto.DeviceHeader{}
+		if device.RoomId == roomID {
+			out := &deviceregistrydef.DeviceHeader{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}
@@ -128,7 +128,7 @@ func (r *DeviceRepository) reload() error {
 	}
 
 	var cfg struct {
-		Devices []*proto.DeviceHeader `json:"devices"`
+		Devices []*deviceregistrydef.DeviceHeader `json:"devices"`
 	}
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return err

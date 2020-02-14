@@ -56,10 +56,15 @@ func (m *GetDeviceRequest) Validate() error {
 
 // GetDeviceResponse is defined in the .def file
 type GetDeviceResponse struct {
+	DeviceHeader *DeviceHeader `json:"device_header"`
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *GetDeviceResponse) Validate() error {
+	if err := m.DeviceHeader.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -76,28 +81,42 @@ func (m *ListDevicesRequest) Validate() error {
 
 // ListDevicesResponse is defined in the .def file
 type ListDevicesResponse struct {
+	DeviceHeaders []*DeviceHeader `json:"device_headers"`
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *ListDevicesResponse) Validate() error {
+	for _, r := range m.DeviceHeaders {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // GetRoomRequest is defined in the .def file
 type GetRoomRequest struct {
+	RoomId string `json:"room_id"`
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *GetRoomRequest) Validate() error {
+
 	return nil
 }
 
 // GetRoomResponse is defined in the .def file
 type GetRoomResponse struct {
+	Room *Room `json:"room"`
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *GetRoomResponse) Validate() error {
+	if err := m.Room.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -112,9 +131,16 @@ func (m *ListRoomsRequest) Validate() error {
 
 // ListRoomsResponse is defined in the .def file
 type ListRoomsResponse struct {
+	Rooms []*Room `json:"rooms"`
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *ListRoomsResponse) Validate() error {
+	for _, r := range m.Rooms {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

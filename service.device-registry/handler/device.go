@@ -1,15 +1,9 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/jakewright/home-automation/libraries/go/errors"
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 
-	proto "github.com/jakewright/home-automation/service.device-registry/proto"
-
-	"github.com/jakewright/home-automation/libraries/go/request"
-	"github.com/jakewright/home-automation/libraries/go/response"
-	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.device-registry/repository"
 )
 
@@ -19,92 +13,58 @@ type DeviceHandler struct {
 	RoomRepository   *repository.RoomRepository
 }
 
-type listRequest struct {
-	ControllerName string `json:"controller_name"`
-}
-
-type getDeviceRequest struct {
-	DeviceID string `json:"device_id"`
-}
-
 // HandleListDevices lists all devices known by the registry. Results can be filtered by controller name.
-func (h *DeviceHandler) HandleListDevices(w http.ResponseWriter, r *http.Request) {
-	body := listRequest{}
-	if err := request.Decode(r, &body); err != nil {
-		slog.Errorf("Failed to decode body: %v", err)
-		response.WriteJSON(w, err)
-		return
-	}
-
-	var devices []*proto.DeviceHeader
+func (h *DeviceHandler) HandleListDevices(req *deviceregistrydef.ListDevicesRequest) (*deviceregistrydef.ListDevicesResponse, error) {
+	var devices []*deviceregistrydef.DeviceHeader
 	var err error
-	if body.ControllerName != "" {
-		devices, err = h.DeviceRepository.FindByController(body.ControllerName)
+	if req.ControllerName != "" {
+		devices, err = h.DeviceRepository.FindByController(req.ControllerName)
 	} else {
 		devices, err = h.DeviceRepository.FindAll()
 	}
 	if err != nil {
-		slog.Errorf("Failed to read devices: %v", err)
-		response.WriteJSON(w, err)
-		return
+		return nil, errors.WithMessage(err, "failed to find devices")
 	}
 
 	// Decorate the devices with their rooms
 	for _, device := range devices {
-		room, err := h.RoomRepository.Find(device.RoomID)
+		room, err := h.RoomRepository.Find(device.RoomId)
 		if err != nil {
-			slog.Errorf("Failed to read rooms: %v", err)
-			response.WriteJSON(w, err)
-			return
+			return nil, errors.WithMessage(err, "failed to find room %q", device.RoomId)
 		}
 		if room == nil {
-			slog.Errorf("Failed to find room %q", device.RoomID)
-			response.WriteJSON(w, errors.InternalService("Failed to find room %q", device.RoomID))
-			return
+			return nil, errors.NotFound("room %q not found", device.RoomId)
 		}
+
 		device.Room = room
 	}
 
-	response.WriteJSON(w, devices)
+	return &deviceregistrydef.ListDevicesResponse{
+		DeviceHeaders: devices,
+	}, nil
 }
 
 // HandleGetDevice returns a specific device by ID
-func (h *DeviceHandler) HandleGetDevice(w http.ResponseWriter, r *http.Request) {
-	body := getDeviceRequest{}
-	if err := request.Decode(r, &body); err != nil {
-		slog.Errorf("Failed to decode body: %v", err)
-		response.WriteJSON(w, err)
-		return
-	}
-
-	device, err := h.DeviceRepository.Find(body.DeviceID)
+func (h *DeviceHandler) HandleGetDevice(req *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
+	device, err := h.DeviceRepository.Find(req.DeviceId)
 	if err != nil {
-		slog.Errorf("Failed to find device '%s': %v", body.DeviceID, err)
-		response.WriteJSON(w, err)
-		return
+		return nil, errors.WithMessage(err, "failed to find device %q", req.DeviceId)
 	}
-
 	if device == nil {
-		err := errors.NotFound("Device with ID '%s' not found", body.DeviceID)
-		response.WriteJSON(w, err)
-		return
+		return nil, errors.NotFound("device %q not found", req.DeviceId)
 	}
 
 	// Decorate device with room
-	room, err := h.RoomRepository.Find(device.RoomID)
+	room, err := h.RoomRepository.Find(device.RoomId)
 	if err != nil {
-		slog.Errorf("Failed to read rooms: %v", err)
-		response.WriteJSON(w, err)
-		return
+		return nil, errors.WithMessage(err, "failed to find room %q", device.RoomId)
 	}
-
 	if room == nil {
-		slog.Errorf("Failed to find room %q", device.RoomID)
-		response.WriteJSON(w, errors.InternalService("Failed to find room %q", device.RoomID))
-		return
+		return nil, errors.NotFound("room %q not found", device.RoomId)
 	}
-
 	device.Room = room
 
-	response.WriteJSON(w, device)
+	return &deviceregistrydef.GetDeviceResponse{
+		DeviceHeader: device,
+	}, nil
 }

@@ -48,7 +48,7 @@ message GetDeviceRequest {
 }
 
 message GetDeviceResponse {
-
+    DeviceHeader device_header
 }
 
 message ListDevicesRequest {
@@ -56,15 +56,15 @@ message ListDevicesRequest {
 }
 
 message ListDevicesResponse {
-
+    []DeviceHeader device_headers
 }
 
 message GetRoomRequest {
-
+    string room_id
 }
 
 message GetRoomResponse {
-
+    Room room
 }
 
 message ListRoomsRequest {
@@ -72,5 +72,5 @@ message ListRoomsRequest {
 }
 
 message ListRoomsResponse {
-
+    []Room rooms
 }

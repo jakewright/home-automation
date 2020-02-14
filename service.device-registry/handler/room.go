@@ -1,13 +1,9 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/jakewright/home-automation/libraries/go/errors"
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 
-	"github.com/jakewright/home-automation/libraries/go/request"
-	"github.com/jakewright/home-automation/libraries/go/response"
-	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.device-registry/repository"
 )
 
@@ -17,63 +13,44 @@ type RoomHandler struct {
 	RoomRepository   *repository.RoomRepository
 }
 
-type getRoomRequest struct {
-	RoomID string `json:"room_id"`
-}
-
 // HandleListRooms returns all rooms known by the registry
-func (h *RoomHandler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) HandleListRooms(_ *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
 	rooms, err := h.RoomRepository.FindAll()
 	if err != nil {
-		slog.Errorf("Failed to find rooms: %v", err)
-		response.WriteJSON(w, err)
-		return
+		return nil, errors.WithMessage(err, "failed to find rooms")
 	}
 
 	// Decorate the rooms with their devices
 	for _, room := range rooms {
-		devices, err := h.DeviceRepository.FindByRoom(room.ID)
+		devices, err := h.DeviceRepository.FindByRoom(room.Id)
 		if err != nil {
-			slog.Errorf("Failed to find devices for room '%s': %v", room.ID, err)
-			response.WriteJSON(w, err)
-			return
+			return nil, errors.WithMessage(err, "failed to find devices for message %q", room.Id)
 		}
 		room.Devices = devices
 	}
 
-	response.WriteJSON(w, rooms)
+	return &deviceregistrydef.ListRoomsResponse{
+		Rooms: rooms,
+	}, nil
 }
 
 // HandleGetRoom returns a specific room by ID, including its devices.
-func (h *RoomHandler) HandleGetRoom(w http.ResponseWriter, r *http.Request) {
-	body := getRoomRequest{}
-	if err := request.Decode(r, &body); err != nil {
-		slog.Errorf("Failed to decode body: %v", err)
-		response.WriteJSON(w, err)
-		return
-	}
-
-	room, err := h.RoomRepository.Find(body.RoomID)
+func (h *RoomHandler) HandleGetRoom(req *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
+	room, err := h.RoomRepository.Find(req.RoomId)
 	if err != nil {
-		slog.Errorf("Failed to find room '%s': %v", body.RoomID, err)
-		response.WriteJSON(w, err)
-		return
-	}
-
-	if room == nil {
-		err := errors.NotFound("Room with ID '%s' not found", body.RoomID)
-		response.WriteJSON(w, err)
-		return
+		return nil, errors.WithMessage(err, "failed to find room %q", req.RoomId)
+	} else if room == nil {
+		return nil, errors.NotFound("room %q not found", req.RoomId)
 	}
 
 	// Decorate the room with its devices
-	devices, err := h.DeviceRepository.FindByRoom(body.RoomID)
+	devices, err := h.DeviceRepository.FindByRoom(req.RoomId)
 	if err != nil {
-		slog.Errorf("Failed to find devices for room '%s': %v", body.RoomID, err)
-		response.WriteJSON(w, err)
-		return
+		return nil, errors.WithMessage(err, "failed to find devices for room %q", req.RoomId)
 	}
-
 	room.Devices = devices
-	response.WriteJSON(w, room)
+
+	return &deviceregistrydef.GetRoomResponse{
+		Room: room,
+	}, nil
 }
