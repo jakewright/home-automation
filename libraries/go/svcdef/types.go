@@ -2,6 +2,12 @@ package svcdef
 
 // File represents a .def file
 type File struct {
+	// Path is the path that was given to the Parse function.
+	// It'll be relative to the current working directory from
+	// where Parse() was called. This is true for imports as
+	// well.
+	Path string
+
 	// Imports is a map of alias to import
 	// e.g. in the statement import foo "../foo/foo.def",
 	// foo is the alias

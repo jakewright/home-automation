@@ -40,6 +40,8 @@ func Parse(filename string) (*File, error) {
 		f.Imports[alias].File = g
 	}
 
+	f.Path = filename
+
 	return f, nil
 }
 
