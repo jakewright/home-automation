@@ -33,10 +33,12 @@ func flattenMessages(messages []*Message, prefix string) (map[string]*Message, e
 		if _, ok := byQualifiedName[m.QualifiedName]; ok {
 			return nil, fmt.Errorf("duplicate message found: %s", m.QualifiedName)
 		}
-		byQualifiedName[prefix+"."+m.QualifiedName] = m
+
+		m.QualifiedName = prefix + "." + m.Name
+		byQualifiedName[m.QualifiedName] = m
 
 		// Recurse for nested messages
-		nested, err := flattenMessages(m.Nested, prefix)
+		nested, err := flattenMessages(m.Nested, m.QualifiedName)
 		if err != nil {
 			return nil, err
 		}
@@ -107,8 +109,8 @@ func qualifyType(typ, scope string, messagesByQualifiedName map[string]*Message)
 	// If this type has a scope, i.e. it is inside a message
 	if scope != "" {
 		// Look for a message in the scope
-		if _, ok := messagesByQualifiedName["."+scope+"."+typ]; ok {
-			return "." + scope + "." + typ, nil
+		if _, ok := messagesByQualifiedName[scope+"."+typ]; ok {
+			return scope + "." + typ, nil
 		}
 	}
 
@@ -117,6 +119,8 @@ func qualifyType(typ, scope string, messagesByQualifiedName map[string]*Message)
 		return "." + typ, nil
 	}
 
-	// This must be a simple type
-	return typ, nil
+	// This must be a simple type. Return the empty string
+	// because it doesn't make sense to have a qualified
+	// type for anything but messages.
+	return "", nil
 }

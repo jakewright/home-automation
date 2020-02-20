@@ -26,9 +26,24 @@ type File struct {
 	Options map[string]interface{}
 }
 
-// AddMessage adds a new message to the file
-func (f *File) AddMessage(msg *Message) {
+func (f *File) addImport(alias string, imp *Import) {
+	if f.Imports == nil {
+		f.Imports = map[string]*Import{}
+	}
+
+	f.Imports[alias] = imp
+}
+
+func (f *File) addMessage(msg *Message) {
 	f.Messages = append(f.Messages, msg)
+}
+
+func (f *File) addOption(key string, value interface{}) {
+	if f.Options == nil {
+		f.Options = map[string]interface{}{}
+	}
+
+	f.Options[key] = value
 }
 
 // Import represents an imported file
@@ -54,6 +69,14 @@ type Service struct {
 	Options map[string]interface{}
 }
 
+func (s *Service) addOption(key string, value interface{}) {
+	if s.Options == nil {
+		s.Options = map[string]interface{}{}
+	}
+
+	s.Options[key] = value
+}
+
 // RPC is a representation of an rpc definition
 type RPC struct {
 	// Name is the name given in the def file
@@ -67,6 +90,14 @@ type RPC struct {
 
 	// Options are arbitrary options defined within the RPC
 	Options map[string]interface{}
+}
+
+func (r *RPC) addOption(key string, value interface{}) {
+	if r.Options == nil {
+		r.Options = map[string]interface{}{}
+	}
+
+	r.Options[key] = value
 }
 
 // Message is a representation of a message definition
@@ -93,9 +124,20 @@ type Message struct {
 	Options map[string]interface{}
 }
 
-// AddMessage adds a new nested message
-func (m *Message) AddMessage(msg *Message) {
+func (m *Message) addField(f *Field) {
+	m.Fields = append(m.Fields, f)
+}
+
+func (m *Message) addMessage(msg *Message) {
 	m.Nested = append(m.Nested, msg)
+}
+
+func (m *Message) addOption(key string, value interface{}) {
+	if m.Options == nil {
+		m.Options = map[string]interface{}{}
+	}
+
+	m.Options[key] = value
 }
 
 // Field is a representation of a type-name pair
@@ -112,8 +154,11 @@ type Field struct {
 
 // Type is a representation of a type
 type Type struct {
-	// Name is the simple type name given in the def file
+	// Name is the simple name of the type
 	Name string
+
+	// Original is the original type string from the def file
+	Original string
 
 	// Qualified is the fully-qualified type name.
 	// It can be
@@ -127,6 +172,10 @@ type Type struct {
 	//       the generator should use the Map* fields to
 	//       understand how to interpret the type
 	Qualified string
+
+	// Message is the message that the type refers to.
+	// It is nil if it is a "simple", non-message type.
+	//Message *Message
 
 	// Repeated is set if [] appears before the type name
 	Repeated bool

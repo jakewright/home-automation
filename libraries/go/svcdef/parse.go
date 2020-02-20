@@ -1,52 +1,25 @@
 package svcdef
 
 import (
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"path"
 	"path/filepath"
 	"strconv"
 )
 
+// ErrCircularImport is returned if a circular import exists
+var ErrCircularImport = errors.New("circular import")
+
 // Parse returns a structured representation of the def
-// file at the given path. Imports are recursively parsed.
+// file at the given path.
 func Parse(filename string) (*File, error) {
-	// Read the file
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse the file
-	f, err := (&Parser{
-		lex: newLexer(b),
-	}).Parse()
-	if err != nil {
-		return nil, err
-	}
-
-	// For each import
-	for alias, imp := range f.Imports {
-		// Expect import paths to be relative to file we're parsing
-		p := filepath.Join(path.Dir(filename), imp.Path)
-
-		// Recursively parse the imported file
-		g, err := Parse(p)
-		if err != nil {
-			return nil, err
-		}
-
-		// Update the import with the parsed file
-		f.Imports[alias].File = g
-	}
-
-	f.Path = filename
-
-	return f, nil
+	return NewParser(&osFileReader{}).Parse(filename)
 }
 
 // Parser parses a def file
 type Parser struct {
+	fr  FileReader
 	lex *lexer
 	buf []token
 	l   token
@@ -54,8 +27,16 @@ type Parser struct {
 	err error
 }
 
-// Parse parses the tokens provided by the lexer
-func (p *Parser) Parse() (file *File, err error) {
+// NewParser returns a parser initialised with the FileReader
+func NewParser(fr FileReader) *Parser {
+	return &Parser{
+		fr: fr,
+	}
+}
+
+// Parse returns a structured representation of the def
+// file at the given path. Imports are recursively parsed.
+func (p *Parser) Parse(filename string) (file *File, err error) {
 	//defer func() {
 	//	if e := recover(); e != nil {
 	//		switch v := e.(type) {
@@ -67,15 +48,45 @@ func (p *Parser) Parse() (file *File, err error) {
 	//	}
 	//}()
 
+	// Read the file
+	if p.fr.SeenFile(filename) {
+		return nil, fmt.Errorf("%s: %w", filename, ErrCircularImport)
+	}
+	b, err := p.fr.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %v", filename, err)
+	}
+
+	// Initialise the lexer
+	p.lex = newLexer(b)
+
 	// Initialise the file
 	p.f = &File{
-		Imports: make(map[string]*Import),
-		Options: make(map[string]interface{}),
+		Path: filename,
 	}
 
 	// Parse tokens until there are none left
 	for state := parse; state != nil; {
 		state = state(p)
+	}
+
+	// For each import
+	for alias, imp := range p.f.Imports {
+		// Expect import paths to be relative to file we're parsing
+		importedFilename := filepath.Join(path.Dir(filename), imp.Path)
+
+		// Recursively parse the imported file
+		g, err := NewParser(p.fr).Parse(importedFilename)
+		if err != nil {
+			if errors.Is(err, ErrCircularImport) {
+				return nil, fmt.Errorf("%s -> %w", filename, err)
+			}
+
+			return nil, err
+		}
+
+		// Update the import with the parsed file
+		p.f.Imports[alias].File = g
 	}
 
 	// Now that we've parsed all of the tokens
@@ -87,15 +98,17 @@ func (p *Parser) Parse() (file *File, err error) {
 		p.error("failed to get messages by qualified name: %v", err)
 	}
 
-	for _, r := range p.f.Service.RPCs {
-		r.InputType.Qualified, err = qualifyType(r.InputType.Name, "", byQualifiedName)
-		if err != nil {
-			p.error("failed to qualify %s input type %s: %v", r.Name, r.InputType.Name, err)
-		}
+	if p.f.Service != nil {
+		for _, r := range p.f.Service.RPCs {
+			r.InputType.Qualified, err = qualifyType(r.InputType.Name, "", byQualifiedName)
+			if err != nil {
+				p.error("failed to qualify %s input type %s: %v", r.Name, r.InputType.Name, err)
+			}
 
-		r.OutputType.Qualified, err = qualifyType(r.OutputType.Name, "", byQualifiedName)
-		if err != nil {
-			p.error("failed to qualify %s output type %s: %v", r.Name, r.OutputType.Name, err)
+			r.OutputType.Qualified, err = qualifyType(r.OutputType.Name, "", byQualifiedName)
+			if err != nil {
+				p.error("failed to qualify %s output type %s: %v", r.Name, r.OutputType.Name, err)
+			}
 		}
 	}
 
@@ -213,10 +226,10 @@ func parse(p *Parser) parseFn {
 		case tokService:
 			return parseService
 		case tokMessage:
-			p.f.AddMessage(parseMessage(p, nil))
+			p.f.addMessage(parseMessage(p, nil))
 		case tokIdentifier:
-			id, val := parseOption(p)
-			p.f.Options[id] = val
+			key, val := parseOption(p)
+			p.f.addOption(key, val)
 		case tokComment:
 			p.expect(tokComment) // comments are ignored
 		case tokEOF:
@@ -237,10 +250,10 @@ func parseImport(p *Parser) parseFn {
 	if err != nil {
 		p.error("failed to unquote import path: %v", err)
 	}
-	p.f.Imports[ts[1].val] = &Import{
+	p.f.addImport(ts[1].val, &Import{
 		Alias: ts[1].val,
 		Path:  pth,
-	}
+	})
 	return parse
 }
 
@@ -255,8 +268,7 @@ func parseService(p *Parser) parseFn {
 	}
 
 	p.f.Service = &Service{
-		Name:    p.expect(tokIdentifier).val,
-		Options: make(map[string]interface{}),
+		Name: p.expect(tokIdentifier).val,
 	}
 
 	p.expect(tokOpenBrace)
@@ -272,8 +284,8 @@ func parseInsideService(p *Parser) parseFn {
 	for {
 		switch t := p.peekn(1); t[0].typ {
 		case tokIdentifier:
-			id, val := parseOption(p)
-			p.f.Service.Options[id] = val
+			key, val := parseOption(p)
+			p.f.Service.addOption(key, val)
 		case tokRPC:
 			return parseRPC
 		case tokCloseBrace: // end of the service definition
@@ -299,28 +311,29 @@ func parseInsideService(p *Parser) parseFn {
 func parseRPC(p *Parser) parseFn {
 	ts := p.expectn(tokRPC, tokIdentifier, tokOpenParen, tokIdentifier, tokCloseParen, tokIdentifier, tokOpenBrace)
 
-	inType := "." + ts[3].val
-	outType := "." + ts[5].val
+	inType := ts[3].val
+	outType := ts[5].val
 
 	rpc := &RPC{
 		Name: ts[1].val,
 		InputType: &Type{ // RPC types cannot be optional, repeated or map types
-			Name: inType,
+			Name:     inType,
+			Original: inType,
 		},
 		OutputType: &Type{ // RPC types cannot be optional, repeated or map types
-			Name: outType,
+			Name:     outType,
+			Original: outType,
 		},
 		// We can't fill in the fully-qualified type names yet
 		// because we probably haven't parsed all of the messages
-		Options: make(map[string]interface{}),
 	}
 
 Loop:
 	for {
 		switch t := p.peekn(1); t[0].typ {
 		case tokIdentifier:
-			id, val := parseOption(p)
-			rpc.Options[id] = val
+			key, val := parseOption(p)
+			rpc.addOption(key, val)
 		case tokCloseBrace:
 			p.nextNonSpace()
 			break Loop
@@ -365,7 +378,6 @@ func parseMessage(p *Parser, parent *Message) *Message {
 	message := &Message{
 		Name:          ts[1].val,
 		QualifiedName: qualifiedMessageName,
-		Options:       make(map[string]interface{}),
 	}
 
 Loop:
@@ -379,14 +391,14 @@ Loop:
 		// If this is an option
 		ps := p.peekn(2)
 		if ps[0].typ == tokIdentifier && ps[1].typ == tokAssign {
-			id, val := parseOption(p)
-			message.Options[id] = val
+			key, val := parseOption(p)
+			message.addOption(key, val)
 			continue
 		}
 
 		// If this is a nested message declaration
 		if p.peek().typ == tokMessage {
-			message.AddMessage(parseMessage(p, message))
+			message.addMessage(parseMessage(p, message))
 			continue
 		}
 
@@ -397,6 +409,9 @@ Loop:
 		var opts map[string]interface{}
 		if p.peek().typ == tokOpenParen {
 			opts = parseFieldOptions(p)
+			if len(opts) == 0 {
+				opts = nil // This makes tests cleaner
+			}
 		}
 
 		if p.peek().typ == tokComment {
@@ -416,10 +431,13 @@ Loop:
 func parseType(p *Parser) *Type {
 	t := p.expectOneOf(tokAsterisk, tokOpenBracket, tokIdentifier)
 
+	var original string
+
 	// If this is an optional field *
 	optional := false
 	if t.typ == tokAsterisk {
 		optional = true
+		original += "*"
 		t = p.expectOneOf(tokOpenBracket, tokIdentifier)
 	}
 
@@ -428,9 +446,11 @@ func parseType(p *Parser) *Type {
 	if t.typ == tokOpenBracket {
 		repeated = true
 		p.expect(tokCloseBracket) // ]
+		original += "[]"
 		t = p.expectOneOf(tokIdentifier)
 	}
 
+	original += t.val
 	name := t.val
 
 	// If this is a map type
@@ -443,11 +463,13 @@ func parseType(p *Parser) *Type {
 		p.expect(tokCloseBracket)
 		val = parseType(p)
 
-		name = fmt.Sprintf("map[%s]%s", key.Name, val.Name)
+		name = "map"
+		original = fmt.Sprintf("%s[%s]%s", original, key.Original, val.Original)
 	}
 
 	return &Type{
-		Name: name,
+		Name:     name,
+		Original: original,
 		// We can't fill in the qualified type yet because
 		// we probably haven't parsed all of the messages yet
 		Repeated: repeated,
