@@ -3,7 +3,7 @@
 package handler
 
 import (
-	http "net/http"
+	"net/http"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
@@ -30,7 +30,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 	rr.Router.Handle("GET", "/device", func(w http.ResponseWriter, r *http.Request) {
 		if rr.GetDevice == nil {
-			slog.Panicf("No handler exists for GET service.device-registry/device")
+			slog.Panicf("No handler exists for GET /device")
 		}
 
 		body := &def.GetDeviceRequest{}
@@ -61,7 +61,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 	rr.Router.Handle("GET", "/devices", func(w http.ResponseWriter, r *http.Request) {
 		if rr.ListDevices == nil {
-			slog.Panicf("No handler exists for GET service.device-registry/devices")
+			slog.Panicf("No handler exists for GET /devices")
 		}
 
 		body := &def.ListDevicesRequest{}
@@ -92,7 +92,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 	rr.Router.Handle("GET", "/room", func(w http.ResponseWriter, r *http.Request) {
 		if rr.GetRoom == nil {
-			slog.Panicf("No handler exists for GET service.device-registry/room")
+			slog.Panicf("No handler exists for GET /room")
 		}
 
 		body := &def.GetRoomRequest{}
@@ -123,7 +123,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 	rr.Router.Handle("GET", "/rooms", func(w http.ResponseWriter, r *http.Request) {
 		if rr.ListRooms == nil {
-			slog.Panicf("No handler exists for GET service.device-registry/rooms")
+			slog.Panicf("No handler exists for GET /rooms")
 		}
 
 		body := &def.ListRoomsRequest{}

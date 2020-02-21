@@ -18,7 +18,7 @@ func HandleListScenes(req *scenedef.ListScenesRequest) (*scenedef.ListScenesResp
 		return nil, err
 	}
 
-	protos := make([]scenedef.Scene, len(scenes))
+	protos := make([]*scenedef.Scene, len(scenes))
 	for i, s := range scenes {
 		protos[i] = s.ToProto()
 	}

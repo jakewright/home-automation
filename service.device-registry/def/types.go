@@ -14,16 +14,6 @@ type DeviceHeader struct {
 	ControllerName string                 `json:"controller_name"`
 }
 
-// Validate returns an error if any of the fields have bad values
-func (m *DeviceHeader) Validate() error {
-
-	if err := m.Room.Validate(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Room is defined in the .def file
 type Room struct {
 	Id      string          `json:"id"`
@@ -31,9 +21,56 @@ type Room struct {
 	Devices []*DeviceHeader `json:"devices"`
 }
 
+// GetDeviceRequest is defined in the .def file
+type GetDeviceRequest struct {
+	DeviceId string `json:"device_id"`
+}
+
+// GetDeviceResponse is defined in the .def file
+type GetDeviceResponse struct {
+	DeviceHeader *DeviceHeader `json:"device_header"`
+}
+
+// ListDevicesRequest is defined in the .def file
+type ListDevicesRequest struct {
+	ControllerName string `json:"controller_name"`
+}
+
+// ListDevicesResponse is defined in the .def file
+type ListDevicesResponse struct {
+	DeviceHeaders []*DeviceHeader `json:"device_headers"`
+}
+
+// GetRoomRequest is defined in the .def file
+type GetRoomRequest struct {
+	RoomId string `json:"room_id"`
+}
+
+// GetRoomResponse is defined in the .def file
+type GetRoomResponse struct {
+	Room *Room `json:"room"`
+}
+
+// ListRoomsRequest is defined in the .def file
+type ListRoomsRequest struct {
+}
+
+// ListRoomsResponse is defined in the .def file
+type ListRoomsResponse struct {
+	Rooms []*Room `json:"rooms"`
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *DeviceHeader) Validate() error {
+	if err := m.Room.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *Room) Validate() error {
-
 	for _, r := range m.Devices {
 		if err := r.Validate(); err != nil {
 			return err
@@ -43,20 +80,9 @@ func (m *Room) Validate() error {
 	return nil
 }
 
-// GetDeviceRequest is defined in the .def file
-type GetDeviceRequest struct {
-	DeviceId string `json:"device_id"`
-}
-
 // Validate returns an error if any of the fields have bad values
 func (m *GetDeviceRequest) Validate() error {
-
 	return nil
-}
-
-// GetDeviceResponse is defined in the .def file
-type GetDeviceResponse struct {
-	DeviceHeader *DeviceHeader `json:"device_header"`
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -68,20 +94,9 @@ func (m *GetDeviceResponse) Validate() error {
 	return nil
 }
 
-// ListDevicesRequest is defined in the .def file
-type ListDevicesRequest struct {
-	ControllerName string `json:"controller_name"`
-}
-
 // Validate returns an error if any of the fields have bad values
 func (m *ListDevicesRequest) Validate() error {
-
 	return nil
-}
-
-// ListDevicesResponse is defined in the .def file
-type ListDevicesResponse struct {
-	DeviceHeaders []*DeviceHeader `json:"device_headers"`
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -95,20 +110,9 @@ func (m *ListDevicesResponse) Validate() error {
 	return nil
 }
 
-// GetRoomRequest is defined in the .def file
-type GetRoomRequest struct {
-	RoomId string `json:"room_id"`
-}
-
 // Validate returns an error if any of the fields have bad values
 func (m *GetRoomRequest) Validate() error {
-
 	return nil
-}
-
-// GetRoomResponse is defined in the .def file
-type GetRoomResponse struct {
-	Room *Room `json:"room"`
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -120,18 +124,9 @@ func (m *GetRoomResponse) Validate() error {
 	return nil
 }
 
-// ListRoomsRequest is defined in the .def file
-type ListRoomsRequest struct {
-}
-
 // Validate returns an error if any of the fields have bad values
 func (m *ListRoomsRequest) Validate() error {
 	return nil
-}
-
-// ListRoomsResponse is defined in the .def file
-type ListRoomsResponse struct {
-	Rooms []*Room `json:"rooms"`
 }
 
 // Validate returns an error if any of the fields have bad values

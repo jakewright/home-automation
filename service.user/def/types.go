@@ -14,26 +14,33 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// Validate returns an error if any of the fields have bad values
-func (m *User) Validate() error {
-
-	return nil
-}
-
 // GetUserRequest is defined in the .def file
 type GetUserRequest struct {
 	UserId uint32 `json:"user_id"`
 }
 
-// Validate returns an error if any of the fields have bad values
-func (m *GetUserRequest) Validate() error {
+// GetUserResponse is defined in the .def file
+type GetUserResponse struct {
+	User *User `json:"user"`
+}
 
+// ListUsersRequest is defined in the .def file
+type ListUsersRequest struct {
+}
+
+// ListUsersResponse is defined in the .def file
+type ListUsersResponse struct {
+	Users []*User `json:"users"`
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *User) Validate() error {
 	return nil
 }
 
-// GetUserResponse is defined in the .def file
-type GetUserResponse struct {
-	User User `json:"user"`
+// Validate returns an error if any of the fields have bad values
+func (m *GetUserRequest) Validate() error {
+	return nil
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -45,18 +52,9 @@ func (m *GetUserResponse) Validate() error {
 	return nil
 }
 
-// ListUsersRequest is defined in the .def file
-type ListUsersRequest struct {
-}
-
 // Validate returns an error if any of the fields have bad values
 func (m *ListUsersRequest) Validate() error {
 	return nil
-}
-
-// ListUsersResponse is defined in the .def file
-type ListUsersResponse struct {
-	Users []User `json:"users"`
 }
 
 // Validate returns an error if any of the fields have bad values

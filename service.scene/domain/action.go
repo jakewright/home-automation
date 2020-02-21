@@ -169,8 +169,8 @@ func marshalPropertyValue(t, v string) (interface{}, error) {
 }
 
 // ToProto marshals to the proto type
-func (a *Action) ToProto() scenedef.Action {
-	return scenedef.Action{
+func (a *Action) ToProto() *scenedef.Action {
+	return &scenedef.Action{
 		Stage:          int32(a.Stage),
 		Sequence:       int32(a.Sequence),
 		Func:           a.Func,

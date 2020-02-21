@@ -3,7 +3,7 @@
 package handler
 
 import (
-	http "net/http"
+	"net/http"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
@@ -28,7 +28,7 @@ func NewRouter() *UserRouter {
 
 	rr.Router.Handle("GET", "/user", func(w http.ResponseWriter, r *http.Request) {
 		if rr.GetUser == nil {
-			slog.Panicf("No handler exists for GET service.user/user")
+			slog.Panicf("No handler exists for GET /user")
 		}
 
 		body := &def.GetUserRequest{}
@@ -59,7 +59,7 @@ func NewRouter() *UserRouter {
 
 	rr.Router.Handle("GET", "/users", func(w http.ResponseWriter, r *http.Request) {
 		if rr.ListUsers == nil {
-			slog.Panicf("No handler exists for GET service.user/users")
+			slog.Panicf("No handler exists for GET /users")
 		}
 
 		body := &def.ListUsersRequest{}

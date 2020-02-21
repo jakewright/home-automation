@@ -17,13 +17,13 @@ type Scene struct {
 }
 
 // ToProto marshals to the proto type
-func (s *Scene) ToProto() scenedef.Scene {
-	actions := make([]scenedef.Action, len(s.Actions))
+func (s *Scene) ToProto() *scenedef.Scene {
+	actions := make([]*scenedef.Action, len(s.Actions))
 	for i, a := range s.Actions {
 		actions[i] = a.ToProto()
 	}
 
-	return scenedef.Scene{
+	return &scenedef.Scene{
 		Id:        s.ID,
 		Name:      s.Name,
 		OwnerId:   s.OwnerID,

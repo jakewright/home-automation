@@ -3,7 +3,7 @@
 package handler
 
 import (
-	http "net/http"
+	"net/http"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
@@ -31,7 +31,7 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("POST", "/scenes", func(w http.ResponseWriter, r *http.Request) {
 		if rr.CreateScene == nil {
-			slog.Panicf("No handler exists for POST service.scene/scenes")
+			slog.Panicf("No handler exists for POST /scenes")
 		}
 
 		body := &def.CreateSceneRequest{}
@@ -62,7 +62,7 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("GET", "/scene", func(w http.ResponseWriter, r *http.Request) {
 		if rr.ReadScene == nil {
-			slog.Panicf("No handler exists for GET service.scene/scene")
+			slog.Panicf("No handler exists for GET /scene")
 		}
 
 		body := &def.ReadSceneRequest{}
@@ -93,7 +93,7 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("GET", "/scenes", func(w http.ResponseWriter, r *http.Request) {
 		if rr.ListScenes == nil {
-			slog.Panicf("No handler exists for GET service.scene/scenes")
+			slog.Panicf("No handler exists for GET /scenes")
 		}
 
 		body := &def.ListScenesRequest{}
@@ -124,7 +124,7 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("DELETE", "/scene", func(w http.ResponseWriter, r *http.Request) {
 		if rr.DeleteScene == nil {
-			slog.Panicf("No handler exists for DELETE service.scene/scene")
+			slog.Panicf("No handler exists for DELETE /scene")
 		}
 
 		body := &def.DeleteSceneRequest{}
@@ -155,7 +155,7 @@ func NewRouter() *SceneRouter {
 
 	rr.Router.Handle("POST", "/scene/set", func(w http.ResponseWriter, r *http.Request) {
 		if rr.SetScene == nil {
-			slog.Panicf("No handler exists for POST service.scene/scene/set")
+			slog.Panicf("No handler exists for POST /scene/set")
 		}
 
 		body := &def.SetSceneRequest{}
