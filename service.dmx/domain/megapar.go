@@ -23,7 +23,7 @@ type MegaParProfile struct {
 
 // ID returns the device ID
 func (f *MegaParProfile) ID() string {
-	return f.DeviceHeader.ID
+	return f.DeviceHeader.Id
 }
 
 // Offset returns the fixture's offset into the channel space

@@ -2,7 +2,7 @@ package domain
 
 import (
 	"github.com/jakewright/home-automation/libraries/go/errors"
-	deviceregistryproto "github.com/jakewright/home-automation/service.device-registry/proto"
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
 // Fixture is an addressable device
@@ -15,7 +15,7 @@ type Fixture interface {
 
 // DeviceHeader is a wrapper that adds typed Attributes
 type DeviceHeader struct {
-	*deviceregistryproto.DeviceHeader
+	*deviceregistrydef.DeviceHeader
 	Attributes Attributes `json:"attributes"`
 }
 
@@ -31,5 +31,5 @@ func NewFixtureFromDeviceHeader(h *DeviceHeader) (Fixture, error) {
 	case "mega_par_profile":
 		return &MegaParProfile{DeviceHeader: h}, nil
 	}
-	return nil, errors.InternalService("Device %s has invalid fixture type '%s'", h.ID, h.Attributes.FixtureType)
+	return nil, errors.InternalService("Device %s has invalid fixture type '%s'", h.Id, h.Attributes.FixtureType)
 }
