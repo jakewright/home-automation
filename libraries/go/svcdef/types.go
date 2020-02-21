@@ -1,5 +1,7 @@
 package svcdef
 
+import "strings"
+
 // File represents a .def file
 type File struct {
 	// Path is the path that was given to the Parse function.
@@ -20,6 +22,10 @@ type File struct {
 
 	// Messages are all of the message types defined in the file
 	Messages []*Message
+
+	// FlatMessages contains all of the messages, including
+	// nested and imported.
+	FlatMessages []*Message
 
 	// Options are arbitrary options defined
 	// at the top level in the def file
@@ -106,11 +112,12 @@ type Message struct {
 	Name string
 
 	// QualifiedName is the fully-qualified name.
-	// For a message defined at the top-level, this
-	// will be the same as Name, e.g. "Bar". For
-	// a nested message, it will be prefixed with
-	// the parent's qualified name. E.g. "Foo.Bar".
-	// Note that it does not have a leading dot.
+	// For a message defined in the main def file,
+	// it will be the name prefixed with a dot, e.g.
+	// ".Bar". For a nested message, it will also
+	// include the parent's lineage, e.g. ".Foo.Bar".
+	// For an imported message, it will be prefixed
+	// with the import alias, e.g. "Foo.Bar".
 	QualifiedName string
 
 	// Fields are the type-name pairs defined in the message
@@ -138,6 +145,14 @@ func (m *Message) addOption(key string, value interface{}) {
 	}
 
 	m.Options[key] = value
+}
+
+// Lineage returns the file alias and a slice of name parts.
+// If the message was defined in the main def file, the first
+// return value will be the empty string.
+func (m *Message) Lineage() (string, []string) {
+	parts := strings.Split(m.QualifiedName, ".")
+	return parts[0], parts[1:]
 }
 
 // Field is a representation of a type-name pair

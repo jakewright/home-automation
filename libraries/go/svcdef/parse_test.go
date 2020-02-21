@@ -53,6 +53,26 @@ message GetFooResponse {
 	f, err := NewParser(fr).Parse("test.def")
 	assert.NilError(t, err)
 
+	messages := []*Message{
+		{
+			Name:          "GetFooRequest",
+			QualifiedName: ".GetFooRequest",
+		},
+		{
+			Name:          "GetFooResponse",
+			QualifiedName: ".GetFooResponse",
+			Fields: []*Field{
+				{
+					Name: "bar",
+					Type: &Type{
+						Name:     "string",
+						Original: "string",
+					},
+				},
+			},
+		},
+	}
+
 	expected := &File{
 		Path: "test.def",
 		Service: &Service{
@@ -80,25 +100,8 @@ message GetFooResponse {
 				"path": "service.test",
 			},
 		},
-		Messages: []*Message{
-			{
-				Name:          "GetFooRequest",
-				QualifiedName: ".GetFooRequest",
-			},
-			{
-				Name:          "GetFooResponse",
-				QualifiedName: ".GetFooResponse",
-				Fields: []*Field{
-					{
-						Name: "bar",
-						Type: &Type{
-							Name:     "string",
-							Original: "string",
-						},
-					},
-				},
-			},
-		},
+		Messages:     messages,
+		FlatMessages: messages,
 		Options: map[string]interface{}{
 			"foo": "bar",
 		},
@@ -124,30 +127,31 @@ func TestParser_Parse_nestedMessage(t *testing.T) {
 	actual, err := NewParser(fr).Parse("test.def")
 	assert.NilError(t, err)
 
-	expected := &File{
-		Path: "test.def",
-		Messages: []*Message{
+	bar := &Message{
+		Name:          "Bar",
+		QualifiedName: ".Foo.Bar",
+	}
+
+	foo := &Message{
+		Name:          "Foo",
+		QualifiedName: ".Foo",
+		Fields: []*Field{
 			{
-				Name:          "Foo",
-				QualifiedName: ".Foo",
-				Fields: []*Field{
-					{
-						Name: "bar",
-						Type: &Type{
-							Name:      "Bar",
-							Original:  "Bar",
-							Qualified: ".Foo.Bar",
-						},
-					},
-				},
-				Nested: []*Message{
-					{
-						Name:          "Bar",
-						QualifiedName: ".Foo.Bar",
-					},
+				Name: "bar",
+				Type: &Type{
+					Name:      "Bar",
+					Original:  "Bar",
+					Qualified: ".Foo.Bar",
 				},
 			},
 		},
+		Nested: []*Message{bar},
+	}
+
+	expected := &File{
+		Path:         "test.def",
+		Messages:     []*Message{foo},
+		FlatMessages: []*Message{foo, bar},
 	}
 
 	assert.DeepEqual(t, expected, actual)
@@ -167,31 +171,34 @@ func TestParser_Parse_fieldOptions(t *testing.T) {
 	actual, err := NewParser(fr).Parse("test.def")
 	assert.NilError(t, err)
 
-	expected := &File{
-		Path: "test.def",
-		Messages: []*Message{
-			{
-				Name:          "Foo",
-				QualifiedName: ".Foo",
-				Fields: []*Field{
-					{
-						Name: "bar",
-						Type: &Type{
-							Name:     "string",
-							Original: "*[]string",
-							Repeated: true,
-							Optional: true,
-						},
-						Options: map[string]interface{}{
-							"required": true,
-							"foo":      "bar",
-							"bat":      int64(5),
-							"baz":      false,
-						},
+	messages := []*Message{
+		{
+			Name:          "Foo",
+			QualifiedName: ".Foo",
+			Fields: []*Field{
+				{
+					Name: "bar",
+					Type: &Type{
+						Name:     "string",
+						Original: "*[]string",
+						Repeated: true,
+						Optional: true,
+					},
+					Options: map[string]interface{}{
+						"required": true,
+						"foo":      "bar",
+						"bat":      int64(5),
+						"baz":      false,
 					},
 				},
 			},
 		},
+	}
+
+	expected := &File{
+		Path:         "test.def",
+		Messages:     messages,
+		FlatMessages: messages,
 	}
 
 	assert.DeepEqual(t, expected, actual)
@@ -220,72 +227,74 @@ message Baz {
 	actual, err := NewParser(fr).Parse("test.def")
 	assert.NilError(t, err)
 
-	expected := &File{
-		Path: "test.def",
-		Messages: []*Message{
+	bar := &Message{
+		Name:          "Bar",
+		QualifiedName: ".Foo.Bar",
+	}
+
+	foo := &Message{
+		Name:          "Foo",
+		QualifiedName: ".Foo",
+		Fields: []*Field{
 			{
-				Name:          "Foo",
-				QualifiedName: ".Foo",
-				Fields: []*Field{
-					{
-						Name: "foo",
-						Type: &Type{
-							Name:     "map",
-							Original: "map[Baz]string",
-							Map:      true,
-							MapKey: &Type{
-								Name:      "Baz",
-								Original:  "Baz",
-								Qualified: ".Baz",
-							},
-							MapValue: &Type{
-								Name:     "string",
-								Original: "string",
-							},
-						},
+				Name: "foo",
+				Type: &Type{
+					Name:     "map",
+					Original: "map[Baz]string",
+					Map:      true,
+					MapKey: &Type{
+						Name:      "Baz",
+						Original:  "Baz",
+						Qualified: ".Baz",
 					},
-					{
-						Name: "bar",
-						Type: &Type{
-							Name:     "map",
-							Original: "*[]map[map[string]int][]Bar",
-							Map:      true,
-							MapKey: &Type{
-								Name:     "map",
-								Original: "map[string]int",
-								Map:      true,
-								MapKey: &Type{
-									Name:     "string",
-									Original: "string",
-								},
-								MapValue: &Type{
-									Name:     "int",
-									Original: "int",
-								},
-							},
-							MapValue: &Type{
-								Name:      "Bar",
-								Original:  "[]Bar",
-								Qualified: ".Foo.Bar",
-								Repeated:  true,
-							},
-							Repeated: true,
-							Optional: true,
-						},
-					},
-				},
-				Nested: []*Message{
-					{
-						Name:          "Bar",
-						QualifiedName: ".Foo.Bar",
+					MapValue: &Type{
+						Name:     "string",
+						Original: "string",
 					},
 				},
 			},
 			{
-				Name:          "Baz",
-				QualifiedName: ".Baz",
+				Name: "bar",
+				Type: &Type{
+					Name:     "map",
+					Original: "*[]map[map[string]int][]Bar",
+					Map:      true,
+					MapKey: &Type{
+						Name:     "map",
+						Original: "map[string]int",
+						Map:      true,
+						MapKey: &Type{
+							Name:     "string",
+							Original: "string",
+						},
+						MapValue: &Type{
+							Name:     "int",
+							Original: "int",
+						},
+					},
+					MapValue: &Type{
+						Name:      "Bar",
+						Original:  "[]Bar",
+						Qualified: ".Foo.Bar",
+						Repeated:  true,
+					},
+					Repeated: true,
+					Optional: true,
+				},
 			},
 		},
+		Nested: []*Message{bar},
+	}
+
+	baz := &Message{
+		Name:          "Baz",
+		QualifiedName: ".Baz",
+	}
+
+	expected := &File{
+		Path:         "test.def",
+		Messages:     []*Message{foo, baz},
+		FlatMessages: []*Message{foo, bar, baz},
 	}
 
 	assert.DeepEqual(t, expected, actual)
@@ -321,16 +330,31 @@ message Bar {
 	f, err := NewParser(fr).Parse("service.foo/foo.def")
 	assert.NilError(t, err)
 
+	foo := &Message{Name: "Foo", QualifiedName: "bar.Foo"}
+	bar := &Message{Name: "Bar", QualifiedName: "bar.Bar"}
+	msg := &Message{
+		Name:          "Msg",
+		QualifiedName: ".Msg",
+		Fields: []*Field{
+			{
+				Name: "foo",
+				Type: &Type{Name: "bar.Foo", Original: "bar.Foo", Qualified: "bar.Foo"},
+			},
+			{
+				Name: "bar",
+				Type: &Type{Name: "bar.Bar", Original: "bar.Bar", Qualified: "bar.Bar"},
+			},
+		},
+	}
+
 	expected := &File{
 		Path: "service.foo/foo.def",
 		Imports: map[string]*Import{
 			"bar": {
 				File: &File{
-					Path: "service.bar/bar.def",
-					Messages: []*Message{
-						{Name: "Foo", QualifiedName: "bar.Foo"},
-						{Name: "Bar", QualifiedName: "bar.Bar"},
-					},
+					Path:         "service.bar/bar.def",
+					Messages:     []*Message{foo, bar},
+					FlatMessages: []*Message{foo, bar},
 				},
 				Alias: "bar",
 				Path:  "../service.bar/bar.def",
@@ -346,22 +370,8 @@ message Bar {
 				},
 			},
 		},
-		Messages: []*Message{
-			{
-				Name:          "Msg",
-				QualifiedName: ".Msg",
-				Fields: []*Field{
-					{
-						Name: "foo",
-						Type: &Type{Name: "bar.Foo", Original: "bar.Foo", Qualified: "bar.Foo"},
-					},
-					{
-						Name: "bar",
-						Type: &Type{Name: "bar.Bar", Original: "bar.Bar", Qualified: "bar.Bar"},
-					},
-				},
-			},
-		},
+		Messages:     []*Message{msg},
+		FlatMessages: []*Message{msg, foo, bar},
 	}
 
 	assert.DeepEqual(t, expected, f)

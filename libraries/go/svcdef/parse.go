@@ -93,10 +93,11 @@ func (p *Parser) Parse(filename string) (file *File, err error) {
 	// from the lexer, we can do a second pass
 	// and generate fully-qualified type names.
 
-	byQualifiedName, err := messagesByQualifiedName(p.f, "")
+	byQualifiedName, byQualifiedSlice, err := messagesByQualifiedName(p.f, "")
 	if err != nil {
 		p.error("failed to get messages by qualified name: %v", err)
 	}
+	p.f.FlatMessages = byQualifiedSlice
 
 	if p.f.Service != nil {
 		for _, r := range p.f.Service.RPCs {

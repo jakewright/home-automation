@@ -5,51 +5,59 @@ import (
 	"strings"
 )
 
-func messagesByQualifiedName(file *File, prefix string) (map[string]*Message, error) {
-	byQualifiedName, err := flattenMessages(file.Messages, prefix)
+func messagesByQualifiedName(file *File, prefix string) (map[string]*Message, []*Message, error) {
+	byQualifiedMap, byQualifiedSlice, err := flattenMessages(file.Messages, prefix)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	for alias, i := range file.Imports {
-		imported, err := messagesByQualifiedName(i.File, alias)
+		importedMap, importedSlice, err := messagesByQualifiedName(i.File, alias)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
-		if err := mergeMaps(byQualifiedName, imported); err != nil {
-			return nil, err
+		if err := mergeMaps(byQualifiedMap, importedMap); err != nil {
+			return nil, nil, err
 		}
+
+		byQualifiedSlice = append(byQualifiedSlice, importedSlice...)
 	}
 
-	return byQualifiedName, nil
+	return byQualifiedMap, byQualifiedSlice, nil
 }
 
 // flattenMessages returns a map of all fully-qualified
 // message names to messages including nested messages
-func flattenMessages(messages []*Message, prefix string) (map[string]*Message, error) {
-	byQualifiedName := make(map[string]*Message)
+func flattenMessages(messages []*Message, prefix string) (map[string]*Message, []*Message, error) {
+	byQualifiedMap := make(map[string]*Message)
+	var byQualifiedSlice []*Message
+
 	for _, m := range messages {
-		if _, ok := byQualifiedName[m.QualifiedName]; ok {
-			return nil, fmt.Errorf("duplicate message found: %s", m.QualifiedName)
+		if _, ok := byQualifiedMap[m.QualifiedName]; ok {
+			return nil, nil, fmt.Errorf("duplicate message found: %s", m.QualifiedName)
 		}
 
 		m.QualifiedName = prefix + "." + m.Name
-		byQualifiedName[m.QualifiedName] = m
+		byQualifiedMap[m.QualifiedName] = m
+		byQualifiedSlice = append(byQualifiedSlice, m)
 
 		// Recurse for nested messages
-		nested, err := flattenMessages(m.Nested, m.QualifiedName)
+		nestedMap, nestedSlice, err := flattenMessages(m.Nested, m.QualifiedName)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		// Merge the maps
-		if err := mergeMaps(byQualifiedName, nested); err != nil {
-			return nil, err
+		if err := mergeMaps(byQualifiedMap, nestedMap); err != nil {
+			return nil, nil, err
 		}
+
+		// Merge the slices
+		byQualifiedSlice = append(byQualifiedSlice, nestedSlice...)
 	}
 
-	return byQualifiedName, nil
+	return byQualifiedMap, byQualifiedSlice, nil
 }
 
 func mergeMaps(m, n map[string]*Message) error {
