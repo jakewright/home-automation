@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package routerproto;
-option go_package = "github.com/jakewright/home-automation/libraries/go/router/proto;routerproto";
-
-message PingResponse {
-    string ping = 1;
-}

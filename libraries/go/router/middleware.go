@@ -6,7 +6,6 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/response"
-	routerproto "github.com/jakewright/home-automation/libraries/go/router/proto"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/libraries/go/util"
 )
@@ -32,9 +31,14 @@ func panicRecovery(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 	next(w, r)
 }
 
+// PingResponse is returned when a GET request to /ping is made
+type PingResponse struct {
+	Ping string `json:"ping,omitempty"`
+}
+
 func ping(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	if r.Method == http.MethodGet && r.URL.Path == "/ping" {
-		response.WriteJSON(w, &routerproto.PingResponse{
+		response.WriteJSON(w, &PingResponse{
 			Ping: "pong",
 		})
 		return
