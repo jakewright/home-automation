@@ -1,36 +1,41 @@
-package main
+package imports
 
 import (
 	"strconv"
 	"strings"
 )
 
-type importManager struct {
-	// pkg is the package for which we're managing
-	// imports. It should be a full import path e.g.
-	// github.com/jakewright/home-automation/service.foo
-	pkg    string
-	byPath map[string]*imp
-	byPkg  map[string][]*imp
+type Imp struct {
+	Alias string
+	Path  string
 }
 
-func newImportManager(pkg string) *importManager {
-	return &importManager{
-		pkg:    pkg,
-		byPath: make(map[string]*imp),
-		byPkg:  make(map[string][]*imp),
+type Manager struct {
+	// self is the package for which we're managing
+	// imports. It should be a full import path e.g.
+	// github.com/jakewright/home-automation/service.foo
+	self   string
+	byPath map[string]*Imp
+	byPkg  map[string][]*Imp
+}
+
+func NewManager(self string) *Manager {
+	return &Manager{
+		self:   self,
+		byPath: make(map[string]*Imp),
+		byPkg:  make(map[string][]*Imp),
 	}
 }
 
-func (m *importManager) add(path string) string {
+func (m *Manager) Add(path string) string {
 	parts := strings.Split(path, "/")
 	pkg := parts[len(parts)-1]
 
 	return m.addWithPackageName(path, pkg)
 }
 
-func (m *importManager) addWithPackageName(path, pkg string) string {
-	if path == "" || path == m.pkg {
+func (m *Manager) addWithPackageName(path, pkg string) string {
+	if path == "" || path == m.self {
 		return ""
 	}
 
@@ -43,7 +48,7 @@ func (m *importManager) addWithPackageName(path, pkg string) string {
 		pkg = pkg + strconv.Itoa(len(m.byPkg[pkg]))
 	}
 
-	imp := &imp{
+	imp := &Imp{
 		Alias: pkg,
 		Path:  path,
 	}
@@ -54,8 +59,8 @@ func (m *importManager) addWithPackageName(path, pkg string) string {
 	return pkg
 }
 
-func (m *importManager) get() []*imp {
-	var imps []*imp
+func (m *Manager) Get() []*Imp {
+	var imps []*Imp
 	for _, imp := range m.byPath {
 		imps = append(imps, imp)
 	}

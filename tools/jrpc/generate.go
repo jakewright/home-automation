@@ -5,16 +5,41 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"golang.org/x/tools/imports"
 
 	"github.com/jakewright/home-automation/libraries/go/svcdef"
+	jrpcimports "github.com/jakewright/home-automation/tools/jrpc/imports"
 )
 
-const (
-	packageDirExternal = "def"
-	packageDirRouter   = "handler"
-)
+var resolver *jrpcimports.Resolver
+
+func init() {
+	var err error
+	resolver, err = jrpcimports.NewResolver()
+	if err != nil {
+		panic(err)
+	}
+}
+
+type generator interface {
+	Init(*options, *svcdef.File)
+	PackageDir() string
+	Data(*jrpcimports.Manager) (interface{}, error)
+	Template() (*template.Template, error)
+	Filename() string
+}
+
+type baseGenerator struct {
+	options *options
+	file    *svcdef.File
+}
+
+func (g *baseGenerator) Init(options *options, file *svcdef.File) {
+	g.options = options
+	g.file = file
+}
 
 type options struct {
 	DefPath           string
@@ -22,26 +47,59 @@ type options struct {
 }
 
 func generate(defPath string, file *svcdef.File) error {
-	generators := []func(*options, *svcdef.File) (string, []byte, error){
-		generateTypes,
-		generateRouter,
-		generateFirehose,
+	generators := []generator{
+		&firehoseGenerator{},
+		&routerGenerator{},
+		&rpcGenerator{},
+		&typesGenerator{},
 	}
 
 	opts := &options{
 		DefPath: defPath,
 	}
 
-	for _, generate := range generators {
-		filename, b, err := generate(opts, file)
+	for _, generator := range generators {
+		// Initialise the generator
+		generator.Init(opts, file)
+
+		// Generate the package directory name e.g. "handler"
+		packageDir := generator.PackageDir()
+
+		// Get the full go import path of the package we're generating
+		self, err := resolver.Resolve(file.Path, packageDir)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		if filename == "" || b == nil {
+		// Create an import manager
+		im := jrpcimports.NewManager(self)
+
+		// Generate the template data
+		data, err := generator.Data(im)
+		if err != nil {
+			return err
+		}
+		if data == nil {
 			continue
 		}
 
+		// Get the template
+		tmpl, err := generator.Template()
+		if err != nil {
+			return err
+		}
+
+		// Generate the code
+		buf := &bytes.Buffer{}
+		if err := tmpl.Execute(buf, data); err != nil {
+			return err
+		}
+		b := buf.Bytes()
+
+		// Generate the filename
+		filename := filepath.Join(filepath.Dir(defPath), packageDir, generator.Filename())
+
+		// Run gofmt on the code
 		b, err = imports.Process(filename, b, &imports.Options{
 			Comments: true,
 		})
@@ -49,76 +107,19 @@ func generate(defPath string, file *svcdef.File) error {
 			panic(err)
 		}
 
-		dir := filepath.Dir(filename)
-
 		// Create the directory if necessary
+		dir := filepath.Dir(filename)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			if err := os.Mkdir(dir, 0700); err != nil {
 				panic(err)
 			}
 		}
 
+		// Write the file
 		if err := ioutil.WriteFile(filename, b, 0644); err != nil {
 			panic(err)
 		}
 	}
 
 	return nil
-}
-
-func generateTypes(opts *options, file *svcdef.File) (string, []byte, error) {
-	data, err := createTypesTemplateData(opts, file)
-	if err != nil {
-		return "", nil, err
-	}
-
-	if data == nil {
-		return "", nil, nil
-	}
-
-	// Generate the code
-	buf := &bytes.Buffer{}
-	if err := typesTemplate.Execute(buf, data); err != nil {
-		return "", nil, err
-	}
-
-	return "./" + data.PackageDir + "/types.go", buf.Bytes(), nil
-}
-
-func generateRouter(opts *options, file *svcdef.File) (string, []byte, error) {
-	data, err := createRouterTemplateData(opts, file)
-	if err != nil {
-		return "", nil, err
-	}
-
-	if data == nil {
-		return "", nil, nil
-	}
-
-	// Generate the code
-	buf := &bytes.Buffer{}
-	if err := routerTemplate.Execute(buf, data); err != nil {
-		return "", nil, err
-	}
-
-	return "./" + data.PackageDir + "/gen.go", buf.Bytes(), nil
-}
-
-func generateFirehose(opts *options, file *svcdef.File) (string, []byte, error) {
-	data, err := createFirehoseTemplateData(opts, file)
-	if err != nil {
-		return "", nil, err
-	}
-
-	if data == nil {
-		return "", nil, nil
-	}
-
-	// Generate the code
-	buf := &bytes.Buffer{}
-	if err := firehoseTemplate.Execute(buf, data); err != nil {
-		return "", nil, err
-	}
-
-	return "./" + data.PackageDir + "/firehose.go", buf.Bytes(), nil
 }
