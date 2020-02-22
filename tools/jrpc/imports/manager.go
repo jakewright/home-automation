@@ -5,11 +5,13 @@ import (
 	"strings"
 )
 
+// Imp represents a go import
 type Imp struct {
 	Alias string
 	Path  string
 }
 
+// Manager manages go imports
 type Manager struct {
 	// self is the package for which we're managing
 	// imports. It should be a full import path e.g.
@@ -19,6 +21,8 @@ type Manager struct {
 	byPkg  map[string][]*Imp
 }
 
+// NewManager returns an import manager for the package
+// described by self. It should be a complete import path.
 func NewManager(self string) *Manager {
 	return &Manager{
 		self:   self,
@@ -27,6 +31,8 @@ func NewManager(self string) *Manager {
 	}
 }
 
+// Add adds a new import to the manager and
+// returns the alias to use, if any.
 func (m *Manager) Add(path string) string {
 	parts := strings.Split(path, "/")
 	pkg := parts[len(parts)-1]
@@ -59,6 +65,7 @@ func (m *Manager) addWithPackageName(path, pkg string) string {
 	return pkg
 }
 
+// Get returns all of the imports
 func (m *Manager) Get() []*Imp {
 	var imps []*Imp
 	for _, imp := range m.byPath {
