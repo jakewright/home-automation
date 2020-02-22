@@ -25,9 +25,9 @@ func (l *Loader) FetchDevices() error {
 	for _, device := range rsp {
 		switch {
 		case device.ControllerName != l.ServiceName:
-			return errors.InternalService("device %s is not for this controller", device.ID)
+			return errors.InternalService("device %s is not for this controller", device.Id)
 		case device.Type != "dmx":
-			return errors.InternalService("device %s does not have type dmx", device.ID)
+			return errors.InternalService("device %s does not have type dmx", device.Id)
 		}
 
 		fixture, err := domain.NewFixtureFromDeviceHeader(device)
