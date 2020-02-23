@@ -3,11 +3,13 @@
 package deviceregistrydef
 
 import (
+	context "context"
+
 	rpc "github.com/jakewright/home-automation/libraries/go/rpc"
 )
 
 // Do performs the request
-func (m *GetDeviceRequest) Do() (*GetDeviceResponse, error) {
+func (m *GetDeviceRequest) Do(ctx context.Context) (*GetDeviceResponse, error) {
 	req := &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/device",
@@ -15,12 +17,12 @@ func (m *GetDeviceRequest) Do() (*GetDeviceResponse, error) {
 	}
 
 	rsp := &GetDeviceResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *ListDevicesRequest) Do() (*ListDevicesResponse, error) {
+func (m *ListDevicesRequest) Do(ctx context.Context) (*ListDevicesResponse, error) {
 	req := &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/devices",
@@ -28,12 +30,12 @@ func (m *ListDevicesRequest) Do() (*ListDevicesResponse, error) {
 	}
 
 	rsp := &ListDevicesResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *GetRoomRequest) Do() (*GetRoomResponse, error) {
+func (m *GetRoomRequest) Do(ctx context.Context) (*GetRoomResponse, error) {
 	req := &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/room",
@@ -41,12 +43,12 @@ func (m *GetRoomRequest) Do() (*GetRoomResponse, error) {
 	}
 
 	rsp := &GetRoomResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *ListRoomsRequest) Do() (*ListRoomsResponse, error) {
+func (m *ListRoomsRequest) Do(ctx context.Context) (*ListRoomsResponse, error) {
 	req := &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/rooms",
@@ -54,6 +56,6 @@ func (m *ListRoomsRequest) Do() (*ListRoomsResponse, error) {
 	}
 
 	rsp := &ListRoomsResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }

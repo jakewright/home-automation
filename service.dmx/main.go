@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/router"
@@ -28,7 +30,7 @@ func main() {
 		Universe:    u,
 	}
 
-	if err := l.FetchDevices(); err != nil {
+	if err := l.FetchDevices(context.Background()); err != nil {
 		slog.Panicf("Failed to load devices: %v", err)
 	}
 

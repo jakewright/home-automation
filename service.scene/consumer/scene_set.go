@@ -1,6 +1,7 @@
 package consumer
 
 import (
+	"context"
 	"sort"
 	"strconv"
 
@@ -45,7 +46,9 @@ var HandleSetSceneEvent scenedef.SetSceneEventHandler = func(body *scenedef.SetS
 	for _, stage := range stages {
 		var g errgroup.Group
 		for _, action := range stage {
-			g.Go(action.Perform)
+			g.Go(func() error {
+				return action.Perform(context.TODO())
+			})
 		}
 		if err := g.Wait(); err != nil {
 			return firehose.Fail(err)

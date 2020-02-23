@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
@@ -15,10 +16,10 @@ type Loader struct {
 }
 
 // FetchDevices loads devices from the device registry, creates fixtures, and adds them to the universe.
-func (l *Loader) FetchDevices() error {
+func (l *Loader) FetchDevices(ctx context.Context) error {
 	url := fmt.Sprintf("service.device-registry/devices?controller_name=%s", l.ServiceName)
 	var rsp []*domain.DeviceHeader
-	if _, err := rpc.Get(url, &rsp); err != nil {
+	if _, err := rpc.Get(ctx, url, &rsp); err != nil {
 		return err
 	}
 

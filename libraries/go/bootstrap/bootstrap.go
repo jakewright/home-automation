@@ -74,7 +74,7 @@ func Init(opts *Opts) (*Service, error) {
 	configLoader := &config.Loader{
 		ServiceName: opts.ServiceName,
 	}
-	if err := configLoader.Load(); err != nil {
+	if err := configLoader.Load(context.Background()); err != nil {
 		return nil, err
 	}
 	slog.Infof("Config loaded")

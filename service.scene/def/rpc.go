@@ -3,11 +3,13 @@
 package scenedef
 
 import (
+	context "context"
+
 	rpc "github.com/jakewright/home-automation/libraries/go/rpc"
 )
 
 // Do performs the request
-func (m *CreateSceneRequest) Do() (*CreateSceneResponse, error) {
+func (m *CreateSceneRequest) Do(ctx context.Context) (*CreateSceneResponse, error) {
 	req := &rpc.Request{
 		Method: "POST",
 		URL:    "service.scene/scenes",
@@ -15,12 +17,12 @@ func (m *CreateSceneRequest) Do() (*CreateSceneResponse, error) {
 	}
 
 	rsp := &CreateSceneResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *ReadSceneRequest) Do() (*ReadSceneResponse, error) {
+func (m *ReadSceneRequest) Do(ctx context.Context) (*ReadSceneResponse, error) {
 	req := &rpc.Request{
 		Method: "GET",
 		URL:    "service.scene/scene",
@@ -28,12 +30,12 @@ func (m *ReadSceneRequest) Do() (*ReadSceneResponse, error) {
 	}
 
 	rsp := &ReadSceneResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *ListScenesRequest) Do() (*ListScenesResponse, error) {
+func (m *ListScenesRequest) Do(ctx context.Context) (*ListScenesResponse, error) {
 	req := &rpc.Request{
 		Method: "GET",
 		URL:    "service.scene/scenes",
@@ -41,12 +43,12 @@ func (m *ListScenesRequest) Do() (*ListScenesResponse, error) {
 	}
 
 	rsp := &ListScenesResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *DeleteSceneRequest) Do() (*DeleteSceneResponse, error) {
+func (m *DeleteSceneRequest) Do(ctx context.Context) (*DeleteSceneResponse, error) {
 	req := &rpc.Request{
 		Method: "DELETE",
 		URL:    "service.scene/scene",
@@ -54,12 +56,12 @@ func (m *DeleteSceneRequest) Do() (*DeleteSceneResponse, error) {
 	}
 
 	rsp := &DeleteSceneResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *SetSceneRequest) Do() (*SetSceneResponse, error) {
+func (m *SetSceneRequest) Do(ctx context.Context) (*SetSceneResponse, error) {
 	req := &rpc.Request{
 		Method: "POST",
 		URL:    "service.scene/scene/set",
@@ -67,6 +69,6 @@ func (m *SetSceneRequest) Do() (*SetSceneResponse, error) {
 	}
 
 	rsp := &SetSceneResponse{}
-	_, err := rpc.Do(req, rsp)
+	_, err := rpc.Do(ctx, req, rsp)
 	return rsp, err
 }

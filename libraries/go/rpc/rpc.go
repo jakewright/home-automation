@@ -2,20 +2,24 @@ package rpc
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
+
+const defaultTimeout = 10 * time.Second
 
 // Requester is an interface for making HTTP requests
 type Requester interface {
-	Do(request *Request, resultData interface{}) (*Response, error)
-	Get(url string, response interface{}) (*Response, error)
-	Put(url string, body map[string]interface{}, response interface{}) (*Response, error)
-	Patch(url string, body map[string]interface{}, response interface{}) (*Response, error)
+	Do(ctx context.Context, request *Request, resultData interface{}) (*Response, error)
+	Get(ctx context.Context, url string, response interface{}) (*Response, error)
+	Put(ctx context.Context, url string, body map[string]interface{}, response interface{}) (*Response, error)
+	Patch(ctx context.Context, url string, body map[string]interface{}, response interface{}) (*Response, error)
 }
 
 // Client is a high-level HTTP client for making requests to other services
@@ -28,6 +32,8 @@ type Client struct {
 
 	// Envelope is the name of the data field in the response
 	Envelope string
+
+	httpClient *http.Client
 }
 
 // DefaultClient is a global instance of Client
@@ -42,23 +48,23 @@ func mustGetDefaultClient() Requester {
 }
 
 // Do makes a request using the default client
-func Do(req *Request, response interface{}) (*Response, error) {
-	return mustGetDefaultClient().Do(req, response)
+func Do(ctx context.Context, req *Request, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Do(ctx, req, response)
 }
 
 // Get makes GET requests using the default client
-func Get(url string, response interface{}) (*Response, error) {
-	return mustGetDefaultClient().Get(url, response)
+func Get(ctx context.Context, url string, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Get(ctx, url, response)
 }
 
 // Put makes PUT requests using the default client
-func Put(url string, body map[string]interface{}, response interface{}) (*Response, error) {
-	return mustGetDefaultClient().Put(url, body, response)
+func Put(ctx context.Context, url string, body map[string]interface{}, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Put(ctx, url, body, response)
 }
 
 // Patch makes PATCH requests using the default client
-func Patch(url string, body map[string]interface{}, response interface{}) (*Response, error) {
-	return mustGetDefaultClient().Patch(url, body, response)
+func Patch(ctx context.Context, url string, body map[string]interface{}, response interface{}) (*Response, error) {
+	return mustGetDefaultClient().Patch(ctx, url, body, response)
 }
 
 // New returns a new RPC Client
@@ -68,12 +74,18 @@ func New(base string, envelope string) (Requester, error) {
 		return nil, err
 	}
 
+	httpClient := &http.Client{
+		Timeout: defaultTimeout,
+	}
+
 	return &Client{
 		Base: strings.TrimRight(u.String(), "/"),
 		ValidateStatus: func(status int) bool {
 			return status >= 200 && status < 300
 		},
 		Envelope: envelope,
+
+		httpClient: httpClient,
 	}, nil
 }
 
@@ -93,7 +105,7 @@ type Response struct {
 // Do performs the HTTP request. Relative URLs will have the base URL prepended. An error
 // will be thrown if the response does not have a JSON content-type or if the status code is
 // not valid. The entire response will be returned but the JSON will be unmarshalled into the second argument.
-func (c Client) Do(request *Request, v interface{}) (*Response, error) {
+func (c Client) Do(ctx context.Context, request *Request, v interface{}) (*Response, error) {
 	if !validMethod(request.Method) {
 		return nil, fmt.Errorf("method %q is not a valid HTTP method", request.Method)
 	}
@@ -125,9 +137,10 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 	}
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
+	req = req.WithContext(ctx)
+
 	// Make the request
-	client := &http.Client{}
-	rawRsp, err := client.Do(req)
+	rawRsp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -184,21 +197,21 @@ func (c Client) Do(request *Request, v interface{}) (*Response, error) {
 }
 
 // Get performs a GET request
-func (c Client) Get(url string, response interface{}) (*Response, error) {
+func (c Client) Get(ctx context.Context, url string, response interface{}) (*Response, error) {
 	r := Request{Method: http.MethodGet, URL: url}
-	return c.Do(&r, response)
+	return c.Do(ctx, &r, response)
 }
 
 // Put performs a PUT request
-func (c Client) Put(url string, body map[string]interface{}, response interface{}) (*Response, error) {
+func (c Client) Put(ctx context.Context, url string, body map[string]interface{}, response interface{}) (*Response, error) {
 	r := Request{Method: http.MethodPut, URL: url, Body: body}
-	return c.Do(&r, response)
+	return c.Do(ctx, &r, response)
 }
 
 // Patch performs a PATCH request
-func (c Client) Patch(url string, body map[string]interface{}, response interface{}) (*Response, error) {
+func (c Client) Patch(ctx context.Context, url string, body map[string]interface{}, response interface{}) (*Response, error) {
 	r := Request{Method: http.MethodPatch, URL: url, Body: body}
-	return c.Do(&r, response)
+	return c.Do(ctx, &r, response)
 }
 
 func validMethod(method string) bool {

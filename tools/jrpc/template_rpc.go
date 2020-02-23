@@ -35,7 +35,7 @@ package {{ .PackageName }}
 
 {{ range .Endpoints }}
 	// Do performs the request
-	func (m *{{ .InputType }}) Do() (*{{ .OutputType }}, error) {
+	func (m *{{ .InputType }}) Do(ctx context.Context) (*{{ .OutputType }}, error) {
 		req := &rpc.Request{
 			Method: "{{ .HTTPMethod }}",
 			URL: "{{ .URL }}",
@@ -43,7 +43,7 @@ package {{ .PackageName }}
 		}
 
 		rsp := &{{ .OutputType }}{}
-		_, err := rpc.Do(req, rsp)
+		_, err := rpc.Do(ctx, req, rsp)
 		return rsp, err
 	}
 {{ end }}
@@ -63,6 +63,7 @@ func (g *rpcGenerator) PackageDir() string {
 
 func (g *rpcGenerator) Data(im *imports.Manager) (interface{}, error) {
 	im.Add("github.com/jakewright/home-automation/libraries/go/rpc")
+	im.Add("context")
 
 	if g.file.Service == nil {
 		return nil, nil

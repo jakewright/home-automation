@@ -30,11 +30,11 @@ func (l *Loader) GetName() string {
 }
 
 // Load makes a request to service.config and overwrites the default config with new values
-func (l *Loader) Load() error {
+func (l *Loader) Load(ctx context.Context) error {
 	var content map[string]interface{}
 	var err error
 	for i := 0; i < maxRetries; i++ {
-		if _, err = rpc.Get("service.config/read/"+l.ServiceName, &content); err == nil {
+		if _, err = rpc.Get(ctx, "service.config/read/"+l.ServiceName, &content); err == nil {
 			break
 		}
 		slog.Errorf("Failed to load config [attempt %d of %d]: %v", i+1, maxRetries, err)
@@ -65,7 +65,7 @@ func (l *Loader) Start() error {
 		case <-l.done:
 			return nil
 		case <-l.ticker.C:
-			if err := l.Load(); err == nil {
+			if err := l.Load(context.Background()); err == nil {
 				l.reloaded = time.Now()
 			}
 		}

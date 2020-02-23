@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -78,12 +79,12 @@ func (a *Action) Validate() error {
 }
 
 // Perform does the action
-func (a *Action) Perform() error {
+func (a *Action) Perform(ctx context.Context) error {
 	if err := a.Validate(); err != nil {
 		return err
 	}
 
-	var f func() error
+	var f func(context.Context) error
 
 	switch {
 	case a.Func != "":
@@ -96,10 +97,10 @@ func (a *Action) Perform() error {
 		return nil
 	}
 
-	return f()
+	return f(ctx)
 }
 
-func (a *Action) parseFunc() (func() error, error) {
+func (a *Action) parseFunc() (func(context.Context) error, error) {
 	parts := strings.Split(a.Func, " ")
 	if len(parts) == 0 {
 		return nil, errors.BadRequest("failed to extract func name from '%s'", a.Func)
@@ -116,7 +117,7 @@ func (a *Action) parseFunc() (func() error, error) {
 			return nil, err
 		}
 
-		return func() error {
+		return func(_ context.Context) error {
 			time.Sleep(d)
 			return nil
 		}, nil
@@ -125,14 +126,14 @@ func (a *Action) parseFunc() (func() error, error) {
 	return nil, errors.BadRequest("unknown func %s", parts[0])
 }
 
-func (a *Action) parseCommand() (func() error, error) {
+func (a *Action) parseCommand() (func(context.Context) error, error) {
 	// todo
-	return func() error {
+	return func(_ context.Context) error {
 		return nil
 	}, nil
 }
 
-func (a *Action) parseProperty() (func() error, error) {
+func (a *Action) parseProperty() (func(context.Context) error, error) {
 	url := fmt.Sprintf("%s/device/%s", a.ControllerName, a.DeviceID)
 
 	val, err := marshalPropertyValue(a.PropertyType, a.PropertyValue)
@@ -144,8 +145,8 @@ func (a *Action) parseProperty() (func() error, error) {
 		a.Property: val,
 	}
 
-	return func() error {
-		_, err := rpc.Patch(url, body, nil)
+	return func(ctx context.Context) error {
+		_, err := rpc.Patch(ctx, url, body, nil)
 		return err
 	}, nil
 }
