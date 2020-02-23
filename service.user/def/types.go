@@ -3,6 +3,8 @@
 package userdef
 
 import (
+	context "context"
+	http "net/http"
 	time "time"
 )
 
@@ -16,7 +18,9 @@ type User struct {
 
 // GetUserRequest is defined in the .def file
 type GetUserRequest struct {
-	UserId uint32 `json:"user_id"`
+	context.Context `json:"-"`
+	Request         *http.Request `json:"-"`
+	UserId          uint32        `json:"user_id"`
 }
 
 // GetUserResponse is defined in the .def file
@@ -26,6 +30,8 @@ type GetUserResponse struct {
 
 // ListUsersRequest is defined in the .def file
 type ListUsersRequest struct {
+	context.Context `json:"-"`
+	Request         *http.Request `json:"-"`
 }
 
 // ListUsersResponse is defined in the .def file

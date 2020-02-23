@@ -2,6 +2,11 @@
 
 package deviceregistrydef
 
+import (
+	context "context"
+	http "net/http"
+)
+
 // DeviceHeader is defined in the .def file
 type DeviceHeader struct {
 	Id             string                 `json:"id"`
@@ -23,7 +28,9 @@ type Room struct {
 
 // GetDeviceRequest is defined in the .def file
 type GetDeviceRequest struct {
-	DeviceId string `json:"device_id"`
+	context.Context `json:"-"`
+	Request         *http.Request `json:"-"`
+	DeviceId        string        `json:"device_id"`
 }
 
 // GetDeviceResponse is defined in the .def file
@@ -33,7 +40,9 @@ type GetDeviceResponse struct {
 
 // ListDevicesRequest is defined in the .def file
 type ListDevicesRequest struct {
-	ControllerName string `json:"controller_name"`
+	context.Context `json:"-"`
+	Request         *http.Request `json:"-"`
+	ControllerName  string        `json:"controller_name"`
 }
 
 // ListDevicesResponse is defined in the .def file
@@ -43,7 +52,9 @@ type ListDevicesResponse struct {
 
 // GetRoomRequest is defined in the .def file
 type GetRoomRequest struct {
-	RoomId string `json:"room_id"`
+	context.Context `json:"-"`
+	Request         *http.Request `json:"-"`
+	RoomId          string        `json:"room_id"`
 }
 
 // GetRoomResponse is defined in the .def file
@@ -53,6 +64,8 @@ type GetRoomResponse struct {
 
 // ListRoomsRequest is defined in the .def file
 type ListRoomsRequest struct {
+	context.Context `json:"-"`
+	Request         *http.Request `json:"-"`
 }
 
 // ListRoomsResponse is defined in the .def file

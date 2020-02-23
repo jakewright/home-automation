@@ -31,7 +31,10 @@ func NewRouter() *UserRouter {
 			slog.Panicf("No handler exists for GET /user")
 		}
 
-		body := &def.GetUserRequest{}
+		body := &def.GetUserRequest{
+			Request: r,
+			Context: r.Context(),
+		}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -62,7 +65,10 @@ func NewRouter() *UserRouter {
 			slog.Panicf("No handler exists for GET /users")
 		}
 
-		body := &def.ListUsersRequest{}
+		body := &def.ListUsersRequest{
+			Request: r,
+			Context: r.Context(),
+		}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)

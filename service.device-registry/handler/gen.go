@@ -33,7 +33,10 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /device")
 		}
 
-		body := &def.GetDeviceRequest{}
+		body := &def.GetDeviceRequest{
+			Request: r,
+			Context: r.Context(),
+		}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -64,7 +67,10 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /devices")
 		}
 
-		body := &def.ListDevicesRequest{}
+		body := &def.ListDevicesRequest{
+			Request: r,
+			Context: r.Context(),
+		}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -95,7 +101,10 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /room")
 		}
 
-		body := &def.GetRoomRequest{}
+		body := &def.GetRoomRequest{
+			Request: r,
+			Context: r.Context(),
+		}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -126,7 +135,10 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /rooms")
 		}
 
-		body := &def.ListRoomsRequest{}
+		body := &def.ListRoomsRequest{
+			Request: r,
+			Context: r.Context(),
+		}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)

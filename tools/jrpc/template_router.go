@@ -56,7 +56,10 @@ func NewRouter() *{{ .RouterName }} {
 				slog.Panicf("No handler exists for {{ .HTTPMethod }} {{ .Path }}")
 			}
 
-			body := &{{ .InputType }}{}
+			body := &{{ .InputType }}{
+				Request: r,
+				Context: r.Context(),
+			}
 			if err := request.Decode(r, body); err != nil {
 				err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 				slog.Error(err)
