@@ -1,0 +1,34 @@
+message Device {
+    // id is the globally unique identifier for this device
+    string id
+
+    // name is the friendly name for this device
+    string name
+
+    // type is the specific device type e.g. HS100
+    string type
+
+    // kind is the kind of device e.g. plug
+    string kind
+
+    // controller_name is the name of the controller that manages this device
+    string controller_name
+
+    // attributes contains arbitrary metadata about the device
+    map[string]any attributes
+
+    // state_providers is an array of controller names that provide state for this device
+    []string state_providers
+
+    // state is the
+    map[string]Property state
+    // todo commands
+}
+
+message Property {
+    any value
+    string type
+    int32 min
+    int32 max
+    string interpolation
+}
