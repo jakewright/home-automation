@@ -389,6 +389,12 @@ Loop:
 			break Loop
 		}
 
+		// If this is a comment
+		if p.peek().typ == tokComment {
+			p.expect(tokComment)
+			continue // Ignore it
+		}
+
 		// If this is an option
 		ps := p.peekn(2)
 		if ps[0].typ == tokIdentifier && ps[1].typ == tokAssign {
