@@ -57,9 +57,8 @@ services:
       context: .
     image: home-automation-service-config
     volumes:
-      - .:/go/src/github.com/jakewright/home-automation
+      - .:/app
       - ./private/config/dev.yaml:/data/config.yaml
-      - /go/src/github.com/jakewright/home-automation/vendor
     ports:
       - 7002:80
     env_file:
@@ -136,8 +135,7 @@ services:
       context: .
     image: home-automation-device-registry
     volumes:
-      - .:/go/src/github.com/jakewright/home-automation
-      - /go/src/github.com/jakewright/home-automation/vendor
+      - .:/app
     ports:
       - 7001:80
     env_file:
@@ -166,9 +164,8 @@ services:
       context: .
     image: home-automation-log
     volumes:
-      - .:/go/src/github.com/jakewright/home-automation
+      - .:/app
       - ./log/:/var/log:ro
-      - /go/src/github.com/jakewright/home-automation/vendor
     ports:
       - 7020:80
     env_file:
