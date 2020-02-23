@@ -177,9 +177,8 @@ func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 		messages = append(messages, &typesDataMessage{
 			Name: name,
 			// This is a naive way to determine if this is a request type.
-			// It would be nice to see if it is _used_ as a request type in
-			// any of the RPCs but since RPCs can use imported types this
-			// doesn't work.
+			// It would be better to see if it is used as a request type
+			// in any of the RPC definitions.
 			IsRequestType: strings.HasSuffix(name, "Request"),
 			Fields:        fields,
 		})

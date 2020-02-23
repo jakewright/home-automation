@@ -107,6 +107,11 @@ func (g *routerGenerator) PackageDir() string {
 }
 
 func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
+	// Don't generate anything if there's no service definition
+	if g.file.Service == nil {
+		return nil, nil
+	}
+
 	// Make sure the service name is a suitable go struct name
 	if ok := reValidGoStruct.MatchString(g.file.Service.Name); !ok {
 		return "", fmt.Errorf("service name should be alphanumeric camelcase")

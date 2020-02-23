@@ -65,6 +65,9 @@ func generate(defPath string, file *svcdef.File) error {
 		// Generate the package directory name e.g. "handler"
 		packageDir := generator.PackageDir()
 
+		// Generate the filename
+		filename := filepath.Join(filepath.Dir(defPath), packageDir, generator.Filename())
+
 		// Get the full go import path of the package we're generating
 		self, err := resolver.Resolve(file.Path, packageDir)
 		if err != nil {
@@ -79,7 +82,16 @@ func generate(defPath string, file *svcdef.File) error {
 		if err != nil {
 			return err
 		}
+		// If there's nothing to generate, delete the file
+		// in case it previously existed.
 		if data == nil {
+			if err := os.Remove(filename); err != nil {
+				if os.IsNotExist(err) {
+					continue
+				}
+				return err
+			}
+
 			continue
 		}
 
@@ -95,9 +107,6 @@ func generate(defPath string, file *svcdef.File) error {
 			return err
 		}
 		b := buf.Bytes()
-
-		// Generate the filename
-		filename := filepath.Join(filepath.Dir(defPath), packageDir, generator.Filename())
 
 		// Run gofmt on the code
 		b, err = imports.Process(filename, b, &imports.Options{
