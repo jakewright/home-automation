@@ -7,7 +7,7 @@ import (
 )
 
 // HandleListUsers lists all users
-func HandleListUsers(_ *userdef.ListUsersRequest) (*userdef.ListUsersResponse, error) {
+func HandleListUsers(r *Request, body *userdef.ListUsersRequest) (*userdef.ListUsersResponse, error) {
 	var users []*userdef.User
 	if err := database.Find(&users); err != nil {
 		return nil, errors.WithMessage(err, "failed to find")

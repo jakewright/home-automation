@@ -8,9 +8,9 @@ import (
 )
 
 // HandleCreateScene persists a new scene
-func HandleCreateScene(req *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
-	actions := make([]*domain.Action, len(req.Actions))
-	for i, a := range req.Actions {
+func HandleCreateScene(r *Request, body *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
+	actions := make([]*domain.Action, len(body.Actions))
+	for i, a := range body.Actions {
 		actions[i] = &domain.Action{
 			Stage:          int(a.Stage),
 			Sequence:       int(a.Sequence),
@@ -29,7 +29,7 @@ func HandleCreateScene(req *scenedef.CreateSceneRequest) (*scenedef.CreateSceneR
 	}
 
 	scene := &domain.Scene{
-		Name:    req.Name,
+		Name:    body.Name,
 		Actions: actions,
 	}
 

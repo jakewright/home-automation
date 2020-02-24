@@ -7,10 +7,10 @@ import (
 )
 
 // HandleListScenes lists all scenes in the database
-func HandleListScenes(req *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
+func HandleListScenes(r *Request, body *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
 	where := make(map[string]interface{})
-	if req.OwnerId > 0 {
-		where["owner_id"] = req.OwnerId
+	if body.OwnerId > 0 {
+		where["owner_id"] = body.OwnerId
 	}
 
 	var scenes []*domain.Scene

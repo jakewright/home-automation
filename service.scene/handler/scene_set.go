@@ -8,7 +8,7 @@ import (
 )
 
 // HandleSetScene emits an event to trigger the scene to be set asynchronously
-func HandleSetScene(body *scenedef.SetSceneRequest) (*scenedef.SetSceneResponse, error) {
+func HandleSetScene(r *Request, body *scenedef.SetSceneRequest) (*scenedef.SetSceneResponse, error) {
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, body.SceneId); err != nil {
 		return nil, err

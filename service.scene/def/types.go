@@ -3,8 +3,6 @@
 package scenedef
 
 import (
-	context "context"
-	http "net/http"
 	time "time"
 
 	errors "github.com/jakewright/home-automation/libraries/go/errors"
@@ -37,11 +35,9 @@ type Action struct {
 
 // CreateSceneRequest is defined in the .def file
 type CreateSceneRequest struct {
-	context.Context `json:"-"`
-	Request         *http.Request                `json:"-"`
-	Name            string                       `json:"name"`
-	OwnerId         uint32                       `json:"owner_id"`
-	Actions         []*CreateSceneRequest_Action `json:"actions"`
+	Name    string                       `json:"name"`
+	OwnerId uint32                       `json:"owner_id"`
+	Actions []*CreateSceneRequest_Action `json:"actions"`
 }
 
 // CreateSceneRequest_Action is defined in the .def file
@@ -64,9 +60,7 @@ type CreateSceneResponse struct {
 
 // ReadSceneRequest is defined in the .def file
 type ReadSceneRequest struct {
-	context.Context `json:"-"`
-	Request         *http.Request `json:"-"`
-	SceneId         uint32        `json:"scene_id"`
+	SceneId uint32 `json:"scene_id"`
 }
 
 // ReadSceneResponse is defined in the .def file
@@ -76,9 +70,7 @@ type ReadSceneResponse struct {
 
 // ListScenesRequest is defined in the .def file
 type ListScenesRequest struct {
-	context.Context `json:"-"`
-	Request         *http.Request `json:"-"`
-	OwnerId         uint32        `json:"owner_id"`
+	OwnerId uint32 `json:"owner_id"`
 }
 
 // ListScenesResponse is defined in the .def file
@@ -88,9 +80,7 @@ type ListScenesResponse struct {
 
 // DeleteSceneRequest is defined in the .def file
 type DeleteSceneRequest struct {
-	context.Context `json:"-"`
-	Request         *http.Request `json:"-"`
-	SceneId         int32         `json:"scene_id"`
+	SceneId int32 `json:"scene_id"`
 }
 
 // DeleteSceneResponse is defined in the .def file
@@ -99,9 +89,7 @@ type DeleteSceneResponse struct {
 
 // SetSceneRequest is defined in the .def file
 type SetSceneRequest struct {
-	context.Context `json:"-"`
-	Request         *http.Request `json:"-"`
-	SceneId         uint32        `json:"scene_id"`
+	SceneId uint32 `json:"scene_id"`
 }
 
 // SetSceneResponse is defined in the .def file

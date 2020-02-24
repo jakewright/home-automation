@@ -8,9 +8,9 @@ import (
 )
 
 // HandleReadScene returns the scene with the given ID
-func HandleReadScene(req *scenedef.ReadSceneRequest) (*scenedef.ReadSceneResponse, error) {
+func HandleReadScene(r *Request, body *scenedef.ReadSceneRequest) (*scenedef.ReadSceneResponse, error) {
 	scene := &domain.Scene{}
-	if err := database.Find(&scene, req.SceneId); err != nil {
+	if err := database.Find(&scene, body.SceneId); err != nil {
 		return nil, errors.WithMessage(err, "failed to find")
 	}
 

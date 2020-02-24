@@ -7,9 +7,9 @@ import (
 )
 
 // HandleGetUser reads a user by ID
-func HandleGetUser(req *userdef.GetUserRequest) (*userdef.GetUserResponse, error) {
+func HandleGetUser(r *Request, body *userdef.GetUserRequest) (*userdef.GetUserResponse, error) {
 	user := &userdef.User{}
-	if err := database.Find(user, req.UserId); err != nil {
+	if err := database.Find(user, body.UserId); err != nil {
 		return nil, errors.WithMessage(err, "failed to find")
 	}
 

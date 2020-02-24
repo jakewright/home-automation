@@ -9,16 +9,16 @@ import (
 )
 
 // HandleDeleteScene deletes a scene and associated actions
-func HandleDeleteScene(req *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
-	if req.SceneId == 0 {
+func HandleDeleteScene(r *Request, body *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
+	if body.SceneId == 0 {
 		return nil, errors.BadRequest("scene_id empty")
 	}
 
 	// Delete the scene
-	if err := database.Delete(&domain.Scene{}, req.SceneId); err != nil {
+	if err := database.Delete(&domain.Scene{}, body.SceneId); err != nil {
 		return nil, err
 	}
 
-	slog.Infof("Deleted scene %d", req.SceneId)
+	slog.Infof("Deleted scene %d", body.SceneId)
 	return &scenedef.DeleteSceneResponse{}, nil
 }

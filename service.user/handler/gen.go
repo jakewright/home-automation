@@ -3,7 +3,8 @@
 package handler
 
 import (
-	"net/http"
+	context "context"
+	http "net/http"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
@@ -16,8 +17,8 @@ import (
 // UserRouter wraps router.Router to provide a convenient way to set handlers
 type UserRouter struct {
 	*router.Router
-	GetUser   func(*def.GetUserRequest) (*def.GetUserResponse, error)
-	ListUsers func(*def.ListUsersRequest) (*def.ListUsersResponse, error)
+	GetUser   func(*Request, *def.GetUserRequest) (*def.GetUserResponse, error)
+	ListUsers func(*Request, *def.ListUsersRequest) (*def.ListUsersResponse, error)
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -31,10 +32,7 @@ func NewRouter() *UserRouter {
 			slog.Panicf("No handler exists for GET /user")
 		}
 
-		body := &def.GetUserRequest{
-			Request: r,
-			Context: r.Context(),
-		}
+		body := &def.GetUserRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -49,7 +47,12 @@ func NewRouter() *UserRouter {
 			return
 		}
 
-		rsp, err := rr.GetUser(body)
+		req := &Request{
+			Context: r.Context(),
+			Request: r,
+		}
+
+		rsp, err := rr.GetUser(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -65,10 +68,7 @@ func NewRouter() *UserRouter {
 			slog.Panicf("No handler exists for GET /users")
 		}
 
-		body := &def.ListUsersRequest{
-			Request: r,
-			Context: r.Context(),
-		}
+		body := &def.ListUsersRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -83,7 +83,12 @@ func NewRouter() *UserRouter {
 			return
 		}
 
-		rsp, err := rr.ListUsers(body)
+		req := &Request{
+			Context: r.Context(),
+			Request: r,
+		}
+
+		rsp, err := rr.ListUsers(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -95,4 +100,9 @@ func NewRouter() *UserRouter {
 	})
 
 	return rr
+}
+
+type Request struct {
+	context.Context
+	*http.Request
 }
