@@ -32,3 +32,8 @@ message Property {
     int32 max
     string interpolation
 }
+
+message DeviceStateChangedEvent {
+    event_name = "device-state-changed"
+    Device device (required)
+}
