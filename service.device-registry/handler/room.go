@@ -14,7 +14,7 @@ type RoomHandler struct {
 }
 
 // HandleListRooms returns all rooms known by the registry
-func (h *RoomHandler) HandleListRooms(_ *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
+func (h *RoomHandler) HandleListRooms(r *Request, body *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
 	rooms, err := h.RoomRepository.FindAll()
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to find rooms")
@@ -35,18 +35,18 @@ func (h *RoomHandler) HandleListRooms(_ *deviceregistrydef.ListRoomsRequest) (*d
 }
 
 // HandleGetRoom returns a specific room by ID, including its devices.
-func (h *RoomHandler) HandleGetRoom(req *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
-	room, err := h.RoomRepository.Find(req.RoomId)
+func (h *RoomHandler) HandleGetRoom(r *Request, body *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
+	room, err := h.RoomRepository.Find(body.RoomId)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to find room %q", req.RoomId)
+		return nil, errors.WithMessage(err, "failed to find room %q", body.RoomId)
 	} else if room == nil {
-		return nil, errors.NotFound("room %q not found", req.RoomId)
+		return nil, errors.NotFound("room %q not found", body.RoomId)
 	}
 
 	// Decorate the room with its devices
-	devices, err := h.DeviceRepository.FindByRoom(req.RoomId)
+	devices, err := h.DeviceRepository.FindByRoom(body.RoomId)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to find devices for room %q", req.RoomId)
+		return nil, errors.WithMessage(err, "failed to find devices for room %q", body.RoomId)
 	}
 	room.Devices = devices
 

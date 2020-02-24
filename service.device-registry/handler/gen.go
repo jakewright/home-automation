@@ -3,7 +3,8 @@
 package handler
 
 import (
-	"net/http"
+	context "context"
+	http "net/http"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/request"
@@ -16,10 +17,10 @@ import (
 // DeviceRegistryRouter wraps router.Router to provide a convenient way to set handlers
 type DeviceRegistryRouter struct {
 	*router.Router
-	GetDevice   func(*def.GetDeviceRequest) (*def.GetDeviceResponse, error)
-	ListDevices func(*def.ListDevicesRequest) (*def.ListDevicesResponse, error)
-	GetRoom     func(*def.GetRoomRequest) (*def.GetRoomResponse, error)
-	ListRooms   func(*def.ListRoomsRequest) (*def.ListRoomsResponse, error)
+	GetDevice   func(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
+	ListDevices func(*Request, *def.ListDevicesRequest) (*def.ListDevicesResponse, error)
+	GetRoom     func(*Request, *def.GetRoomRequest) (*def.GetRoomResponse, error)
+	ListRooms   func(*Request, *def.ListRoomsRequest) (*def.ListRoomsResponse, error)
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -33,10 +34,7 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /device")
 		}
 
-		body := &def.GetDeviceRequest{
-			Request: r,
-			Context: r.Context(),
-		}
+		body := &def.GetDeviceRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -51,7 +49,12 @@ func NewRouter() *DeviceRegistryRouter {
 			return
 		}
 
-		rsp, err := rr.GetDevice(body)
+		req := &Request{
+			Context: r.Context(),
+			Request: r,
+		}
+
+		rsp, err := rr.GetDevice(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -67,10 +70,7 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /devices")
 		}
 
-		body := &def.ListDevicesRequest{
-			Request: r,
-			Context: r.Context(),
-		}
+		body := &def.ListDevicesRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -85,7 +85,12 @@ func NewRouter() *DeviceRegistryRouter {
 			return
 		}
 
-		rsp, err := rr.ListDevices(body)
+		req := &Request{
+			Context: r.Context(),
+			Request: r,
+		}
+
+		rsp, err := rr.ListDevices(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -101,10 +106,7 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /room")
 		}
 
-		body := &def.GetRoomRequest{
-			Request: r,
-			Context: r.Context(),
-		}
+		body := &def.GetRoomRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -119,7 +121,12 @@ func NewRouter() *DeviceRegistryRouter {
 			return
 		}
 
-		rsp, err := rr.GetRoom(body)
+		req := &Request{
+			Context: r.Context(),
+			Request: r,
+		}
+
+		rsp, err := rr.GetRoom(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -135,10 +142,7 @@ func NewRouter() *DeviceRegistryRouter {
 			slog.Panicf("No handler exists for GET /rooms")
 		}
 
-		body := &def.ListRoomsRequest{
-			Request: r,
-			Context: r.Context(),
-		}
+		body := &def.ListRoomsRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
@@ -153,7 +157,12 @@ func NewRouter() *DeviceRegistryRouter {
 			return
 		}
 
-		rsp, err := rr.ListRooms(body)
+		req := &Request{
+			Context: r.Context(),
+			Request: r,
+		}
+
+		rsp, err := rr.ListRooms(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -165,4 +174,9 @@ func NewRouter() *DeviceRegistryRouter {
 	})
 
 	return rr
+}
+
+type Request struct {
+	context.Context
+	*http.Request
 }

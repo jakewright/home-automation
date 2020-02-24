@@ -40,7 +40,7 @@ package {{ .PackageName }}
 type {{ .RouterName }} struct {
 	*router.Router
 	{{- range .Endpoints }}
-		{{ .Name }} func(*request, *{{ .InputType }}) (*{{ .OutputType }}, error)
+		{{ .Name }} func(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
@@ -71,7 +71,7 @@ func NewRouter() *{{ .RouterName }} {
 				return
 			}
 
-			req := &request{
+			req := &Request{
 				Context: r.Context(),
 				Request: r,
 			}
@@ -84,14 +84,14 @@ func NewRouter() *{{ .RouterName }} {
 				return
 			}
 
-			response.WriteJSON(w, rsp.Body)
+			response.WriteJSON(w, rsp)
 		})
 	{{ end }}
 
 	return rr
 }
 
-type request struct {
+type Request struct {
 	context.Context
 	*http.Request
 }
