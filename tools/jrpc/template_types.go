@@ -11,9 +11,8 @@ import (
 const packageDirExternal = "def"
 
 type typesDataMessage struct {
-	Name          string
-	IsRequestType bool
-	Fields        []*typesDataField
+	Name   string
+	Fields []*typesDataField
 }
 
 type typesDataField struct {
@@ -47,10 +46,6 @@ package {{ .PackageName }}
 {{ range $message := .Messages }}
 	// {{ $message.Name }} is defined in the .def file
 	type {{ $message.Name }} struct {
-		{{- if $message.IsRequestType }}
-			context.Context ` + "`json:\"-\"`" + `
-			Request *http.Request ` + "`json:\"-\"`" + `
-		{{- end }}
 		{{- range $field := .Fields }}
 			{{ $field.GoName }} {{ $field.Type }} ` + "`" + `json:"{{ $field.JSONName }}"` + "`" + `
 		{{- end }}
@@ -126,8 +121,6 @@ func (g *typesGenerator) PackageDir() string {
 
 func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 	im.Add("github.com/jakewright/home-automation/libraries/go/errors")
-	im.Add("context")
-	im.Add("net/http")
 
 	if len(g.file.Messages) == 0 {
 		return nil, nil
@@ -175,12 +168,8 @@ func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 		}
 
 		messages = append(messages, &typesDataMessage{
-			Name: name,
-			// This is a naive way to determine if this is a request type.
-			// It would be better to see if it is used as a request type
-			// in any of the RPC definitions.
-			IsRequestType: strings.HasSuffix(name, "Request"),
-			Fields:        fields,
+			Name:   name,
+			Fields: fields,
 		})
 	}
 

@@ -40,7 +40,7 @@ package {{ .PackageName }}
 type {{ .RouterName }} struct {
 	*router.Router
 	{{- range .Endpoints }}
-		{{ .Name }} func(*{{ .InputType }}) (*{{ .OutputType }}, error)
+		{{ .Name }} func(*request, *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
@@ -56,10 +56,7 @@ func NewRouter() *{{ .RouterName }} {
 				slog.Panicf("No handler exists for {{ .HTTPMethod }} {{ .Path }}")
 			}
 
-			body := &{{ .InputType }}{
-				Request: r,
-				Context: r.Context(),
-			}
+			body := &{{ .InputType }}{}
 			if err := request.Decode(r, body); err != nil {
 				err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
 				slog.Error(err)
@@ -74,7 +71,12 @@ func NewRouter() *{{ .RouterName }} {
 				return
 			}
 
-			rsp, err := rr.{{ .Name }}(body)
+			req := &request{
+				Context: r.Context(),
+				Request: r,
+			}
+
+			rsp, err := rr.{{ .Name }}(req, body)
 			if err != nil {
 				err = errors.WithMessage(err, "failed to handle request")
 				slog.Error(err)
@@ -82,11 +84,16 @@ func NewRouter() *{{ .RouterName }} {
 				return
 			}
 
-			response.WriteJSON(w, rsp)
+			response.WriteJSON(w, rsp.Body)
 		})
 	{{ end }}
 
 	return rr
+}
+
+type request struct {
+	context.Context
+	*http.Request
 }
 `
 
@@ -111,6 +118,9 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 	if g.file.Service == nil {
 		return nil, nil
 	}
+
+	im.Add("context")
+	im.Add("net/http")
 
 	// Make sure the service name is a suitable go struct name
 	if ok := reValidGoStruct.MatchString(g.file.Service.Name); !ok {
