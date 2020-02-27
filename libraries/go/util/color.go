@@ -7,9 +7,9 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/errors"
 )
 
-// ParseHexColor turns a hexadecimal color code (e.g. #FBEE13)
-// into a color.RGBA.
-func ParseHexColor(s string) (c color.RGBA, err error) {
+// HexToColor turns a hexadecimal color code
+// (e.g. #FBEE13) into a color.RGBA.
+func HexToColor(s string) (c color.RGBA, err error) {
 	c.A = 0xff
 	switch len(s) {
 	case 7:
@@ -31,4 +31,10 @@ func ParseHexColor(s string) (c color.RGBA, err error) {
 	}
 
 	return
+}
+
+// ColorToHex turns a color.RGBA into a hexadecimal color
+// code e.g. #FBEE13. The alpha value is ignored.
+func ColorToHex(c color.RGBA) string {
+	return fmt.Sprintf("#%02X%02X%02X", c.R, c.G, c.B)
 }
