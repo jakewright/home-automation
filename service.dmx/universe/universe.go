@@ -1,43 +1,47 @@
-package domain
+package universe
 
 import (
 	"sort"
 	"sync"
+
+	"github.com/jakewright/home-automation/service.dmx/domain"
 )
 
 // Universe represents a set of fixtures in a 512 channel space
 type Universe struct {
 	Number int
 
-	fixtures []Fixture
-	mux      sync.RWMutex
+	fixtures map[string]domain.Fixture
+	mux      *sync.RWMutex
+}
+
+func New(number int) *Universe {
+	return &Universe{
+		Number:   number,
+		fixtures: make(map[string]domain.Fixture),
+		mux:      &sync.RWMutex{},
+	}
 }
 
 // Find returns the fixture with the given ID
-func (u *Universe) Find(id string) Fixture {
+func (u *Universe) Find(id string) domain.Fixture {
 	u.mux.RLock()
 	defer u.mux.RUnlock()
 
-	for _, f := range u.fixtures {
-		if f.ID() == id {
-			return f
-		}
-	}
-
-	return nil
+	return u.fixtures[id]
 }
 
 // AddFixture will add the given fixture to
 // the universe if it does not already exist
-func (u *Universe) AddFixture(f Fixture) {
-	if existing := u.Find(f.ID()); existing != nil {
-		return
-	}
-
+func (u *Universe) AddFixture(f domain.Fixture) {
 	u.mux.Lock()
 	defer u.mux.Unlock()
 
-	u.fixtures = append(u.fixtures, f)
+	if _, ok := u.fixtures[f.ID()]; ok {
+		return
+	}
+
+	u.fixtures[f.ID()] = f
 }
 
 // Valid returns false if any fixtures have overlapping channel ranges
@@ -45,9 +49,10 @@ func (u *Universe) Valid() bool {
 	u.mux.RLock()
 	defer u.mux.RUnlock()
 
-	// Don't modify the slice
-	var f []Fixture
-	copy(f, u.fixtures)
+	var f []domain.Fixture
+	for _, fixture := range u.fixtures {
+		f = append(f, fixture)
+	}
 
 	// Sort the fixtures by offset
 	sort.Slice(f, func(i, j int) bool {

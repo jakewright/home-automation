@@ -3,9 +3,11 @@ package domain
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"image/color"
 
+	"github.com/jakewright/home-automation/libraries/go/device"
+	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
+	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
@@ -43,23 +45,34 @@ func (f *MegaParProfile) DMXValues() []byte {
 
 // SetProperties unmarshals the []byte as JSON and sets
 // any properties that exist in the resulting object.
-func (f *MegaParProfile) SetProperties(data []byte) (bool, error) {
+func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, error) {
 	var properties struct {
+		Power      *bool  `json:"power"`
 		RGB        string `json:"rgb"`
 		Strobe     *byte  `json:"strobe"`
 		Brightness *byte  `json:"brightness"`
-		Power      *bool  `json:"power"`
 	}
 
-	if err := json.Unmarshal(data, &properties); err != nil {
-		return false, err
+	// The state map is the result of unmarshaling the JSON request
+	// so all of the numbers end up being float64s. The easiest way
+	// to turn these into the *byte types we want is to marshal back
+	// to JSON and then unmarshal again. This deals with cases like
+	// the number being too big to fit into a byte (uint8).
+
+	b, err := json.Marshal(state)
+	if err != nil {
+		return false, errors.WithMessage(err, "failed to marshal state into JSON")
+	}
+
+	if err := json.Unmarshal(b, &properties); err != nil {
+		return false, errors.WithMessage(err, "failed to unmarshal JSON")
 	}
 
 	var c color.RGBA
 	if properties.RGB != "" {
 		var err error
-		if c, err = util.ParseHexColor(properties.RGB); err != nil {
-			return false, err
+		if c, err = util.HexToColor(properties.RGB); err != nil {
+			return false, errors.WithMessage(err, "failed to parse hex value")
 		}
 	}
 
@@ -68,52 +81,58 @@ func (f *MegaParProfile) SetProperties(data []byte) (bool, error) {
 	if properties.Power != nil {
 		f.power = *properties.Power
 	}
-	if properties.Brightness != nil {
-		f.brightness = *properties.Brightness
-	}
 	if properties.RGB != "" {
 		f.color = c
 	}
 	if properties.Strobe != nil {
 		f.strobe = *properties.Strobe
 	}
+	if properties.Brightness != nil {
+		f.brightness = *properties.Brightness
+	}
 
 	equal := bytes.Equal(oldState, f.DMXValues())
 	return !equal, nil
 }
 
-// MarshalJSON returns the standard home-automation JSON encoding of the device
-func (f *MegaParProfile) MarshalJSON() ([]byte, error) {
-	rgb := fmt.Sprintf("#%02X%02X%02X", f.color.R, f.color.G, f.color.G)
+// ToDef returns a standard Device type for a MegaParProfile
+func (f *MegaParProfile) ToDef() *devicedef.Device {
+	attributes := map[string]interface{}{
+		"fixture_type": f.Attributes.FixtureType,
+		"offset":       f.Attributes.Offset,
+	}
 
-	return json.Marshal(&struct {
-		*DeviceHeader
-		State map[string]interface{} `json:"state"`
-	}{
-		DeviceHeader: f.DeviceHeader,
-		State: map[string]interface{}{
-			"power": map[string]interface{}{
-				"type":  "bool",
-				"value": f.power,
+	return &devicedef.Device{
+		Id:             f.ID(),
+		Name:           f.Name,
+		Type:           f.Type,
+		Kind:           f.Kind,
+		ControllerName: f.ControllerName,
+		Attributes:     attributes,
+		StateProviders: nil,
+		State: map[string]*devicedef.Property{
+			"power": {
+				Value: f.power,
+				Type:  device.PropertyTypeBool,
 			},
-			"brightness": map[string]interface{}{
-				"type":          "int",
-				"min":           0,
-				"max":           255,
-				"interpolation": "continuous",
-				"value":         f.brightness,
+			"brightness": {
+				Value:         f.brightness,
+				Type:          device.PropertyTypeInt,
+				Min:           0,
+				Max:           255,
+				Interpolation: device.InterpolationContinuous,
 			},
-			"rgb": map[string]interface{}{
-				"type":  "rgb",
-				"value": rgb,
+			"rgb": {
+				Value: util.ColorToHex(f.color),
+				Type:  "rgb",
 			},
-			"strobe": map[string]interface{}{
-				"type":          "int",
-				"min":           0,
-				"max":           255,
-				"interpolation": "continuous",
-				"value":         f.strobe,
+			"strobe": {
+				Value:         f.strobe,
+				Type:          device.PropertyTypeInt,
+				Min:           0,
+				Max:           255,
+				Interpolation: device.InterpolationContinuous,
 			},
 		},
-	})
+	}
 }

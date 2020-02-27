@@ -4,12 +4,37 @@ import (
 	"bytes"
 	"os/exec"
 	"strconv"
+	"strings"
+	"sync"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
 )
 
+var m = sync.Mutex{}
+
 // SetDMX sets all of the DMX values for the given universe
 func SetDMX(universe int, values [512]byte) error {
+	m.Lock()
+	defer m.Unlock()
+
+	a := args(universe, values)
+
+	cmd := exec.Command("ola_set_dmx", a...)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	if err := cmd.Run(); err != nil {
+		return errors.WithMessage(err, "failed to run ola_set_dmx %s", strings.Join(a, " "))
+	}
+
+	// Assume anything written to stderr is a bad thing
+	if stderr.Len() > 0 {
+		return errors.InternalService("ola_set_dmx wrote to stderr: %s", stderr.String())
+	}
+
+	return nil
+}
+
+func args(universe int, values [512]byte) []string {
 	// Iterate over the values backwards until we
 	// find the first non-zero value. This should
 	// make sure we're not actually sending 512
@@ -27,17 +52,5 @@ func SetDMX(universe int, values [512]byte) error {
 		args = append(args, strconv.Itoa(int(v)))
 	}
 
-	cmd := exec.Command("ola_set_dmx", args...)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &stdout, &stderr
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	// Assume anything written to stderr is a bad thing
-	if stderr.Len() > 0 {
-		return errors.InternalService("ola_set_dmx wrote to stderr: %s", stderr.String())
-	}
-
-	return nil
+	return args
 }

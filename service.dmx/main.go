@@ -5,12 +5,12 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/config"
-	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	"github.com/jakewright/home-automation/service.dmx/device"
-	"github.com/jakewright/home-automation/service.dmx/domain"
 	"github.com/jakewright/home-automation/service.dmx/handler"
+	"github.com/jakewright/home-automation/service.dmx/universe"
 )
+
+//go:generate jrpc dmx.def
 
 func main() {
 	svc, err := bootstrap.Init(&bootstrap.Opts{
@@ -23,9 +23,9 @@ func main() {
 	}
 
 	universeNumber := config.Get("universe.number").Int()
-	u := &domain.Universe{Number: universeNumber}
+	u := universe.New(universeNumber)
 
-	l := device.Loader{
+	l := universe.Loader{
 		ServiceName: "service.dmx",
 		Universe:    u,
 	}
@@ -36,9 +36,9 @@ func main() {
 
 	h := handler.DMXHandler{Universe: u}
 
-	r := router.New()
-	r.Get("/{device_id}", h.Read)
-	r.Patch("/{device_id}", h.Update)
+	r := handler.NewRouter()
+	r.GetDevice = h.Read
+	r.UpdateDevice = h.Update
 
 	svc.Run(r)
 }

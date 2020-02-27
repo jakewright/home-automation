@@ -1,81 +1,59 @@
 package handler
 
 import (
-	"io/ioutil"
-	"net/http"
-
-	"github.com/gorilla/mux"
-
+	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/errors"
-	"github.com/jakewright/home-automation/libraries/go/firehose"
-	"github.com/jakewright/home-automation/libraries/go/response"
-	"github.com/jakewright/home-automation/service.dmx/domain"
+	dmxdef "github.com/jakewright/home-automation/service.dmx/def"
 	"github.com/jakewright/home-automation/service.dmx/ola"
+	"github.com/jakewright/home-automation/service.dmx/universe"
 )
 
 // DMXHandler handles device requests
 type DMXHandler struct {
-	Universe *domain.Universe
+	Universe *universe.Universe
 }
 
 // Read returns the current state of a fixture
-func (h *DMXHandler) Read(w http.ResponseWriter, r *http.Request) {
-	// Get the device ID from the route params
-	deviceID, ok := mux.Vars(r)["device_id"]
-	if !ok {
-		response.WriteJSON(w, errors.BadRequest("device_id not set in route params"))
-		return
-	}
-
-	fixture := h.Universe.Find(deviceID)
+func (h *DMXHandler) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
+	fixture := h.Universe.Find(body.DeviceId)
 	if fixture == nil {
-		response.WriteJSON(w, errors.NotFound("Device '%s' not found", deviceID))
-		return
+		return nil, errors.NotFound("device %q not found", body.DeviceId)
 	}
 
-	response.WriteJSON(w, fixture)
+	return &dmxdef.GetDeviceResponse{
+		Device: fixture.ToDef(),
+	}, nil
 }
 
 // Update modifies fixture properties
-func (h *DMXHandler) Update(w http.ResponseWriter, r *http.Request) {
-	// Get the device ID from the route params
-	deviceID, ok := mux.Vars(r)["device_id"]
-	if !ok {
-		response.WriteJSON(w, errors.BadRequest("device_id not set in route params"))
-		return
+func (h *DMXHandler) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
+	errParams := map[string]string{
+		"device_id": body.DeviceId,
 	}
 
-	fixture := h.Universe.Find(deviceID)
+	fixture := h.Universe.Find(body.DeviceId)
 	if fixture == nil {
-		response.WriteJSON(w, errors.NotFound("Device '%s' not found", deviceID))
-		return
+		return nil, errors.NotFound("device %q not found", body.DeviceId, errParams)
 	}
 
-	// Read the body of the request
-	defer func() { _ = r.Body.Close() }()
-	body, err := ioutil.ReadAll(r.Body)
+	changed, err := fixture.SetProperties(body.State)
 	if err != nil {
-		response.WriteJSON(w, errors.WithMessage(err, "failed to read request body"))
-		return
-	}
-
-	changed, err := fixture.SetProperties(body)
-	if err != nil {
-		response.WriteJSON(w, errors.WithMessage(err, "failed to update fixture"))
-		return
+		return nil, errors.WithMessage(err, "failed to update fixture", errParams)
 	}
 
 	if err := ola.SetDMX(h.Universe.Number, h.Universe.DMXValues()); err != nil {
-		response.WriteJSON(w, errors.WithMessage(err, "failed to set DMX values"))
-		return
+		return nil, errors.WithMessage(err, "failed to set DMX values", errParams)
 	}
 
 	if changed {
-		if err := firehose.Publish("device-state-changed."+deviceID, fixture); err != nil {
-			response.WriteJSON(w, errors.WithMessage(err, "failed to emit event"))
-			return
+		if err := (&devicedef.DeviceStateChangedEvent{
+			Device: fixture.ToDef(),
+		}).Publish(); err != nil {
+			return nil, errors.WithMessage(err, "failed to publish state changed event", errParams)
 		}
 	}
 
-	response.WriteJSON(w, fixture)
+	return &dmxdef.UpdateDeviceResponse{
+		Device: fixture.ToDef(),
+	}, nil
 }

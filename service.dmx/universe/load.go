@@ -1,4 +1,4 @@
-package device
+package universe
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 // Loader loads device metadata and instantiates fixtures
 type Loader struct {
 	ServiceName string
-	Universe    *domain.Universe
+	Universe    *Universe
 }
 
 // FetchDevices loads devices from the device registry, creates fixtures, and adds them to the universe.
