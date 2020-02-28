@@ -15,6 +15,7 @@ type Universe struct {
 	mux      *sync.RWMutex
 }
 
+// New returns an initialised universe
 func New(number int) *Universe {
 	return &Universe{
 		Number:   number,
