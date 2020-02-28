@@ -1,4 +1,4 @@
-package ola
+package dmx
 
 import (
 	"strconv"

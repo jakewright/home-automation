@@ -14,11 +14,19 @@ import (
 	def "github.com/jakewright/home-automation/service.dmx/def"
 )
 
+// Request wraps http.Request but exposes the context
+type Request struct {
+	context.Context
+	*http.Request
+}
+
 // DMXRouter wraps router.Router to provide a convenient way to set handlers
 type DMXRouter struct {
 	*router.Router
-	GetDevice    func(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
-	UpdateDevice func(*Request, *def.UpdateDeviceRequest) (*def.UpdateDeviceResponse, error)
+	getDevice               func(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
+	updateDevice            func(*Request, *def.UpdateDeviceRequest) (*def.UpdateDeviceResponse, error)
+	getDeviceHandlerFunc    http.HandlerFunc
+	updateDeviceHandlerFunc http.HandlerFunc
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -27,8 +35,8 @@ func NewRouter() *DMXRouter {
 		Router: router.New(),
 	}
 
-	rr.Router.Handle("GET", "/device", func(w http.ResponseWriter, r *http.Request) {
-		if rr.GetDevice == nil {
+	rr.getDeviceHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.getDevice == nil {
 			slog.Panicf("No handler exists for GET /device")
 		}
 
@@ -52,7 +60,7 @@ func NewRouter() *DMXRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.GetDevice(req, body)
+		rsp, err := rr.getDevice(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -61,10 +69,12 @@ func NewRouter() *DMXRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
 
-	rr.Router.Handle("PATCH", "/device", func(w http.ResponseWriter, r *http.Request) {
-		if rr.UpdateDevice == nil {
+	rr.Router.Handle("GET", "/device", rr.getDeviceHandlerFunc)
+
+	rr.updateDeviceHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.updateDevice == nil {
 			slog.Panicf("No handler exists for PATCH /device")
 		}
 
@@ -88,7 +98,7 @@ func NewRouter() *DMXRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.UpdateDevice(req, body)
+		rsp, err := rr.updateDevice(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -97,12 +107,19 @@ func NewRouter() *DMXRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
+
+	rr.Router.Handle("PATCH", "/device", rr.updateDeviceHandlerFunc)
 
 	return rr
 }
 
-type Request struct {
-	context.Context
-	*http.Request
+func (r *DMXRouter) GetDevice(f func(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)) *DMXRouter {
+	r.getDevice = f
+	return r
+}
+
+func (r *DMXRouter) UpdateDevice(f func(*Request, *def.UpdateDeviceRequest) (*def.UpdateDeviceResponse, error)) *DMXRouter {
+	r.updateDevice = f
+	return r
 }

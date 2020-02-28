@@ -6,6 +6,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/service.dmx/dmx"
 	"github.com/jakewright/home-automation/service.dmx/handler"
 	"github.com/jakewright/home-automation/service.dmx/universe"
 )
@@ -34,11 +35,14 @@ func main() {
 		slog.Panicf("Failed to load devices: %v", err)
 	}
 
-	h := handler.DMXHandler{Universe: u}
+	h := handler.DMXController{
+		Universe: u,
+		Setter:   &dmx.OLA{},
+	}
 
-	r := handler.NewRouter()
-	r.GetDevice = h.Read
-	r.UpdateDevice = h.Update
+	r := handler.NewRouter().
+		GetDevice(h.Read).
+		UpdateDevice(h.Update)
 
 	svc.Run(r)
 }

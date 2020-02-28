@@ -1,4 +1,4 @@
-package ola
+package dmx
 
 import (
 	"bytes"
@@ -10,12 +10,15 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/errors"
 )
 
-var m = sync.Mutex{}
+// OLA sends DMX information via the ola_set_dmx program
+type OLA struct {
+	m sync.Mutex
+}
 
-// SetDMX sets all of the DMX values for the given universe
-func SetDMX(universe int, values [512]byte) error {
-	m.Lock()
-	defer m.Unlock()
+// Set sets all of the DMX values for the given universe
+func (o *OLA) Set(universe int, values [512]byte) error {
+	o.m.Lock()
+	defer o.m.Unlock()
 
 	a := args(universe, values)
 

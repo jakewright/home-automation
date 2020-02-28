@@ -6,6 +6,11 @@ import (
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
+// Fixture types
+const (
+	FixtureTypeMegaParProfile = "mega_par_profile"
+)
+
 // Fixture is an addressable device
 type Fixture interface {
 	ID() string
@@ -30,7 +35,7 @@ type Attributes struct {
 // NewFixtureFromDeviceHeader returns a Fixture based on the device's fixture type attribute
 func NewFixtureFromDeviceHeader(h *DeviceHeader) (Fixture, error) {
 	switch h.Attributes.FixtureType {
-	case "mega_par_profile":
+	case FixtureTypeMegaParProfile:
 		return &MegaParProfile{DeviceHeader: h}, nil
 	}
 	return nil, errors.InternalService("device %s has invalid fixture type '%s'", h.Id, h.Attributes.FixtureType)

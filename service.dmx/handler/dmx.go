@@ -4,18 +4,22 @@ import (
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	dmxdef "github.com/jakewright/home-automation/service.dmx/def"
-	"github.com/jakewright/home-automation/service.dmx/ola"
 	"github.com/jakewright/home-automation/service.dmx/universe"
 )
 
-// DMXHandler handles device requests
-type DMXHandler struct {
+type setter interface {
+	Set(universe int, values [512]byte) error
+}
+
+// DMXController handles device requests
+type DMXController struct {
 	Universe *universe.Universe
+	Setter   setter
 }
 
 // Read returns the current state of a fixture
-func (h *DMXHandler) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
-	fixture := h.Universe.Find(body.DeviceId)
+func (c *DMXController) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
+	fixture := c.Universe.Find(body.DeviceId)
 	if fixture == nil {
 		return nil, errors.NotFound("device %q not found", body.DeviceId)
 	}
@@ -26,12 +30,12 @@ func (h *DMXHandler) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.Ge
 }
 
 // Update modifies fixture properties
-func (h *DMXHandler) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
+func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
 	errParams := map[string]string{
 		"device_id": body.DeviceId,
 	}
 
-	fixture := h.Universe.Find(body.DeviceId)
+	fixture := c.Universe.Find(body.DeviceId)
 	if fixture == nil {
 		return nil, errors.NotFound("device %q not found", body.DeviceId, errParams)
 	}
@@ -41,7 +45,7 @@ func (h *DMXHandler) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*dmxd
 		return nil, errors.WithMessage(err, "failed to update fixture", errParams)
 	}
 
-	if err := ola.SetDMX(h.Universe.Number, h.Universe.DMXValues()); err != nil {
+	if err := c.Setter.Set(c.Universe.Number, c.Universe.DMXValues()); err != nil {
 		return nil, errors.WithMessage(err, "failed to set DMX values", errParams)
 	}
 

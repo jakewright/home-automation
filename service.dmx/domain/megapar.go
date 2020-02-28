@@ -76,6 +76,9 @@ func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, erro
 		}
 	}
 
+	// Don't return any errors past this point otherwise the
+	// in-memory fixture will be in an inconsistent state.
+
 	oldState := f.DMXValues()
 
 	if properties.Power != nil {
@@ -89,6 +92,7 @@ func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, erro
 	}
 	if properties.Brightness != nil {
 		f.brightness = *properties.Brightness
+		f.power = *properties.Brightness > 0
 	}
 
 	equal := bytes.Equal(oldState, f.DMXValues())
