@@ -14,11 +14,19 @@ import (
 	def "github.com/jakewright/home-automation/service.user/def"
 )
 
+// Request wraps http.Request but exposes the context
+type Request struct {
+	context.Context
+	*http.Request
+}
+
 // UserRouter wraps router.Router to provide a convenient way to set handlers
 type UserRouter struct {
 	*router.Router
-	GetUser   func(*Request, *def.GetUserRequest) (*def.GetUserResponse, error)
-	ListUsers func(*Request, *def.ListUsersRequest) (*def.ListUsersResponse, error)
+	getUser              func(*Request, *def.GetUserRequest) (*def.GetUserResponse, error)
+	listUsers            func(*Request, *def.ListUsersRequest) (*def.ListUsersResponse, error)
+	getUserHandlerFunc   http.HandlerFunc
+	listUsersHandlerFunc http.HandlerFunc
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -27,8 +35,8 @@ func NewRouter() *UserRouter {
 		Router: router.New(),
 	}
 
-	rr.Router.Handle("GET", "/user", func(w http.ResponseWriter, r *http.Request) {
-		if rr.GetUser == nil {
+	rr.getUserHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.getUser == nil {
 			slog.Panicf("No handler exists for GET /user")
 		}
 
@@ -52,7 +60,7 @@ func NewRouter() *UserRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.GetUser(req, body)
+		rsp, err := rr.getUser(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -61,10 +69,12 @@ func NewRouter() *UserRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
 
-	rr.Router.Handle("GET", "/users", func(w http.ResponseWriter, r *http.Request) {
-		if rr.ListUsers == nil {
+	rr.Router.Handle("GET", "/user", rr.getUserHandlerFunc)
+
+	rr.listUsersHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.listUsers == nil {
 			slog.Panicf("No handler exists for GET /users")
 		}
 
@@ -88,7 +98,7 @@ func NewRouter() *UserRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.ListUsers(req, body)
+		rsp, err := rr.listUsers(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -97,12 +107,19 @@ func NewRouter() *UserRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
+
+	rr.Router.Handle("GET", "/users", rr.listUsersHandlerFunc)
 
 	return rr
 }
 
-type Request struct {
-	context.Context
-	*http.Request
+func (r *UserRouter) GetUser(f func(*Request, *def.GetUserRequest) (*def.GetUserResponse, error)) *UserRouter {
+	r.getUser = f
+	return r
+}
+
+func (r *UserRouter) ListUsers(f func(*Request, *def.ListUsersRequest) (*def.ListUsersResponse, error)) *UserRouter {
+	r.listUsers = f
+	return r
 }

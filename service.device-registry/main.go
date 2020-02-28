@@ -48,11 +48,11 @@ func main() {
 		RoomRepository:   rr,
 	}
 
-	r := handler.NewRouter()
-	r.GetDevice = deviceHandler.HandleGetDevice
-	r.ListDevices = deviceHandler.HandleListDevices
-	r.GetRoom = roomHandler.HandleGetRoom
-	r.ListRooms = roomHandler.HandleListRooms
+	r := handler.NewRouter().
+		GetDevice(deviceHandler.HandleGetDevice).
+		ListDevices(deviceHandler.HandleListDevices).
+		GetRoom(roomHandler.HandleGetRoom).
+		ListRooms(roomHandler.HandleListRooms)
 
 	svc.Run(r)
 }

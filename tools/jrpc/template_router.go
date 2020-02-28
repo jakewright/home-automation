@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/jakewright/home-automation/tools/jrpc/imports"
@@ -10,7 +11,8 @@ import (
 const packageDirRouter = "handler"
 
 type routerDataEndpoint struct {
-	Name       string
+	NameLower  string
+	NameUpper  string
 	InputType  string
 	OutputType string
 	HTTPMethod string
@@ -36,12 +38,21 @@ package {{ .PackageName }}
 	)
 {{ end }}
 
+// Request wraps http.Request but exposes the context
+type Request struct {
+	context.Context
+	*http.Request
+}
+
 // {{ .RouterName }} wraps router.Router to provide a convenient way to set handlers
 type {{ .RouterName }} struct {
 	*router.Router
 	{{- range .Endpoints }}
-		{{ .Name }} func(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)
+		{{ .NameLower }} func(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
+	{{- range .Endpoints }}
+		{{ .NameLower }}HandlerFunc http.HandlerFunc
+	{{- end}}
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -51,8 +62,8 @@ func NewRouter() *{{ .RouterName }} {
 	}
 
 	{{ range .Endpoints }}
-		rr.Router.Handle("{{ .HTTPMethod }}", "{{ .Path }}", func(w http.ResponseWriter, r *http.Request) {
-			if rr.{{ .Name }} == nil {
+		rr.{{ .NameLower }}HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+			if rr.{{ .NameLower }} == nil {
 				slog.Panicf("No handler exists for {{ .HTTPMethod }} {{ .Path }}")
 			}
 
@@ -76,7 +87,7 @@ func NewRouter() *{{ .RouterName }} {
 				Request: r,
 			}
 
-			rsp, err := rr.{{ .Name }}(req, body)
+			rsp, err := rr.{{ .NameLower }}(req, body)
 			if err != nil {
 				err = errors.WithMessage(err, "failed to handle request")
 				slog.Error(err)
@@ -85,16 +96,23 @@ func NewRouter() *{{ .RouterName }} {
 			}
 
 			response.WriteJSON(w, rsp)
-		})
+		}
+
+		rr.Router.Handle("{{ .HTTPMethod }}", "{{ .Path }}", rr.{{ .NameLower }}HandlerFunc)
 	{{ end }}
 
 	return rr
 }
 
-type Request struct {
-	context.Context
-	*http.Request
-}
+{{ $routerName := .RouterName }}
+
+{{- range .Endpoints }}
+	func (r *{{ $routerName }}) {{ .NameUpper }}(f func(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)) *{{ $routerName }} {
+		r.{{ .NameLower }} = f
+		return r
+	}
+{{ end }}
+
 `
 
 type routerGenerator struct {
@@ -138,6 +156,9 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 
 	endpoints := make([]*routerDataEndpoint, len(g.file.Service.RPCs))
 	for i, r := range g.file.Service.RPCs {
+		nameLower := strings.ToLower(r.Name[0:1]) + r.Name[1:]
+		nameUpper := strings.ToUpper(r.Name[0:1]) + r.Name[1:]
+
 		method, err := getMethod(r)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get RPC %q method: %w", r.Name, err)
@@ -159,7 +180,8 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 		}
 
 		endpoints[i] = &routerDataEndpoint{
-			Name:       r.Name,
+			NameLower:  nameLower,
+			NameUpper:  nameUpper,
 			InputType:  inType.TypeName,
 			OutputType: outType.TypeName,
 			HTTPMethod: method,

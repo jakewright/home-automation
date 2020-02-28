@@ -22,12 +22,12 @@ func main() {
 
 	firehose.Subscribe(consumer.HandleSetSceneEvent)
 
-	r := handler.NewRouter()
-	r.CreateScene = handler.HandleCreateScene
-	r.ReadScene = handler.HandleReadScene
-	r.ListScenes = handler.HandleListScenes
-	r.DeleteScene = handler.HandleDeleteScene
-	r.SetScene = handler.HandleSetScene
+	r := handler.NewRouter().
+		CreateScene(handler.HandleCreateScene).
+		ReadScene(handler.HandleReadScene).
+		ListScenes(handler.HandleListScenes).
+		DeleteScene(handler.HandleDeleteScene).
+		SetScene(handler.HandleSetScene)
 
 	svc.Run(r)
 }

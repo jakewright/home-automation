@@ -14,14 +14,25 @@ import (
 	def "github.com/jakewright/home-automation/service.scene/def"
 )
 
+// Request wraps http.Request but exposes the context
+type Request struct {
+	context.Context
+	*http.Request
+}
+
 // SceneRouter wraps router.Router to provide a convenient way to set handlers
 type SceneRouter struct {
 	*router.Router
-	CreateScene func(*Request, *def.CreateSceneRequest) (*def.CreateSceneResponse, error)
-	ReadScene   func(*Request, *def.ReadSceneRequest) (*def.ReadSceneResponse, error)
-	ListScenes  func(*Request, *def.ListScenesRequest) (*def.ListScenesResponse, error)
-	DeleteScene func(*Request, *def.DeleteSceneRequest) (*def.DeleteSceneResponse, error)
-	SetScene    func(*Request, *def.SetSceneRequest) (*def.SetSceneResponse, error)
+	createScene            func(*Request, *def.CreateSceneRequest) (*def.CreateSceneResponse, error)
+	readScene              func(*Request, *def.ReadSceneRequest) (*def.ReadSceneResponse, error)
+	listScenes             func(*Request, *def.ListScenesRequest) (*def.ListScenesResponse, error)
+	deleteScene            func(*Request, *def.DeleteSceneRequest) (*def.DeleteSceneResponse, error)
+	setScene               func(*Request, *def.SetSceneRequest) (*def.SetSceneResponse, error)
+	createSceneHandlerFunc http.HandlerFunc
+	readSceneHandlerFunc   http.HandlerFunc
+	listScenesHandlerFunc  http.HandlerFunc
+	deleteSceneHandlerFunc http.HandlerFunc
+	setSceneHandlerFunc    http.HandlerFunc
 }
 
 // NewRouter returns a router that is ready to add handlers to
@@ -30,8 +41,8 @@ func NewRouter() *SceneRouter {
 		Router: router.New(),
 	}
 
-	rr.Router.Handle("POST", "/scenes", func(w http.ResponseWriter, r *http.Request) {
-		if rr.CreateScene == nil {
+	rr.createSceneHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.createScene == nil {
 			slog.Panicf("No handler exists for POST /scenes")
 		}
 
@@ -55,7 +66,7 @@ func NewRouter() *SceneRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.CreateScene(req, body)
+		rsp, err := rr.createScene(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -64,10 +75,12 @@ func NewRouter() *SceneRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
 
-	rr.Router.Handle("GET", "/scene", func(w http.ResponseWriter, r *http.Request) {
-		if rr.ReadScene == nil {
+	rr.Router.Handle("POST", "/scenes", rr.createSceneHandlerFunc)
+
+	rr.readSceneHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.readScene == nil {
 			slog.Panicf("No handler exists for GET /scene")
 		}
 
@@ -91,7 +104,7 @@ func NewRouter() *SceneRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.ReadScene(req, body)
+		rsp, err := rr.readScene(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -100,10 +113,12 @@ func NewRouter() *SceneRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
 
-	rr.Router.Handle("GET", "/scenes", func(w http.ResponseWriter, r *http.Request) {
-		if rr.ListScenes == nil {
+	rr.Router.Handle("GET", "/scene", rr.readSceneHandlerFunc)
+
+	rr.listScenesHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.listScenes == nil {
 			slog.Panicf("No handler exists for GET /scenes")
 		}
 
@@ -127,7 +142,7 @@ func NewRouter() *SceneRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.ListScenes(req, body)
+		rsp, err := rr.listScenes(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -136,10 +151,12 @@ func NewRouter() *SceneRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
 
-	rr.Router.Handle("DELETE", "/scene", func(w http.ResponseWriter, r *http.Request) {
-		if rr.DeleteScene == nil {
+	rr.Router.Handle("GET", "/scenes", rr.listScenesHandlerFunc)
+
+	rr.deleteSceneHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.deleteScene == nil {
 			slog.Panicf("No handler exists for DELETE /scene")
 		}
 
@@ -163,7 +180,7 @@ func NewRouter() *SceneRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.DeleteScene(req, body)
+		rsp, err := rr.deleteScene(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -172,10 +189,12 @@ func NewRouter() *SceneRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
 
-	rr.Router.Handle("POST", "/scene/set", func(w http.ResponseWriter, r *http.Request) {
-		if rr.SetScene == nil {
+	rr.Router.Handle("DELETE", "/scene", rr.deleteSceneHandlerFunc)
+
+	rr.setSceneHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		if rr.setScene == nil {
 			slog.Panicf("No handler exists for POST /scene/set")
 		}
 
@@ -199,7 +218,7 @@ func NewRouter() *SceneRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.SetScene(req, body)
+		rsp, err := rr.setScene(req, body)
 		if err != nil {
 			err = errors.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -208,12 +227,34 @@ func NewRouter() *SceneRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	})
+	}
+
+	rr.Router.Handle("POST", "/scene/set", rr.setSceneHandlerFunc)
 
 	return rr
 }
 
-type Request struct {
-	context.Context
-	*http.Request
+func (r *SceneRouter) CreateScene(f func(*Request, *def.CreateSceneRequest) (*def.CreateSceneResponse, error)) *SceneRouter {
+	r.createScene = f
+	return r
+}
+
+func (r *SceneRouter) ReadScene(f func(*Request, *def.ReadSceneRequest) (*def.ReadSceneResponse, error)) *SceneRouter {
+	r.readScene = f
+	return r
+}
+
+func (r *SceneRouter) ListScenes(f func(*Request, *def.ListScenesRequest) (*def.ListScenesResponse, error)) *SceneRouter {
+	r.listScenes = f
+	return r
+}
+
+func (r *SceneRouter) DeleteScene(f func(*Request, *def.DeleteSceneRequest) (*def.DeleteSceneResponse, error)) *SceneRouter {
+	r.deleteScene = f
+	return r
+}
+
+func (r *SceneRouter) SetScene(f func(*Request, *def.SetSceneRequest) (*def.SetSceneResponse, error)) *SceneRouter {
+	r.setScene = f
+	return r
 }
