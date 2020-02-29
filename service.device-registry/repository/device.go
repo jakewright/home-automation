@@ -33,13 +33,13 @@ func (r *DeviceRepository) FindAll() ([]*deviceregistrydef.DeviceHeader, error) 
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	var devices []*deviceregistrydef.DeviceHeader
-	for _, device := range r.devices {
+	devices := make([]*deviceregistrydef.DeviceHeader, len(r.devices))
+	for i, device := range r.devices {
 		out := &deviceregistrydef.DeviceHeader{}
 		if err := copier.Copy(&out, device); err != nil {
 			return nil, err
 		}
-		devices = append(devices, out)
+		devices[i] = out
 	}
 
 	return devices, nil
@@ -78,7 +78,10 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*devicereg
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	var devices []*deviceregistrydef.DeviceHeader
+	// Use an empty slice declaration because if there are
+	// no devices we want to make sure an empty list is
+	// returned in JSON and not null.
+	devices := []*deviceregistrydef.DeviceHeader{}
 	for _, device := range r.devices {
 		if device.ControllerName == controllerName {
 			out := &deviceregistrydef.DeviceHeader{}
