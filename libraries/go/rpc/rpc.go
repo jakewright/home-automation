@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/jakewright/home-automation/libraries/go/errors"
 )
 
 const defaultTimeout = 10 * time.Second
@@ -185,7 +187,7 @@ func (c Client) Do(ctx context.Context, request *Request, v interface{}) (*Respo
 
 		// Allow the unmarshal function to deal with reflection and set the value of &response
 		if err = json.Unmarshal(innerBytes, &v); err != nil {
-			return rsp, err
+			return rsp, errors.WithMessage(err, "failed to unmarshal json %s", innerBytes)
 		}
 	} else {
 		if err = json.Unmarshal(body, &v); err != nil {
