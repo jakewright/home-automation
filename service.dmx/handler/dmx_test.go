@@ -18,13 +18,11 @@ func TestDMXHandler_Update(t *testing.T) {
 	firehose.DefaultClient = &firehose.MockClient{}
 
 	// Create a fixture
-	f, err := domain.NewFixtureFromDeviceHeader(&domain.DeviceHeader{
-		DeviceHeader: &deviceregistrydef.DeviceHeader{
-			Id: "fixture 1",
-		},
-		Attributes: domain.Attributes{
-			FixtureType: domain.FixtureTypeMegaParProfile,
-			Offset:      7,
+	f, err := domain.NewFixtureFromDeviceHeader(&deviceregistrydef.DeviceHeader{
+		Id: "fixture 1",
+		Attributes: map[string]interface{}{
+			"fixture_type": domain.FixtureTypeMegaParProfile,
+			"offset":       7,
 		},
 	})
 	require.NoError(t, err)

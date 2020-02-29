@@ -2,10 +2,9 @@ package universe
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jakewright/home-automation/libraries/go/errors"
-	"github.com/jakewright/home-automation/libraries/go/rpc"
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 	"github.com/jakewright/home-automation/service.dmx/domain"
 )
 
@@ -17,13 +16,14 @@ type Loader struct {
 
 // FetchDevices loads devices from the device registry, creates fixtures, and adds them to the universe.
 func (l *Loader) FetchDevices(ctx context.Context) error {
-	url := fmt.Sprintf("service.device-registry/devices?controller_name=%s", l.ServiceName)
-	var rsp []*domain.DeviceHeader
-	if _, err := rpc.Get(ctx, url, &rsp); err != nil {
-		return err
+	rsp, err := (&deviceregistrydef.ListDevicesRequest{
+		ControllerName: l.ServiceName,
+	}).Do(ctx)
+	if err != nil {
+		return errors.WithMessage(err, "failed to fetch devices")
 	}
 
-	for _, device := range rsp {
+	for _, device := range rsp.DeviceHeaders {
 		switch {
 		case device.ControllerName != l.ServiceName:
 			return errors.InternalService("device %s is not for this controller", device.Id)

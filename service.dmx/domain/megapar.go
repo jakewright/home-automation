@@ -13,7 +13,7 @@ import (
 
 // MegaParProfile is a light by ADJ
 type MegaParProfile struct {
-	*DeviceHeader
+	abstractFixture
 
 	power      bool
 	color      color.RGBA
@@ -21,16 +21,6 @@ type MegaParProfile struct {
 	strobe     byte
 	program    byte
 	brightness byte
-}
-
-// ID returns the device ID
-func (f *MegaParProfile) ID() string {
-	return f.DeviceHeader.Id
-}
-
-// Offset returns the fixture's offset into the channel space
-func (f *MegaParProfile) Offset() int {
-	return f.Attributes.Offset
 }
 
 // DMXValues returns the DMX values for this fixture only
@@ -101,18 +91,13 @@ func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, erro
 
 // ToDef returns a standard Device type for a MegaParProfile
 func (f *MegaParProfile) ToDef() *devicedef.Device {
-	attributes := map[string]interface{}{
-		"fixture_type": f.Attributes.FixtureType,
-		"offset":       f.Attributes.Offset,
-	}
-
 	return &devicedef.Device{
 		Id:             f.ID(),
 		Name:           f.Name,
 		Type:           f.Type,
 		Kind:           f.Kind,
 		ControllerName: f.ControllerName,
-		Attributes:     attributes,
+		Attributes:     f.Attributes,
 		StateProviders: nil,
 		State: map[string]*devicedef.Property{
 			"power": {

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 	"github.com/jakewright/home-automation/service.dmx/domain"
 )
 
@@ -21,6 +22,7 @@ type mockFixture struct {
 func (f *mockFixture) DMXValues() []byte                                  { return make([]byte, f.len) }
 func (f *mockFixture) Offset() int                                        { return f.offset }
 func (f *mockFixture) ID() string                                         { return f.id }
+func (f *mockFixture) SetHeader(*deviceregistrydef.DeviceHeader) error    { panic("implement me") }
 func (f *mockFixture) ToDef() *devicedef.Device                           { panic("implement me") }
 func (f *mockFixture) SetProperties(map[string]interface{}) (bool, error) { panic("implement me") }
 

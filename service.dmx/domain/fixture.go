@@ -13,6 +13,7 @@ const (
 
 // Fixture is an addressable device
 type Fixture interface {
+	SetHeader(*deviceregistrydef.DeviceHeader) error
 	ID() string
 	ToDef() *devicedef.Device
 	DMXValues() []byte
@@ -21,22 +22,36 @@ type Fixture interface {
 }
 
 // DeviceHeader is a wrapper that adds typed Attributes
-type DeviceHeader struct {
-	*deviceregistrydef.DeviceHeader
-	Attributes Attributes `json:"attributes"`
-}
+//type DeviceHeader struct {
+//	*deviceregistrydef.DeviceHeader
+//	Attributes Attributes `json:"attributes"`
+//}
 
 // Attributes describe a fixture
-type Attributes struct {
-	FixtureType string `json:"fixture_type"`
-	Offset      int    `json:"offset"`
-}
+//type Attributes struct {
+//	FixtureType string `json:"fixture_type"`
+//	Offset      int    `json:"offset"`
+//}
 
 // NewFixtureFromDeviceHeader returns a Fixture based on the device's fixture type attribute
-func NewFixtureFromDeviceHeader(h *DeviceHeader) (Fixture, error) {
-	switch h.Attributes.FixtureType {
-	case FixtureTypeMegaParProfile:
-		return &MegaParProfile{DeviceHeader: h}, nil
+func NewFixtureFromDeviceHeader(h *deviceregistrydef.DeviceHeader) (Fixture, error) {
+	fixtureType, ok := h.Attributes["fixture_type"].(string)
+	if !ok {
+		return nil, errors.PreconditionFailed("fixture_type not found in %s device header", h.Id)
 	}
-	return nil, errors.InternalService("device %s has invalid fixture type '%s'", h.Id, h.Attributes.FixtureType)
+
+	var f Fixture
+
+	switch fixtureType {
+	case FixtureTypeMegaParProfile:
+		f = &MegaParProfile{}
+	default:
+		return nil, errors.InternalService("device %s has invalid fixture type '%s'", h.Id, fixtureType)
+	}
+
+	if err := f.SetHeader(h); err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }
