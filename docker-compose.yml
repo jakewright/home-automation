@@ -141,6 +141,18 @@ services:
     env_file:
       - ./.env
 
+  service.dmx:
+    build:
+      dockerfile: service.dmx/dev.dockerfile
+      context: .
+    image: home-automation-dmx
+    volumes:
+      - .:/app
+    ports:
+      - 7012:80
+    env_file:
+      - ./.env
+
   service.event-bus:
     build:
       dockerfile: ./service.event-bus/dev.dockerfile
