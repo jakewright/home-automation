@@ -280,7 +280,7 @@ func getServices(args []string) []string {
 }
 
 func expandService(s string) []string {
-	coreServices := []string{"service.api-gateway", "service.config", "service.device-registry", "redis"}
+	coreServices := []string{"service.api-gateway", "service.config", "service.device-registry", "redis", "mysql"}
 	logServices := []string{"filebeat", "logstash", "service.log"}
 
 	switch s {
