@@ -1,10 +1,10 @@
 FROM golang:1.13
-RUN go get github.com/githubnemo/CompileDaemon
+RUN go get github.com/jakewright/compile-daemon
 
 WORKDIR /app
 COPY . .
 
 RUN go get -v -t -d ./...
 
-# Must use exec form so that CompileDaemon receives signals. The graceful-kill option then forwards them to the go binary.
-CMD ["CompileDaemon", "-build=go install ./service.config", "-command=/go/bin/service.config", "-log-prefix=false", "-graceful-kill=true", "-graceful-timeout=10"]
+# Must use exec form so that compile-daemon receives signals. The graceful-kill option then forwards them to the go binary.
+CMD ["compile-daemon", "-build=go install ./service.config", "-command=/go/bin/service.config", "-directories=service.config,libraries/go", "-log-prefix=false", "-graceful-kill=true", "-graceful-timeout=10"]
