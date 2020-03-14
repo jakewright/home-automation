@@ -7,4 +7,5 @@ const (
 	InterpolationContinuous = "continuous"
 	PropertyTypeBool        = "bool"
 	PropertyTypeInt         = "int"
+	PropertyTypeString      = "string"
 )
