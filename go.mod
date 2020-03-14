@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/creack/pty v1.1.7
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/go-redis/redis/v7 v7.0.0-beta.5
+	github.com/go-redis/redis/v7 v7.2.0
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/gorilla/mux v1.7.3
