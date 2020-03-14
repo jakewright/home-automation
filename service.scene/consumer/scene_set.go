@@ -32,7 +32,7 @@ var HandleSetSceneEvent scenedef.SetSceneEventHandler = func(body *scenedef.SetS
 		return firehose.Discard(err)
 	}
 
-	lock, err := dsync.Lock("scene", body.SceneId)
+	lock, err := dsync.Lock(nil, "scene", body.SceneId)
 	if err != nil {
 		return firehose.Fail(errors.WithMetadata(err, metadata))
 	}

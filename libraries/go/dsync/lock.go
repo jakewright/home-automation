@@ -1,6 +1,7 @@
 package dsync
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -11,6 +12,8 @@ import (
 // This package is a lie. It doesn't implement distributed locking at all.
 // Distributed locking will be implemented if and when there are multiple
 // instances of any services running.
+
+const defaultTimeout = time.Second * 10
 
 // Locker is a lock on a resource that can be locked and unlocked
 type Locker interface {
@@ -35,7 +38,13 @@ func mustGetDefaultLocksmith() Locksmith {
 }
 
 // Lock will forge a lock for the resource and try to acquire the lock
-func Lock(resource string, args ...interface{}) (Locker, error) {
+func Lock(ctx context.Context, resource string, args ...interface{}) (Locker, error) {
+	if ctx == nil {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(context.Background(), defaultTimeout)
+		defer cancel()
+	}
+
 	for _, v := range args {
 		resource = fmt.Sprintf("%s:%s", resource, v)
 	}
@@ -63,8 +72,11 @@ func Lock(resource string, args ...interface{}) (Locker, error) {
 
 	select {
 	case err := <-c:
-		return locker, err
-	case <-time.After(time.Second * 5):
-		return nil, errors.Timeout("Failed to acquire lock in time")
+		if err != nil {
+			return nil, errors.WithMessage(err, "failed to acquire lock")
+		}
+		return locker, nil
+	case <-ctx.Done():
+		return nil, errors.WithMessage(ctx.Err(), "failed to acquire lock in time")
 	}
 }
