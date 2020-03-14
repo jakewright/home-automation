@@ -19,6 +19,7 @@ type Fixture interface {
 	DMXValues() []byte
 	Offset() int
 	SetProperties(map[string]interface{}) (bool, error)
+	Copy() (Fixture, error)
 }
 
 // DeviceHeader is a wrapper that adds typed Attributes

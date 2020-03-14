@@ -2,6 +2,7 @@ package handler
 
 import (
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
+	"github.com/jakewright/home-automation/libraries/go/dsync"
 	"github.com/jakewright/home-automation/libraries/go/errors"
 	dmxdef "github.com/jakewright/home-automation/service.dmx/def"
 	"github.com/jakewright/home-automation/service.dmx/universe"
@@ -19,8 +20,10 @@ type DMXController struct {
 
 // Read returns the current state of a fixture
 func (c *DMXController) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
-	fixture := c.Universe.Find(body.DeviceId)
-	if fixture == nil {
+	fixture, err := c.Universe.Find(body.DeviceId)
+	if err != nil {
+		return nil, errors.WithMessage(err, "failed to find device")
+	} else if fixture == nil {
 		return nil, errors.NotFound("device %q not found", body.DeviceId)
 	}
 
@@ -35,8 +38,16 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 		"device_id": body.DeviceId,
 	}
 
-	fixture := c.Universe.Find(body.DeviceId)
-	if fixture == nil {
+	lock, err := dsync.Lock(r, "dmx-fixture", body.DeviceId)
+	if err != nil {
+		return nil, errors.WithMetadata(err, errParams)
+	}
+	defer lock.Unlock()
+
+	fixture, err := c.Universe.Find(body.DeviceId)
+	if err != nil {
+		return nil, errors.WithMessage(err, "failed to find device")
+	} else if fixture == nil {
 		return nil, errors.NotFound("device %q not found", body.DeviceId, errParams)
 	}
 
@@ -56,6 +67,8 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 			return nil, errors.WithMessage(err, "failed to publish state changed event", errParams)
 		}
 	}
+
+	c.Universe.Save(fixture)
 
 	return &dmxdef.UpdateDeviceResponse{
 		Device: fixture.ToDef(),

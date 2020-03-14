@@ -25,14 +25,19 @@ func New(number int) *Universe {
 }
 
 // Find returns the fixture with the given ID
-func (u *Universe) Find(id string) domain.Fixture {
+func (u *Universe) Find(id string) (domain.Fixture, error) {
 	u.mux.RLock()
 	defer u.mux.RUnlock()
 
-	return u.fixtures[id]
+	f, ok := u.fixtures[id]
+	if !ok {
+		return nil, nil
+	}
+
+	return f.Copy()
 }
 
-// AddFixture will add the given fixture to
+// AddFixture adds the given fixture to
 // the universe if it does not already exist
 func (u *Universe) AddFixture(f domain.Fixture) {
 	u.mux.Lock()
@@ -41,6 +46,15 @@ func (u *Universe) AddFixture(f domain.Fixture) {
 	if _, ok := u.fixtures[f.ID()]; ok {
 		return
 	}
+
+	u.fixtures[f.ID()] = f
+}
+
+// Save adds the given fixture to the universe
+// replacing any existing fixture with the same ID
+func (u *Universe) Save(f domain.Fixture) {
+	u.mux.Lock()
+	defer u.mux.Unlock()
 
 	u.fixtures[f.ID()] = f
 }

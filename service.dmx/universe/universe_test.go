@@ -25,6 +25,7 @@ func (f *mockFixture) ID() string                                         { retu
 func (f *mockFixture) SetHeader(*deviceregistrydef.DeviceHeader) error    { panic("implement me") }
 func (f *mockFixture) ToDef() *devicedef.Device                           { panic("implement me") }
 func (f *mockFixture) SetProperties(map[string]interface{}) (bool, error) { panic("implement me") }
+func (f *mockFixture) Copy() (domain.Fixture, error)                      { panic("implement me") }
 
 func mf(offset, len int) *mockFixture {
 	ctr++

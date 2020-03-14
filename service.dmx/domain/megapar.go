@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"image/color"
 
+	"github.com/jinzhu/copier"
+
 	"github.com/jakewright/home-automation/libraries/go/device"
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/errors"
@@ -124,4 +126,13 @@ func (f *MegaParProfile) ToDef() *devicedef.Device {
 			},
 		},
 	}
+}
+
+// Copy returns a deep copy of the fixture
+func (f *MegaParProfile) Copy() (Fixture, error) {
+	out := &MegaParProfile{}
+	if err := copier.Copy(out, f); err != nil {
+		return nil, errors.WithMessage(err, "failed to copy fixture")
+	}
+	return out, nil
 }
