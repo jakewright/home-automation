@@ -8,10 +8,11 @@ type DeviceHeader struct {
 	Name           string                 `json:"name"`
 	Type           string                 `json:"type"`
 	Kind           string                 `json:"kind"`
+	ControllerName string                 `json:"controller_name"`
 	Attributes     map[string]interface{} `json:"attributes"`
+	StateProviders []string               `json:"state_providers"`
 	RoomId         string                 `json:"room_id"`
 	Room           *Room                  `json:"room"`
-	ControllerName string                 `json:"controller_name"`
 }
 
 // Room is defined in the .def file

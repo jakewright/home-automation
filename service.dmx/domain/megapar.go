@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"image/color"
 
-	"github.com/jinzhu/copier"
-
 	"github.com/jakewright/home-automation/libraries/go/device"
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/errors"
@@ -38,6 +36,10 @@ func (f *MegaParProfile) DMXValues() []byte {
 // SetProperties unmarshals the []byte as JSON and sets
 // any properties that exist in the resulting object.
 func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, error) {
+	if err := device.ValidateState(state, f.ToDef().State); err != nil {
+		return false, err
+	}
+
 	var properties struct {
 		Power      *bool  `json:"power"`
 		RGB        string `json:"rgb"`
@@ -102,37 +104,23 @@ func (f *MegaParProfile) ToDef() *devicedef.Device {
 		Attributes:     f.Attributes,
 		StateProviders: nil,
 		State: map[string]*devicedef.Property{
-			"power": {
-				Value: f.power,
-				Type:  device.PropertyTypeBool,
-			},
-			"brightness": {
-				Value:         f.brightness,
-				Type:          device.PropertyTypeInt,
-				Min:           0,
-				Max:           255,
-				Interpolation: device.InterpolationContinuous,
-			},
-			"rgb": {
-				Value: util.ColorToHex(f.color),
-				Type:  "rgb",
-			},
-			"strobe": {
-				Value:         f.strobe,
-				Type:          device.PropertyTypeInt,
-				Min:           0,
-				Max:           255,
-				Interpolation: device.InterpolationContinuous,
-			},
+			"power":      device.BoolProperty(f.power),
+			"brightness": device.Uint8Property(f.brightness, 0, 255, device.InterpolationContinuous),
+			"rgb":        device.RGBProperty(f.color),
+			"strobe":     device.Uint8Property(f.strobe, 0, 255, device.InterpolationContinuous),
 		},
 	}
 }
 
-// Copy returns a deep copy of the fixture
-func (f *MegaParProfile) Copy() (Fixture, error) {
-	out := &MegaParProfile{}
-	if err := copier.Copy(out, f); err != nil {
-		return nil, errors.WithMessage(err, "failed to copy fixture")
+// Copy returns a copy of the fixture
+func (f *MegaParProfile) Copy() Fixture {
+	return &MegaParProfile{
+		abstractFixture: f.abstractFixture, // note this is not a deep copy
+		power:           f.power,
+		color:           f.color,
+		colorMacro:      f.colorMacro,
+		strobe:          f.strobe,
+		program:         f.program,
+		brightness:      f.brightness,
 	}
-	return out, nil
 }

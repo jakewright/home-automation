@@ -29,10 +29,11 @@ message DeviceHeader {
     string name
     string type // e.g. huelight
     string kind // e.g. lamp
+    string controller_name
     map[string]any attributes
+    []string state_providers
     string room_id
     Room room
-    string controller_name
 }
 
 message Room {

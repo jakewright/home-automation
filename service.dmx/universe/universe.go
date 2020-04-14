@@ -25,13 +25,13 @@ func New(number int) *Universe {
 }
 
 // Find returns the fixture with the given ID
-func (u *Universe) Find(id string) (domain.Fixture, error) {
+func (u *Universe) Find(id string) domain.Fixture {
 	u.mux.RLock()
 	defer u.mux.RUnlock()
 
 	f, ok := u.fixtures[id]
 	if !ok {
-		return nil, nil
+		return nil
 	}
 
 	return f.Copy()

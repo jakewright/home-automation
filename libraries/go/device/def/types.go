@@ -16,15 +16,37 @@ type Device struct {
 	Attributes     map[string]interface{} `json:"attributes"`
 	StateProviders []string               `json:"state_providers"`
 	State          map[string]*Property   `json:"state"`
+	Commands       map[string]*Command    `json:"commands"`
 }
 
 // Property is defined in the .def file
 type Property struct {
 	Value         interface{} `json:"value"`
 	Type          string      `json:"type"`
-	Min           int32       `json:"min"`
-	Max           int32       `json:"max"`
+	Min           *float64    `json:"min"`
+	Max           *float64    `json:"max"`
 	Interpolation string      `json:"interpolation"`
+	Options       []*Option   `json:"options"`
+}
+
+// Command is defined in the .def file
+type Command struct {
+	Args map[string]*Arg `json:"args"`
+}
+
+// Arg is defined in the .def file
+type Arg struct {
+	Required bool      `json:"required"`
+	Type     string    `json:"type"`
+	Min      *float64  `json:"min"`
+	Max      *float64  `json:"max"`
+	Options  []*Option `json:"options"`
+}
+
+// Option is defined in the .def file
+type Option struct {
+	Value string `json:"value"`
+	Name  string `json:"name"`
 }
 
 // DeviceStateChangedEvent is defined in the .def file
@@ -39,6 +61,33 @@ func (m *Device) Validate() error {
 
 // Validate returns an error if any of the fields have bad values
 func (m *Property) Validate() error {
+	for _, r := range m.Options {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *Command) Validate() error {
+	return nil
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *Arg) Validate() error {
+	for _, r := range m.Options {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *Option) Validate() error {
 	return nil
 }
 

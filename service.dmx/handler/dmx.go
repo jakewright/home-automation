@@ -20,10 +20,8 @@ type DMXController struct {
 
 // Read returns the current state of a fixture
 func (c *DMXController) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
-	fixture, err := c.Universe.Find(body.DeviceId)
-	if err != nil {
-		return nil, errors.WithMessage(err, "failed to find device")
-	} else if fixture == nil {
+	fixture := c.Universe.Find(body.DeviceId)
+	if fixture == nil {
 		return nil, errors.NotFound("device %q not found", body.DeviceId)
 	}
 
@@ -44,10 +42,8 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 	}
 	defer lock.Unlock()
 
-	fixture, err := c.Universe.Find(body.DeviceId)
-	if err != nil {
-		return nil, errors.WithMessage(err, "failed to find device")
-	} else if fixture == nil {
+	fixture := c.Universe.Find(body.DeviceId)
+	if fixture == nil {
 		return nil, errors.NotFound("device %q not found", body.DeviceId, errParams)
 	}
 

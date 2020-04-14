@@ -20,17 +20,37 @@ message Device {
     // state_providers is an array of controller names that provide state for this device
     []string state_providers
 
-    // state is the
+    // state is the set of properties that can be set
     map[string]Property state
-    // todo commands
+
+    // commands are stateless commands that can be called
+    map[string]Command commands
 }
 
 message Property {
     any value
     string type
-    int32 min
-    int32 max
+    *float64 min
+    *float64 max
     string interpolation
+    []Option options
+}
+
+message Command {
+    map[string]Arg args
+}
+
+message Arg {
+    bool required
+    string type
+    *float64 min
+    *float64 max
+    []Option options
+}
+
+message Option {
+    string value
+    string name
 }
 
 message DeviceStateChangedEvent {
