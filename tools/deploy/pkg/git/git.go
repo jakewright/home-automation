@@ -63,6 +63,11 @@ func Init(revision string) error {
 	return nil
 }
 
+// Dir returns the full path of the git repo
+func Dir() string {
+	return getMirror().Dir
+}
+
 // ShortHash returns the short hash of the given commit
 func ShortHash(commit string) (string, error) {
 	return getMirror().hash(commit, true)

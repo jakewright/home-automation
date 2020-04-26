@@ -11,7 +11,6 @@ import (
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/git"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
-	"github.com/jakewright/home-automation/tools/deploy/pkg/utils"
 )
 
 // GoBuilder is a builder for golang
@@ -33,8 +32,8 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	op := output.Info("Compiling binary for %s", b.Target.Architecture)
 
 	// Make sure the service exists in the mirror
-	pkgToBuild := fmt.Sprintf("./%s/%s", git.MirrorDirectory, b.Service.Name)
-	if _, err := os.Stat(filepath.Join(utils.CacheDir(), pkgToBuild)); err != nil {
+	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name)
+	if _, err := os.Stat(filepath.Join(git.Dir(), pkgToBuild)); err != nil {
 		op.Failed()
 		return nil, errors.WithMessage(err, "failed to stat service directory")
 	}
@@ -66,8 +65,10 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	binName = fmt.Sprintf("%s-%s", binName, shortHash)
 	binOut := filepath.Join(workingDir, binName)
 
-	if err := exe.Command("go", "build", "-o", binOut, pkgToBuild).
-		Dir(utils.CacheDir()).Env(env).Run().Err; err != nil {
+	flags := fmt.Sprintf("-X github.com/jakewright/home-automation/libraries/go/router.Revision=%s", hash)
+
+	if err := exe.Command("go", "build", "-o", binOut, "-ldflags", flags, pkgToBuild).
+		Dir(git.Dir()).Env(env).Run().Err; err != nil {
 		op.Failed()
 		return nil, errors.WithMessage(err, "failed to compile")
 	}
