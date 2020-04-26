@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"log"
 	"os"
+
+	"github.com/jakewright/home-automation/libraries/go/config"
+	"github.com/jakewright/home-automation/libraries/go/router"
 )
 
 func main() {
@@ -12,16 +14,15 @@ func main() {
 		port = "8080"
 	}
 
-	addr := fmt.Sprintf(":%s", port)
+	// Set config manually so it doesn't need s.config to be running
+	config.DefaultProvider = config.New(map[string]interface{}{
+		"port": port,
+	})
 
-	fmt.Printf("Listening on %s\n", addr)
-
-	http.HandleFunc("/ping", handlePing)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		panic(err)
+	// The router has a default ping handler defined
+	// in: libraries/go/router/middleware.go
+	r := router.New()
+	if err := r.Start(); err != nil {
+		log.Fatal(err)
 	}
-}
-
-func handlePing(w http.ResponseWriter, _ *http.Request) {
-	_, _ = fmt.Fprint(w, "pong")
 }
