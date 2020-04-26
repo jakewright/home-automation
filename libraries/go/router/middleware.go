@@ -10,6 +10,10 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
+// Revision is the service's revision and should be
+// set at build time to the current commit hash.
+var Revision string
+
 func panicRecovery(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	defer func() {
 		if v := recover(); v != nil {
@@ -27,6 +31,14 @@ func panicRecovery(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 			}
 		}
 	}()
+
+	next(w, r)
+}
+
+func revision(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	if Revision != "" {
+		w.Header().Set("X-Revision", Revision)
+	}
 
 	next(w, r)
 }

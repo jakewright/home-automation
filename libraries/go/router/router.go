@@ -25,7 +25,7 @@ func New() *Router {
 		shutdownInvoked: new(int32),
 	}
 
-	r.AddMiddleware(panicRecovery, ping)
+	r.AddMiddleware(panicRecovery, revision, ping)
 	return r
 }
 
