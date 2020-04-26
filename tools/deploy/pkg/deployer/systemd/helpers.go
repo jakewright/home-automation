@@ -171,12 +171,18 @@ func (d *Systemd) restartUnit(client *ssh.Client) error {
 }
 
 func (d *Systemd) cleanup(client *ssh.Client, deploymentName, workingDir string) error {
+	// Delete all old deployment folders from the target
 	if err := exe.RemoteCommand(fmt.Sprintf(
 		"find %s -maxdepth 1 -name '%s' ! -name '%s' -type d -exec rm -r {} +",
 		d.Target.Directory,
 		d.generateDeploymentGlob(),
 		deploymentName,
 	)).Run(client).Err; err != nil {
+		return err
+	}
+
+	// Delete the working directory
+	if err := exe.Command("rm", "-r", workingDir).Run().Err; err != nil {
 		return err
 	}
 
