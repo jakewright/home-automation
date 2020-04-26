@@ -28,7 +28,7 @@ func (d *Systemd) generateDeploymentName(revision string) (string, error) {
 		return "", errors.WithMessage(err, "failed to initialise git mirror")
 	}
 
-	shortHash, err := git.ShortHash()
+	shortHash, err := git.CurrentHash(true)
 	if err != nil {
 		return "", errors.WithMessage(err, "failed to get short hash")
 	}
@@ -67,6 +67,11 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 		return false, errors.WithMessage(err, "failed to get current revision")
 	}
 
+	currentRevision, err = git.ShortHash(currentRevision)
+	if err != nil {
+		return false, errors.WithMessage(err, "failed to get short hash of current revision")
+	}
+
 	fmt.Println()
 	output.Info("Service  %s", aurora.Index(105, d.Service.Name))
 	output.Info("Target   %s %s", aurora.Index(105, d.Target.Name), aurora.Gray(16, d.Target.Host))
@@ -74,6 +79,21 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 		output.Info("Revision %s %s", aurora.Index(105, release.ShortHash), aurora.Gray(16, "(not currently deployed)"))
 	} else {
 		output.Info("Revision %s", aurora.Sprintf(aurora.Index(105, "%s...%s"), currentRevision, release.ShortHash))
+	}
+
+	output.Info("") // blank line
+
+	commits, err := git.Log(currentRevision, release.ShortHash, "./"+d.Service.Name)
+	if err != nil {
+		return false, errors.WithMessage(err, "failed to get commit list")
+	}
+
+	if len(commits) == 0 {
+		output.Info(aurora.Sprintf(aurora.Index(178, "No commits in this range for %s"), d.Service.Name))
+	}
+
+	for _, commit := range commits {
+		output.Info("%s %s", aurora.Index(178, commit.ShortHash), commit.TitleLine)
 	}
 
 	if !output.Confirm(true, "Continue?") {
@@ -147,7 +167,7 @@ WantedBy=multi-user.target
 		WorkingDirectory: d.Target.Directory,
 		Environment:      env,
 		ExecStart:        cmd,
-		Revision:         release.ShortHash,
+		Revision:         release.Revision,
 	}
 
 	b := bytes.Buffer{}

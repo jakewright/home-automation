@@ -11,6 +11,7 @@ import (
 type Release struct {
 	Cmd       string
 	Env       []*EnvVar
+	Revision  string
 	ShortHash string
 }
 

@@ -51,7 +51,13 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 		return nil, errors.InternalService("unsupported architecture %q", b.Target.Architecture)
 	}
 
-	shortHash, err := git.ShortHash()
+	hash, err := git.CurrentHash(false)
+	if err != nil {
+		op.Failed()
+		return nil, errors.WithMessage(err, "failed to get hash")
+	}
+
+	shortHash, err := git.CurrentHash(true)
 	if err != nil {
 		op.Failed()
 		return nil, errors.WithMessage(err, "failed to get short hash")
@@ -71,6 +77,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	return &Release{
 		Cmd:       binName,
 		Env:       []*EnvVar{{"PORT", strconv.Itoa(b.Service.Port)}},
+		Revision:  hash,
 		ShortHash: shortHash,
 	}, nil
 }

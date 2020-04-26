@@ -28,6 +28,12 @@ func getMirror() *Repository {
 	return mirror
 }
 
+// Commit represents a commit as told by git log
+type Commit struct {
+	ShortHash string
+	TitleLine string
+}
+
 // Init clones the repo if necessary and checks out the given revision
 func Init(revision string) error {
 	// Don't initialise twice
@@ -57,9 +63,19 @@ func Init(revision string) error {
 	return nil
 }
 
-// ShortHash returns the short hash of the current git commit
-func ShortHash() (string, error) {
-	return getMirror().shortHash()
+// ShortHash returns the short hash of the given commit
+func ShortHash(commit string) (string, error) {
+	return getMirror().hash(commit, true)
+}
+
+// CurrentHash returns the hash of the current git commit
+func CurrentHash(short bool) (string, error) {
+	return getMirror().hash("HEAD", short)
+}
+
+// Log returns commits for the path between the range given
+func Log(from, to, path string) ([]*Commit, error) {
+	return getMirror().log(from, to, path)
 }
 
 // Repository represents a git repository
@@ -68,11 +84,16 @@ type Repository struct {
 	Remote string
 }
 
-func (r *Repository) shortHash() (string, error) {
-	result := r.revParse("--short", "HEAD")
+func (r *Repository) hash(revision string, short bool) (string, error) {
+	args := []string{revision}
+	if short {
+		args = append([]string{"--short"}, args...)
+	}
+
+	result := r.revParse(args...)
 
 	if result.Err != nil {
-		return "", errors.WithMessage(result.Err, "failed to get short hash")
+		return "", errors.WithMessage(result.Err, "failed to get hash")
 	}
 
 	return result.Stdout, nil
@@ -157,6 +178,36 @@ func (r *Repository) isOnBranch() (bool, error) {
 	}
 
 	return result.Stdout != "", nil
+}
+
+func (r *Repository) log(from, to, path string) ([]*Commit, error) {
+	result := r.exec("log", "--oneline", from+"..."+to, path)
+
+	if result.Err != nil {
+		return nil, result.Err
+	}
+
+	var commits []*Commit
+	lines := strings.Split(result.Stdout, "\n")
+
+	for _, str := range lines {
+		str = strings.TrimSpace(str)
+		if str == "" {
+			continue
+		}
+
+		parts := strings.SplitN(str, " ", 2)
+		if len(parts) != 2 {
+			return nil, errors.InternalService("unexpected log line: %s", str)
+		}
+
+		commits = append(commits, &Commit{
+			ShortHash: parts[0],
+			TitleLine: parts[1],
+		})
+	}
+
+	return commits, nil
 }
 
 func (r *Repository) exec(args ...string) *exe.Result {
