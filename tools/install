@@ -11,6 +11,10 @@ cd "$(dirname "$0")/.."
 
 printf "Installing tools...\n"
 
+printf "deploy "
+go install -ldflags "-X main.BuildDirectory=$(pwd)" ./tools/deploy
+printf "$GREEN$TICK$RESET\n"
+
 printf "hooks "
 # Trailing slash copies contents of hooks to .git/hooks
 cp -pR ./tools/hooks/ ./.git/hooks
