@@ -62,6 +62,8 @@ func (c *Cmd) Run() *Result {
 				Err: errors.WithMetadata(err, errParams),
 			}
 		}
+
+		return &Result{}
 	}
 
 	var stdout, stderr bytes.Buffer
