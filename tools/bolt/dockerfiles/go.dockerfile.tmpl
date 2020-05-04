@@ -1,0 +1,15 @@
+FROM golang:{{ .GoVersion }}-alpine
+
+# Alpine doesn't have git but go get needs it
+RUN apk add --no-cache git
+RUN go get github.com/jakewright/compile-daemon
+
+EXPOSE 80
+
+WORKDIR /app
+COPY . .
+
+RUN go get -v -t -d ./...
+
+# Must use exec form so that compile-daemon receives signals. The graceful-kill option then forwards them to the go binary.
+CMD ["compile-daemon", "-build=go install ./{{ .Service }}", "-command=/go/bin/{{ .Service }}", "-directories={{ .Service }},libraries/go", "-log-prefix=false", "-log-prefix=false", "-graceful-kill=true", "-graceful-timeout=10"]

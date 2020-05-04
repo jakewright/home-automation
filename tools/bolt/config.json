@@ -1,0 +1,7 @@
+{
+  "projectName": "home-automation",
+  "dockerComposeFilePath": "docker-compose.yml",
+  "goVersion": "1.14",
+  "goDockerfileTemplate": "./tools/bolt/dockerfiles/go.dockerfile.tmpl",
+  "databaseService": "mysql"
+}
