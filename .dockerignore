@@ -2,3 +2,9 @@
 **/vendor
 .dockerignore
 .git
+.github
+.vscode
+bin
+data
+docs
+log
