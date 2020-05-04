@@ -33,9 +33,20 @@ func newOp() *Operation {
 	return currentOp
 }
 
-// Complete prints a check mark and a new line
-func (o *Operation) Complete() {
-	fmt.Printf(" %s\n", aurora.Green(checkMark))
+// Complete prints the result of running fmt.Sprintf on args and
+// a new line. If args is empty then a default check mark is used.
+func (o *Operation) Complete(args ...interface{}) {
+	end := fmt.Sprintf(" %s", aurora.Green(checkMark))
+
+	switch len(args) {
+	case 0:
+	case 1:
+		end = fmt.Sprintf("%s", args[0])
+	default:
+		end = fmt.Sprintf(fmt.Sprintf("%s", args[0]), args[1:]...)
+	}
+
+	fmt.Printf("%s\n", end)
 	currentOp = nil
 }
 
