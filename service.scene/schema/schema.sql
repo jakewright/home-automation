@@ -1,3 +1,5 @@
+USE home_automation;
+
 CREATE TABLE IF NOT EXISTS service_scene_scenes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(64) NOT NULL,

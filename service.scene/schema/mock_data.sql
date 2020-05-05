@@ -1,3 +1,5 @@
+USE home_automation;
+
 INSERT INTO `service_scene_scenes` (`id`, `name`, `owner_id`) VALUES
 (1, 'Hue light test', 1);
 

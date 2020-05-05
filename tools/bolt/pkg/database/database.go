@@ -11,13 +11,26 @@ import (
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
 
+const (
+	defaultSchemaFilename   = "schema.sql"
+	defaultMockDataFilename = "mock_data.sql"
+)
+
 // GetDefaultSchema returns the schema found at
 // schema/schema.sql in the service's directory.
 func GetDefaultSchema(serviceName string) (string, error) {
-	// It would be better to load this from config
-	a := "USE home_automation;\n\n"
+	filename := fmt.Sprintf("./%s/schema/%s", serviceName, defaultSchemaFilename)
+	return readFileIfExists(filename)
+}
 
-	filename := fmt.Sprintf("./%s/schema/schema.sql", serviceName)
+// GetMockSQL returns the schema found at schema/mock_data.sql
+//in the service's directory.
+func GetMockSQL(serviceName string) (string, error) {
+	filename := fmt.Sprintf("./%s/schema/%s", serviceName, defaultMockDataFilename)
+	return readFileIfExists(filename)
+}
+
+func readFileIfExists(filename string) (string, error) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return "", nil
 	} else if err != nil {
@@ -29,7 +42,7 @@ func GetDefaultSchema(serviceName string) (string, error) {
 		return "", fmt.Errorf("failed to read %s: %w", filename, err)
 	}
 
-	return a + string(b), nil
+	return string(b), nil
 }
 
 // ApplySchema applies the schema to the database.
