@@ -12,7 +12,7 @@ var dir string
 func Init(tool string) error {
 	osCacheDir, err := os.UserCacheDir()
 	if err != nil {
-		return fmt.Errorf("failed to get user cache dir: %w, err")
+		return fmt.Errorf("failed to get user cache dir: %w", err)
 	}
 
 	dir = path.Join(osCacheDir, "home-automation", tool)

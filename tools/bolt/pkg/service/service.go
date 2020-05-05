@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
+	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/golang"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
@@ -175,9 +176,9 @@ func getServices(args []string) []string {
 // expandService returns the set of services
 // if s is a group name otherwise s
 func expandService(s string) []string {
-	for _, g := range Groups {
-		if s == g.Name {
-			return g.Services
+	for groupName, services := range config.Get().Groups {
+		if s == groupName {
+			return services
 		}
 	}
 

@@ -1,49 +1,24 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"sort"
+	"strings"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
-	"github.com/jakewright/home-automation/tools/bolt/pkg/service"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 	"github.com/jakewright/home-automation/tools/toolutils"
 )
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "run service.foo",
+		Use:   "bolt [command]",
 		Short: "A tool to run home automation services locally",
-		Long:  "Long version",
-		Args:  cobra.MinimumNArgs(1),
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// Global setup goes here
-			if err := toolutils.Init("run"); err != nil {
-				output.Fatal("Failed to initialise toolutils: %v", err)
-			}
-
-			if err := config.Init(); err != nil {
-				output.Fatal("Failed to initialise config: %v", err)
-			}
-		},
-		Run: func(cmd *cobra.Command, args []string) {
-			build, err := cmd.Flags().GetBool("build")
-			if err != nil {
-				output.Fatal("Failed to parse build flag: %v", err)
-			}
-
-			if build {
-				if err := service.Build(args); err != nil {
-					output.Fatal("Failed to build: %v", err)
-				}
-			}
-
-			if err := service.Run(args); err != nil {
-				output.Fatal("Failed to run: %v", err)
-			}
-		},
 	}
 )
 
@@ -56,5 +31,31 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().BoolP("build", "b", false, "rebuild the service before running")
+	if err := toolutils.Init("run"); err != nil {
+		output.Fatal("Failed to initialise toolutils: %v", err)
+	}
+
+	if err := config.Init(); err != nil {
+		output.Fatal("Failed to initialise config: %v", err)
+	}
+
+	// Append the groups to the usage info
+	b := bytes.Buffer{}
+	w := tabwriter.NewWriter(&b, 0, 4, 5, ' ', 0)
+	for name, services := range config.Get().Groups {
+		sort.Strings(services)
+		if _, err := fmt.Fprintf(w, "  %s\t%s\n",
+			name,
+			strings.Join(services, ", "),
+		); err != nil {
+			panic(err)
+		}
+	}
+
+	if err := w.Flush(); err != nil {
+		panic(err)
+	}
+
+	groupInfo := "\nGroups:\n" + b.String()
+	rootCmd.SetHelpTemplate(rootCmd.HelpTemplate() + groupInfo)
 }
