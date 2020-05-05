@@ -44,6 +44,32 @@ func (s *System) Is(name string) (bool, error) {
 	return !fileInfo.IsDir(), nil
 }
 
+// ListAll returns a list of all service names that _could_ be controlled
+// by this system. It doesn't ignore ones that are actually defined
+// in the docker-compose.yml file.
+func (s *System) ListAll() ([]string, error) {
+	files, err := ioutil.ReadDir("./")
+	if err != nil {
+		return nil, fmt.Errorf("failed to list files: %w", err)
+	}
+
+	var services []string
+
+	for _, f := range files {
+		if !f.IsDir() {
+			continue
+		}
+
+		if is, err := s.Is(f.Name()); err != nil {
+			return nil, err
+		} else if is {
+			services = append(services, f.Name())
+		}
+	}
+
+	return services, nil
+}
+
 // NeedsBuilding returns whether the service needs to be built before it can be run
 func (s *System) NeedsBuilding(serviceName string) (bool, error) {
 	imageExists, err := docker.ImageForService(serviceName)
@@ -147,4 +173,9 @@ func (s *System) StopAll() error {
 	}
 
 	return nil
+}
+
+// Exec isn't needed for golang services
+func (s *System) Exec(_, _ string, _ string, _ ...string) error {
+	panic("not implemented")
 }

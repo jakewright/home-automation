@@ -1,9 +1,14 @@
 {
+  "database": {
+    "service": "mysql",
+    "engine": "mysql",
+    "username": "root",
+    "password": "secret"
+  },
   "projectName": "home-automation",
   "dockerComposeFilePath": "docker-compose.yml",
   "goVersion": "1.14",
   "goDockerfileTemplate": "./tools/bolt/dockerfiles/go.dockerfile.tmpl",
-  "databaseService": "mysql",
   "groups": {
     "core": ["service.api-gateway", "service.config", "service.device-registry", "redis", "mysql"],
     "log": ["filebeat", "logstash", "service.log"]

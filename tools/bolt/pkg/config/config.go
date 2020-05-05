@@ -8,12 +8,20 @@ import (
 
 // Config holds options for the tool
 type Config struct {
+	Database              Database            `json:"database"`
 	ProjectName           string              `json:"projectName"`
 	DockerComposeFilePath string              `json:"dockerComposeFilePath"`
 	GoVersion             string              `json:"goVersion"`
 	GoDockerfileTemplate  string              `json:"goDockerfileTemplate"`
-	DatabaseService       string              `json:"databaseService"`
 	Groups                map[string][]string `json:"groups"`
+}
+
+// Database holds config for the database service
+type Database struct {
+	Service  string `json:"service"`
+	Engine   string `json:"engine"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 var c = &Config{}

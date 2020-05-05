@@ -34,6 +34,20 @@ func (s *System) Is(serviceName string) (bool, error) {
 	return false, nil
 }
 
+// ListAll returns a list of all service names
+func (s *System) ListAll() ([]string, error) {
+	f, err := s.file()
+	if err != nil {
+		return nil, err
+	}
+
+	services := make([]string, 0, len(f.Services))
+	for name := range f.Services {
+		services = append(services, name)
+	}
+	return services, nil
+}
+
 // NeedsBuilding returns whether the service needs to be built before it can be run
 func (s *System) NeedsBuilding(serviceName string) (bool, error) {
 	f, err := s.file()
@@ -111,6 +125,23 @@ func (s *System) StopAll() error {
 	// each one manually.
 	if err := s.dockerCompose("stop").SetPseudoTTY().Run().Err; err != nil {
 		return fmt.Errorf("failed to run docker-compose stop: %w", err)
+	}
+
+	return nil
+}
+
+// Exec executes the command inside the service's container
+func (s *System) Exec(serviceName, stdin string, cmd string, args ...string) error {
+	containerID, err := s.getContainerID(serviceName)
+	if err != nil {
+		return fmt.Errorf("failed to get container ID of %s: %w", serviceName, err)
+	}
+
+	joinedCmd := fmt.Sprintf("%s %s", cmd, strings.Join(args, " "))
+	dockerArgs := []string{"exec", "-i", containerID, "sh", "-c", joinedCmd}
+
+	if err := exe.Command("docker", dockerArgs...).SetInput(stdin).Run().Err; err != nil {
+		return fmt.Errorf("failed to docker exec: %w", err)
 	}
 
 	return nil

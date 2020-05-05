@@ -21,11 +21,18 @@ import (
 type Cmd struct {
 	*exec.Cmd
 	PseudoTTY bool
+	Input     string
 }
 
 // SetPseudoTTY is a fluent setter for the pty option.
 func (c *Cmd) SetPseudoTTY() *Cmd {
 	c.PseudoTTY = true
+	return c
+}
+
+// SetInput is a fluent setter for the input option.
+func (c *Cmd) SetInput(input string) *Cmd {
+	c.Input = input
 	return c
 }
 
@@ -64,6 +71,18 @@ func (c *Cmd) Run() *Result {
 		}
 
 		return &Result{}
+	}
+
+	if c.Input != "" {
+		pipe, err := c.Cmd.StdinPipe()
+		if err != nil {
+			return &Result{Err: err}
+		}
+
+		go func() {
+			defer func() { _ = pipe.Close() }()
+			_, _ = io.WriteString(pipe, c.Input)
+		}()
 	}
 
 	var stdout, stderr bytes.Buffer

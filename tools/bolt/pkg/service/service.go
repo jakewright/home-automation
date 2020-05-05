@@ -3,11 +3,29 @@ package service
 import (
 	"fmt"
 
+	"github.com/jakewright/home-automation/libraries/go/util"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/golang"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
+
+// ListAll returns a list of all home automation services
+func ListAll() ([]string, error) {
+	var services []string
+
+	systems := getSystems()
+	for _, s := range systems {
+		ss, err := s.ListAll()
+		if err != nil {
+			return nil, err
+		}
+
+		services = append(services, ss...)
+	}
+
+	return util.UniqueStr(services), nil
+}
 
 // Run runs the services
 func Run(args []string) error {
@@ -134,14 +152,26 @@ func Restart(args []string) error {
 	return nil
 }
 
+// Exec executes a command inside the service's container
+func Exec(serviceName, stdin string, cmd string, args ...string) error {
+	s, err := getSystem(serviceName)
+	if err != nil {
+		return err
+	}
+
+	return s.Exec(serviceName, stdin, cmd, args...)
+}
+
 type system interface {
 	Is(string) (bool, error)
+	ListAll() ([]string, error)
 	NeedsBuilding(string) (bool, error)
 	Run(string) error
 	IsRunning(string) (bool, error)
 	Build(string) error
 	Stop(string) error
 	StopAll() error
+	Exec(serviceName, stdin string, cmd string, args ...string) error
 }
 
 func getSystem(name string) (system, error) {
@@ -158,6 +188,8 @@ func getSystem(name string) (system, error) {
 
 func getSystems() []system {
 	return []system{
+		// The order is important: compose must be first
+		// because golang will "steal" the services.
 		&compose.System{},
 		&golang.System{},
 	}
