@@ -1,6 +1,18 @@
-version: '3'
+# Using version 2.1 for _extends_ support
+version: '2.1'
 
 services:
+  # Templates
+  go-service:
+    build:
+      dockerfile: dockerfiles/go.dev.dockerfile
+      context: .
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env
+
+  # Services
   adminer:
     image: adminer:latest
     environment:
@@ -52,33 +64,15 @@ services:
       - 7005:80
 
   service.config:
+    extends:
+      service: go-service
     build:
-      dockerfile: ./service.config/dev.dockerfile
-      context: .
-    image: home-automation-service-config
+      args:
+        service_name: service.config
     volumes:
-      - .:/app
       - ./private/config/dev.yaml:/data/config.yaml
     ports:
       - 7002:80
-    env_file:
-      - ./.env
-
-  service.controller.dmx:
-    build:
-      dockerfile: ./service.controller.dmx/Dockerfile
-      context: .
-    image: home-automation-controller-dmx
-    volumes:
-      - ./service.controller.dmx:/usr/src/app
-      - ./libraries/python:/root/.local/lib/python2.7/site-packages
-    ports:
-      - 7006:80
-      - 9090:9090
-    environment:
-      APP_CONFIG_FILE: /usr/src/app/config/development.py
-    env_file:
-      - ./.env
 
   service.controller.hue:
     build:
@@ -130,28 +124,22 @@ services:
       - ./.env
 
   service.device-registry:
+    extends:
+      service: go-service
     build:
-      dockerfile: service.device-registry/dev.dockerfile
-      context: .
-    image: home-automation-device-registry
-    volumes:
-      - .:/app
+      args:
+        service_name: service.device-registry
     ports:
       - 7001:80
-    env_file:
-      - ./.env
 
   service.dmx:
+    extends:
+      service: go-service
     build:
-      dockerfile: service.dmx/dev.dockerfile
-      context: .
-    image: home-automation-dmx
-    volumes:
-      - .:/app
+      args:
+        service_name: service.dmx
     ports:
       - 7012:80
-    env_file:
-      - ./.env
 
   service.event-bus:
     build:
@@ -171,41 +159,42 @@ services:
       - ./.env
 
   service.log:
+    extends:
+      service: go-service
     build:
-      dockerfile: service.log/dev.dockerfile
-      context: .
-    image: home-automation-log
+      args:
+        service_name: service.log
     volumes:
-      - .:/app
       - ./log/:/var/log:ro
     ports:
       - 7020:80
-    env_file:
-      - ./.env
 
-  service.scene:
+  service.ping:
+    extends:
+      service: go-service
     build:
-        dockerfile: service.scene/dev.dockerfile
-        context: .
-    image: home-automation-scene
-    volumes:
-      - .:/app
-    ports:
-      - 7010:80
-    env_file:
-      - ./.env
-
-  service.user:
-    build:
-        dockerfile: service.user/dev.dockerfile
-        context: .
-    image: home-automation-user
-    volumes:
-      - .:/app
+      args:
+        service_name: service.ping
     ports:
       - 7011:80
-    env_file:
-      - ./.env
+
+  service.scene:
+    extends:
+      service: go-service
+    build:
+        args:
+          service_name: service.scene
+    ports:
+      - 7010:80
+
+  service.user:
+    extends:
+      service: go-service
+    build:
+      args:
+        service_name: service.user
+    ports:
+      - 7013:80
 
   web.client:
     build:
