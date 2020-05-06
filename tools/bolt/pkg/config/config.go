@@ -18,10 +18,11 @@ type Config struct {
 
 // Database holds config for the database service
 type Database struct {
-	Service  string `json:"service"`
-	Engine   string `json:"engine"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Service      string `json:"service"`
+	AdminService string `json:"adminService"`
+	Engine       string `json:"engine"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
 }
 
 var c = &Config{}

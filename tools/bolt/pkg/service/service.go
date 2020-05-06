@@ -6,6 +6,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/util"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
+	"github.com/jakewright/home-automation/tools/bolt/pkg/domain"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/golang"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
@@ -162,6 +163,15 @@ func Exec(serviceName, stdin string, cmd string, args ...string) error {
 	return s.Exec(serviceName, stdin, cmd, args...)
 }
 
+func Ports(serviceName string) ([]string, error) {
+	s, err := getSystem(serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.Ports(serviceName)
+}
+
 type system interface {
 	Is(string) (bool, error)
 	ListAll() ([]string, error)
@@ -172,6 +182,7 @@ type system interface {
 	Stop(string) error
 	StopAll() error
 	Exec(serviceName, stdin string, cmd string, args ...string) error
+	Info(serviceName string) (*domain.Service, error)
 }
 
 func getSystem(name string) (system, error) {

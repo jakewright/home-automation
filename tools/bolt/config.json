@@ -3,7 +3,8 @@
     "service": "mysql",
     "engine": "mysql",
     "username": "root",
-    "password": "secret"
+    "password": "secret",
+    "adminService": "adminer"
   },
   "projectName": "home-automation",
   "dockerComposeFilePath": "docker-compose.yml",

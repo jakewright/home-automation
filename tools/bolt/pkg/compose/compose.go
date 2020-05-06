@@ -3,6 +3,7 @@ package compose
 import (
 	"fmt"
 	"io/ioutil"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -147,6 +148,30 @@ func (s *System) Exec(serviceName, stdin string, cmd string, args ...string) err
 	return nil
 }
 
+// Ports returns the host ports that the service exposes
+func (s *System) Info(serviceName string) ([]string, error) {
+	f, err := s.file()
+	if err != nil {
+		return nil, err
+	}
+
+	raw := f.Services[serviceName].Ports
+	var ports []string
+	for _, port := range raw {
+		fmt.Println(port)
+		// This only supports the 3000:3000 syntax
+		re := regexp.MustCompile(`^(\d+):(\d+)$`)
+		matches := re.FindStringSubmatch(port)
+		if len(matches) != 3 {
+			continue
+		}
+
+		ports = append(ports, matches[1])
+	}
+
+	return ports, nil
+}
+
 type composeFile struct {
 	Version  string                     `yaml:"version"`
 	Services map[string]*composeService `yaml:"services"`
@@ -154,7 +179,8 @@ type composeFile struct {
 }
 
 type composeService struct {
-	Image string `yaml:"image"`
+	Image string   `yaml:"image"`
+	Ports []string `yaml:"ports"`
 }
 
 func (s *System) file() (*composeFile, error) {

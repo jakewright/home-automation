@@ -14,6 +14,7 @@ import (
 
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/docker"
+	"github.com/jakewright/home-automation/tools/bolt/pkg/domain"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 	"github.com/jakewright/home-automation/tools/toolutils"
 )
@@ -177,5 +178,10 @@ func (s *System) StopAll() error {
 
 // Exec isn't needed for golang services
 func (s *System) Exec(_, _ string, _ string, _ ...string) error {
+	panic("not implemented")
+}
+
+// Info isn't implemented for golang services
+func (s *System) Info(serviceName string) (*domain.Service, error) {
 	panic("not implemented")
 }
