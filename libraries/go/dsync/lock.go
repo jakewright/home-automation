@@ -39,12 +39,6 @@ func mustGetDefaultLocksmith() Locksmith {
 
 // Lock will forge a lock for the resource and try to acquire the lock
 func Lock(ctx context.Context, resource string, args ...interface{}) (Locker, error) {
-	if ctx == nil {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(context.Background(), defaultTimeout)
-		defer cancel()
-	}
-
 	for _, v := range args {
 		resource = fmt.Sprintf("%s:%s", resource, v)
 	}

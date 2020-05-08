@@ -24,19 +24,6 @@ func New(number int) *Universe {
 	}
 }
 
-// Find returns the fixture with the given ID
-func (u *Universe) Find(id string) domain.Fixture {
-	u.mux.RLock()
-	defer u.mux.RUnlock()
-
-	f, ok := u.fixtures[id]
-	if !ok {
-		return nil
-	}
-
-	return f.Copy()
-}
-
 // AddFixture adds the given fixture to
 // the universe if it does not already exist
 func (u *Universe) AddFixture(f domain.Fixture) {
@@ -48,6 +35,19 @@ func (u *Universe) AddFixture(f domain.Fixture) {
 	}
 
 	u.fixtures[f.ID()] = f
+}
+
+// Find returns the fixture with the given ID
+func (u *Universe) Find(id string) domain.Fixture {
+	u.mux.RLock()
+	defer u.mux.RUnlock()
+
+	f, ok := u.fixtures[id]
+	if !ok {
+		return nil
+	}
+
+	return f.Copy()
 }
 
 // Save adds the given fixture to the universe
@@ -85,12 +85,16 @@ func (u *Universe) Valid() bool {
 }
 
 // DMXValues returns the value of all channels in the universe
-func (u *Universe) DMXValues() [512]byte {
+// The given fixture will override the locally held version.
+func (u *Universe) DMXValues(override domain.Fixture) [512]byte {
 	u.mux.RLock()
 	defer u.mux.RUnlock()
 
 	var v [512]byte
-	for _, f := range u.fixtures {
+	for id, f := range u.fixtures {
+		if override.ID() == id {
+			f = override
+		}
 		copy(v[f.Offset():], f.DMXValues())
 	}
 	return v

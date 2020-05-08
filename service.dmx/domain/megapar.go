@@ -3,6 +3,7 @@ package domain
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"image/color"
 
 	"github.com/jakewright/home-automation/libraries/go/device"
@@ -87,6 +88,8 @@ func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, erro
 		f.brightness = *properties.Brightness
 		f.power = *properties.Brightness > 0
 	}
+
+	fmt.Printf("\n\nDMX VALUES:%v\n\n", f.DMXValues())
 
 	equal := bytes.Equal(oldState, f.DMXValues())
 	return !equal, nil

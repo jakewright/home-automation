@@ -99,7 +99,7 @@ func ValidateState(state map[string]interface{}, device *devicedef.Device) error
 		}
 
 		if err := validate(def.Type, def.Min, def.Max, def.Options, value); err != nil {
-			return errors.WithMetadata(err, map[string]string{
+			return errors.WithMessage(err, "failed to validate %q", property, map[string]string{
 				"property": property,
 				"value":    fmt.Sprintf("%v", value),
 			})

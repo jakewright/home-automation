@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -31,8 +32,8 @@ func TestDMXHandler_Update(t *testing.T) {
 	_, err = f.SetProperties(map[string]interface{}{
 		"power":      false,
 		"rgb":        "#FF0000",
-		"strobe":     0,
-		"brightness": 0,
+		"strobe":     float64(0), // force float64 to replicate what json.Unmarshal
+		"brightness": float64(0),
 	})
 	require.NoError(t, err)
 
@@ -49,12 +50,14 @@ func TestDMXHandler_Update(t *testing.T) {
 		Setter:   s,
 	}
 
-	rsp, err := h.Update(nil, &dmxdef.UpdateDeviceRequest{
+	rsp, err := h.Update(&Request{
+		Context: context.Background(),
+	}, &dmxdef.UpdateDeviceRequest{
 		DeviceId: "fixture 1",
 		State: map[string]interface{}{
-			"brightness": 100,
+			"brightness": float64(100),
 			"rgb":        "#00FF00",
-			"strobe":     50,
+			"strobe":     float64(50),
 		},
 	})
 	require.NoError(t, err)
@@ -67,5 +70,5 @@ func TestDMXHandler_Update(t *testing.T) {
 
 	expectedDMXValues := [512]byte{0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 50, 0, 100}
 	require.Equal(t, 1, s.Universe)
-	require.Equal(t, expectedDMXValues, s.Values)
+	require.Equal(t, expectedDMXValues, s.Values, "expected %v\ngot      %v", expectedDMXValues, s.Values)
 }

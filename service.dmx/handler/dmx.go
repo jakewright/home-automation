@@ -36,7 +36,11 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 		"device_id": body.DeviceId,
 	}
 
-	lock, err := dsync.Lock(r, "dmx-fixture", body.DeviceId)
+	// Take a lock on the entire universe because even though we're only
+	// updating a single device, we need to send the entire universe's state
+	// over the wire to the fixtures. We therefore don't want simultaneous
+	// update requests to interleave.
+	lock, err := dsync.Lock(r, "dmx-universe", c.Universe.Number)
 	if err != nil {
 		return nil, errors.WithMetadata(err, errParams)
 	}
@@ -52,7 +56,7 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 		return nil, errors.WithMessage(err, "failed to update fixture", errParams)
 	}
 
-	if err := c.Setter.Set(c.Universe.Number, c.Universe.DMXValues()); err != nil {
+	if err := c.Setter.Set(c.Universe.Number, c.Universe.DMXValues(fixture)); err != nil {
 		return nil, errors.WithMessage(err, "failed to set DMX values", errParams)
 	}
 
