@@ -11,6 +11,10 @@ cd "$(dirname "$0")/.."
 
 printf "Installing tools...\n"
 
+printf "bolt "
+go install -ldflags "-X main.BuildDirectory=$(pwd)" ./tools/bolt
+printf "$GREEN$TICK$RESET\n"
+
 printf "deploy "
 go install -ldflags "-X main.BuildDirectory=$(pwd)" ./tools/deploy
 printf "$GREEN$TICK$RESET\n"
@@ -23,8 +27,3 @@ printf "$GREEN$TICK$RESET\n"
 printf "jrpc "
 go install ./tools/jrpc
 printf "$GREEN$TICK$RESET\n"
-
-printf "run "
-go install -ldflags "-X main.BuildDirectory=$(pwd)" ./tools/run
-printf "$GREEN$TICK$RESET\n"
-
