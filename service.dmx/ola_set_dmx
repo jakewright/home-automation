@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# The service shells out to a binary called ola_set_dmx. In dev, this script
+# acts as that binary. It's also possible to install ola in a docker image.
+# See the old Dockerfile and associated scripts for information:
+# https://github.com/jakewright/home-automation/blob/997b59a8a0893a395ba9daa437724d92ac2bde01/service.controller.dmx/Dockerfile
+
+# There's no need for this script to do anything other than exit with a zero
+# exit code. The shebang must be #!/bin/sh because golang:alpine images do not
+# have bash.

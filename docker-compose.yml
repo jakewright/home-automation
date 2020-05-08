@@ -136,8 +136,7 @@ services:
     extends:
       service: go-service
     build:
-      args:
-        service_name: service.dmx
+      dockerfile: ./service.dmx/dev.dockerfile
     ports:
       - 7012:80
 
