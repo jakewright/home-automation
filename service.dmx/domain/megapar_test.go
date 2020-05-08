@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
 func TestMegaParProfile_SetProperties(t *testing.T) {
@@ -83,6 +85,9 @@ func TestMegaParProfile_SetProperties(t *testing.T) {
 			t.Parallel()
 
 			f := &MegaParProfile{
+				abstractFixture: abstractFixture{
+					DeviceHeader: &deviceregistrydef.DeviceHeader{},
+				},
 				power:      tt.before.power,
 				color:      tt.before.color,
 				strobe:     tt.before.strobe,

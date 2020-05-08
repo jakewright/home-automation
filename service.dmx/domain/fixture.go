@@ -22,18 +22,6 @@ type Fixture interface {
 	Copy() Fixture
 }
 
-// DeviceHeader is a wrapper that adds typed Attributes
-//type DeviceHeader struct {
-//	*deviceregistrydef.DeviceHeader
-//	Attributes Attributes `json:"attributes"`
-//}
-
-// Attributes describe a fixture
-//type Attributes struct {
-//	FixtureType string `json:"fixture_type"`
-//	Offset      int    `json:"offset"`
-//}
-
 // NewFixtureFromDeviceHeader returns a Fixture based on the device's fixture type attribute
 func NewFixtureFromDeviceHeader(h *deviceregistrydef.DeviceHeader) (Fixture, error) {
 	fixtureType, ok := h.Attributes["fixture_type"].(string)

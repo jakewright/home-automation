@@ -33,10 +33,9 @@ func (f *MegaParProfile) DMXValues() []byte {
 	return []byte{f.color.R, f.color.G, f.color.B, f.colorMacro, f.strobe, f.program, b}
 }
 
-// SetProperties unmarshals the []byte as JSON and sets
-// any properties that exist in the resulting object.
+// SetProperties sets any properties that exist in the state map
 func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, error) {
-	if err := device.ValidateState(state, f.ToDef().State); err != nil {
+	if err := device.ValidateState(state, f.ToDef()); err != nil {
 		return false, err
 	}
 
