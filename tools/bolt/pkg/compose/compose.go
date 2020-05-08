@@ -134,6 +134,15 @@ func (c *Compose) Ports(serviceName string) ([]string, error) {
 	return ports, nil
 }
 
+// Logs runs docker-compose logs
+func (c *Compose) Logs(services []string) error {
+	args := []string{"logs", "--follow", "--timestamps", "--tail=30"}
+	args = append(args, services...)
+	// Ignore the error because it returns a non-zero exit code on Ctrl+c
+	c.cmd(args...).SetPseudoTTY().Run()
+	return nil
+}
+
 // cmd returns a docker-compose command with the
 // docker-compose file and project name flags set
 func (c *Compose) cmd(args ...string) *exe.Cmd {
