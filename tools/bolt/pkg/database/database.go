@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
-	"github.com/jakewright/home-automation/tools/bolt/pkg/service"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
 
@@ -15,6 +15,20 @@ const (
 	defaultSchemaFilename   = "schema.sql"
 	defaultMockDataFilename = "mock_data.sql"
 )
+
+// Database performs operations on a database container
+type Database struct {
+	c   *compose.Compose
+	cfg *config.Database
+}
+
+// New returns a Database
+func New(c *compose.Compose, config *config.Database) *Database {
+	return &Database{
+		c:   c,
+		cfg: config,
+	}
+}
 
 // GetDefaultSchema returns the schema found at
 // schema/schema.sql in the service's directory.
@@ -46,24 +60,24 @@ func readFileIfExists(filename string) (string, error) {
 }
 
 // ApplySchema applies the schema to the database.
-func ApplySchema(db *config.Database, serviceName, schema string) error {
-	switch db.Engine {
+func (d *Database) ApplySchema(serviceName, schema string) error {
+	switch d.cfg.Engine {
 	case "mysql":
-		return applyMySQLSchema(db, serviceName, schema)
+		return d.applyMySQLSchema(serviceName, schema)
 	default:
-		return fmt.Errorf("unsupported database engine %q", db.Engine)
+		return fmt.Errorf("unsupported database engine %q", d.cfg.Engine)
 	}
 }
 
-func applyMySQLSchema(db *config.Database, serviceName, schema string) error {
-	running, err := service.IsRunning(db.Service)
+func (d *Database) applyMySQLSchema(serviceName, schema string) error {
+	running, err := d.c.IsRunning(d.cfg.Service)
 	if err != nil {
-		return fmt.Errorf("failed to get status of %s: %v", db.Service, err)
+		return fmt.Errorf("failed to get status of %s: %v", d.cfg.Service, err)
 	}
 
 	if !running {
-		if err := service.Run([]string{db.Service}); err != nil {
-			return fmt.Errorf("failed to start %s: %v", db.Service, err)
+		if err := d.c.Run([]string{d.cfg.Service}); err != nil {
+			return fmt.Errorf("failed to start %s: %v", d.cfg.Service, err)
 		}
 
 		op := output.Info("Waiting for database to startup")
@@ -72,7 +86,7 @@ func applyMySQLSchema(db *config.Database, serviceName, schema string) error {
 	}
 
 	op := output.Info("Applying schema for %s", serviceName)
-	if err := service.Exec(db.Service, schema, "mysql", "-u"+db.Username, "-p"+db.Password); err != nil {
+	if err := d.c.Exec(d.cfg.Service, schema, "mysql", "-u"+d.cfg.Username, "-p"+d.cfg.Password); err != nil {
 		op.Failed()
 		return err
 	}

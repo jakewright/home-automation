@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/service"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
@@ -12,20 +13,31 @@ var (
 		Use:   "stop [service.foo] [service.bar]...",
 		Short: "stop a service",
 		Run: func(cmd *cobra.Command, args []string) {
+			c, err := compose.New()
+			if err != nil {
+				output.Fatal("Failed to init compose: %v", err)
+			}
+
 			all, err := cmd.Flags().GetBool("all")
 			if err != nil {
 				output.Fatal("Failed to parse all flag: %v", err)
 			}
 
 			if all {
-				if err := service.StopAll(); err != nil {
+				if err := c.StopAll(); err != nil {
 					output.Fatal("Failed to stop services: %v", err)
 				}
 
 				return
 			}
 
-			if err := service.Stop(args); err != nil {
+			if len(args) == 0 {
+				return
+			}
+
+			services := service.Expand(args)
+
+			if err := c.Stop(services); err != nil {
 				output.Fatal("Failed to stop services: %v", err)
 			}
 		},

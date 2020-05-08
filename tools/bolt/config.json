@@ -4,7 +4,8 @@
     "engine": "mysql",
     "username": "root",
     "password": "secret",
-    "adminService": "adminer"
+    "adminService": "adminer",
+    "adminServicePath": "/?server=mysql&username=root&db=home_automation"
   },
   "projectName": "home-automation",
   "dockerComposeFilePath": "docker-compose.yml",
