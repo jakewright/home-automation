@@ -12,13 +12,13 @@ type abstractFixture struct {
 
 // SetHeader sets the fixture's header and pulls the offset out of the attributes
 func (f *abstractFixture) SetHeader(h *deviceregistrydef.DeviceHeader) error {
-	offset, ok := h.Attributes["offset"].(int)
+	offset, ok := h.Attributes["offset"].(float64)
 	if !ok {
 		return errors.PreconditionFailed("offset not found in %s device header", h.Id)
 	}
 
 	f.DeviceHeader = h
-	f.offset = offset
+	f.offset = int(offset)
 	return nil
 }
 
