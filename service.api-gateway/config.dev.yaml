@@ -54,6 +54,17 @@ apis:
         config:
           attempts: 1
 
+  service.dmx:
+    name: DMX Service
+    prefix: service.dmx
+    upstream_url: http://service.dmx
+    allow_cross_origin: true
+    plugins:
+      - name: retry
+        enabled: true
+        config:
+          attempts: 1
+
   service.device-registry:
     name: Device Registry
     prefix: service.device-registry
