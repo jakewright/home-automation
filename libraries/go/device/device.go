@@ -89,7 +89,9 @@ func StringArgWithOptions(options []*devicedef.Option, required bool) *devicedef
 }
 
 // ValidateState returns an error if the given state does not conform to the specification
-func ValidateState(state map[string]interface{}, spec map[string]*devicedef.Property) error {
+func ValidateState(state map[string]interface{}, device *devicedef.Device) error {
+	spec := device.State
+
 	for property, value := range state {
 		def, ok := spec[property]
 		if !ok {
