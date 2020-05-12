@@ -23,7 +23,7 @@ func TestDMXHandler_Update(t *testing.T) {
 		Id: "fixture 1",
 		Attributes: map[string]interface{}{
 			"fixture_type": domain.FixtureTypeMegaParProfile,
-			"offset":       7,
+			"offset":       float64(7), // force float64 to replicate what json.Unmarshal
 		},
 	})
 	require.NoError(t, err)
@@ -32,7 +32,7 @@ func TestDMXHandler_Update(t *testing.T) {
 	_, err = f.SetProperties(map[string]interface{}{
 		"power":      false,
 		"rgb":        "#FF0000",
-		"strobe":     float64(0), // force float64 to replicate what json.Unmarshal
+		"strobe":     float64(0),
 		"brightness": float64(0),
 	})
 	require.NoError(t, err)
