@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.log/domain"
 	"github.com/jakewright/home-automation/service.log/repository"
@@ -34,17 +34,17 @@ func (w *Watcher) GetName() string {
 func (w *Watcher) Start() error {
 	// Make sure the receiver struct has been initialised properly
 	if w.LogRepository == nil {
-		return errors.InternalService("LogRepository is not set")
+		return oops.InternalService("LogRepository is not set")
 	}
 	if w.LogRepository.LogDirectory == "" {
-		return errors.InternalService("Log directory is not set")
+		return oops.InternalService("Log directory is not set")
 	}
 
 	// Create an fsnotify watcher and attach to w so
 	// that the Stop method can call Close() on it
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return errors.WithMessage(err, "failed to create file watcher")
+		return oops.WithMessage(err, "failed to create file watcher")
 	}
 	defer func() { _ = watcher.Close() }()
 	w.watcher = watcher
@@ -52,7 +52,7 @@ func (w *Watcher) Start() error {
 	// Start watching the log file directory so we
 	// are notified when new log files are created
 	if err = watcher.Add(w.LogRepository.LogDirectory); err != nil {
-		return errors.WithMessage(err, "failed to watch log directory")
+		return oops.WithMessage(err, "failed to watch log directory")
 	}
 	slog.Infof("Watching %s for changes", w.LogRepository.LogDirectory)
 
@@ -101,7 +101,7 @@ func (w *Watcher) Start() error {
 
 			// It's unclear what state the watcher will be in if we receive
 			// any errors so just return, which will trigger Close()
-			return errors.WithMessage(err, "received error from watcher")
+			return oops.WithMessage(err, "received error from watcher")
 		}
 	}
 }

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/exe"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
@@ -22,7 +22,7 @@ var mirror *Repository
 
 func getMirror() *Repository {
 	if mirror == nil {
-		panic(errors.InternalService("git mirror not initialised"))
+		panic(oops.InternalService("git mirror not initialised"))
 	}
 
 	return mirror
@@ -49,14 +49,14 @@ func Init(revision string) error {
 	op := output.Info("Cloning repo to %s", mirror.Dir)
 	if err := mirror.clone(); err != nil {
 		op.Failed()
-		return errors.WithMessage(err, "failed to clone repo")
+		return oops.WithMessage(err, "failed to clone repo")
 	}
 	op.Complete()
 
 	op = output.Info("Checking out %s", revision)
 	if err := mirror.checkout(revision); err != nil {
 		op.Failed()
-		return errors.WithMessage(err, "failed to checkout %q", revision)
+		return oops.WithMessage(err, "failed to checkout %q", revision)
 	}
 	op.Complete()
 
@@ -98,7 +98,7 @@ func (r *Repository) hash(revision string, short bool) (string, error) {
 	result := r.revParse(args...)
 
 	if result.Err != nil {
-		return "", errors.WithMessage(result.Err, "failed to get hash")
+		return "", oops.WithMessage(result.Err, "failed to get hash")
 	}
 
 	return result.Stdout, nil
@@ -107,24 +107,24 @@ func (r *Repository) hash(revision string, short bool) (string, error) {
 func (r *Repository) clone() error {
 	slog.NewStdoutLogger()
 	if !path.IsAbs(r.Dir) {
-		return errors.InternalService("specified repository directory is not absolute")
+		return oops.InternalService("specified repository directory is not absolute")
 	}
 
 	// Use MkdirAll instead of Mkdir because it
 	// doesn't error if the directory already exists
 	if err := os.MkdirAll(r.Dir, os.ModePerm); err != nil {
-		return errors.WithMessage(err, "failed to create mirror directory")
+		return oops.WithMessage(err, "failed to create mirror directory")
 	}
 
 	// Return early if the repository already exists
 	if exists, err := r.exists(); err != nil {
-		return errors.WithMessage(err, "failed to check if repository exists")
+		return oops.WithMessage(err, "failed to check if repository exists")
 	} else if exists {
 		return nil
 	}
 
 	if err := r.exec("clone", r.Remote, r.Dir); err != nil {
-		return errors.WithMessage(err, "failed to clone repository")
+		return oops.WithMessage(err, "failed to clone repository")
 	}
 
 	return nil
@@ -132,21 +132,21 @@ func (r *Repository) clone() error {
 
 func (r *Repository) checkout(revision string) error {
 	if err := r.exec("fetch", "--all", "--prune", "--prune-tags", "--force").Err; err != nil {
-		return errors.WithMessage(err, "failed to fetch from remote", revision)
+		return oops.WithMessage(err, "failed to fetch from remote", revision)
 	}
 
 	if err := r.exec("checkout", revision).Err; err != nil {
-		return errors.WithMessage(err, "failed to checkout %q", revision)
+		return oops.WithMessage(err, "failed to checkout %q", revision)
 	}
 
 	if onBranch, err := r.isOnBranch(); err != nil {
-		return errors.WithMessage(err, "failed to check if on branch")
+		return oops.WithMessage(err, "failed to check if on branch")
 	} else if !onBranch {
 		return nil
 	}
 
 	if err := r.exec("reset", "--hard", "@{u}").Err; err != nil {
-		return errors.WithMessage(err, "failed to reset branch")
+		return oops.WithMessage(err, "failed to reset branch")
 	}
 
 	return nil
@@ -167,7 +167,7 @@ func (r *Repository) exists() (bool, error) {
 		return true, nil
 	}
 
-	return false, errors.InternalService("unexpected output: %v", result.Stdout)
+	return false, oops.InternalService("unexpected output: %v", result.Stdout)
 }
 
 func (r *Repository) revParse(args ...string) *exe.Result {
@@ -203,7 +203,7 @@ func (r *Repository) log(from, to, path string) ([]*Commit, error) {
 
 		parts := strings.SplitN(str, " ", 2)
 		if len(parts) != 2 {
-			return nil, errors.InternalService("unexpected log line: %s", str)
+			return nil, oops.InternalService("unexpected log line: %s", str)
 		}
 
 		commits = append(commits, &Commit{

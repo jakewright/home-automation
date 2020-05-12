@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 
 	"gopkg.in/yaml.v2"
 )
@@ -54,7 +54,7 @@ func (c *Config) Get(serviceName string) (map[string]interface{}, error) {
 
 	a, ok := c.config["base"].(map[string]interface{})
 	if !ok {
-		return nil, errors.InternalService("base config is not a map", errParams)
+		return nil, oops.InternalService("base config is not a map", errParams)
 	}
 
 	// If no config is defined for the service
@@ -65,7 +65,7 @@ func (c *Config) Get(serviceName string) (map[string]interface{}, error) {
 
 	b, ok := c.config[serviceName].(map[string]interface{})
 	if !ok {
-		return nil, errors.InternalService("service %q config is not a map", errParams)
+		return nil, oops.InternalService("service %q config is not a map", errParams)
 	}
 
 	// Merge the maps with service config taking precedence

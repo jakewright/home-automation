@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image/color"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // HexToColor turns a hexadecimal color code
@@ -21,11 +21,11 @@ func HexToColor(s string) (c color.RGBA, err error) {
 		c.G *= 17
 		c.B *= 17
 	default:
-		err = errors.BadRequest("invalid length; must be 7 or 4 characters")
+		err = oops.BadRequest("invalid length; must be 7 or 4 characters")
 	}
 
 	if err != nil {
-		err = errors.Wrap(err, errors.ErrBadRequest, "failed to parse hex color code", map[string]string{
+		err = oops.Wrap(err, oops.ErrBadRequest, "failed to parse hex color code", map[string]string{
 			"color_code": s,
 		})
 	}

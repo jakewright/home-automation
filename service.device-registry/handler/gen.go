@@ -6,7 +6,7 @@ import (
 	context "context"
 	http "net/http"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/router"
@@ -46,14 +46,14 @@ func NewRouter() *DeviceRegistryRouter {
 
 		body := &def.GetDeviceRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -66,7 +66,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 		rsp, err := rr.getDevice(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -84,14 +84,14 @@ func NewRouter() *DeviceRegistryRouter {
 
 		body := &def.ListDevicesRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -104,7 +104,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 		rsp, err := rr.listDevices(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -122,14 +122,14 @@ func NewRouter() *DeviceRegistryRouter {
 
 		body := &def.GetRoomRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -142,7 +142,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 		rsp, err := rr.getRoom(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -160,14 +160,14 @@ func NewRouter() *DeviceRegistryRouter {
 
 		body := &def.ListRoomsRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -180,7 +180,7 @@ func NewRouter() *DeviceRegistryRouter {
 
 		rsp, err := rr.listRooms(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return

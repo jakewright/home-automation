@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/slog"
@@ -219,14 +219,14 @@ func parseQuery(body *readRequest) (*repository.LogQuery, error) {
 	if body.SinceTime != "" {
 		sinceTime, err = time.Parse(htmlTimeFormat, body.SinceTime)
 		if err != nil {
-			return nil, errors.Wrap(err, errors.ErrBadRequest, "failed to parse since_time")
+			return nil, oops.Wrap(err, oops.ErrBadRequest, "failed to parse since_time")
 		}
 	}
 
 	if body.UntilTime != "" {
 		untilTime, err = time.Parse(htmlTimeFormat, body.UntilTime)
 		if err != nil {
-			return nil, errors.Wrap(err, errors.ErrBadRequest, "failed to parse until_time")
+			return nil, oops.Wrap(err, oops.ErrBadRequest, "failed to parse until_time")
 		}
 	}
 

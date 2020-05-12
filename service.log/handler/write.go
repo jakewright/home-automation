@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/slog"
@@ -26,7 +26,7 @@ func HandleWrite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if slog.DefaultLogger == nil {
-		response.WriteJSON(w, errors.InternalService("Default logger is nil"))
+		response.WriteJSON(w, oops.InternalService("Default logger is nil"))
 		return
 	}
 

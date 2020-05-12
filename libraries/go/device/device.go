@@ -6,7 +6,7 @@ import (
 	"image/color"
 
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/util"
 )
@@ -95,11 +95,11 @@ func ValidateState(state map[string]interface{}, device *devicedef.Device) error
 	for property, value := range state {
 		def, ok := spec[property]
 		if !ok {
-			return errors.BadRequest("%q is not a valid property", property)
+			return oops.BadRequest("%q is not a valid property", property)
 		}
 
 		if err := validate(def.Type, def.Min, def.Max, def.Options, value); err != nil {
-			return errors.WithMessage(err, "failed to validate %q", property, map[string]string{
+			return oops.WithMessage(err, "failed to validate %q", property, map[string]string{
 				"property": property,
 				"value":    fmt.Sprintf("%v", value),
 			})
@@ -113,21 +113,21 @@ func ValidateState(state map[string]interface{}, device *devicedef.Device) error
 func ValidateCommand(command string, args map[string]interface{}, spec map[string]*devicedef.Command) error {
 	cmd, ok := spec[command]
 	if !ok {
-		return errors.BadRequest("%q is not a valid command", command)
+		return oops.BadRequest("%q is not a valid command", command)
 	}
 
 	for argName, argDef := range cmd.Args {
 		val, ok := args[argName]
 		if !ok {
 			if argDef.Required {
-				return errors.BadRequest("%q is a required argument", argName)
+				return oops.BadRequest("%q is a required argument", argName)
 			}
 
 			continue
 		}
 
 		if err := validate(argDef.Type, argDef.Min, argDef.Max, argDef.Options, val); err != nil {
-			return errors.WithMetadata(err, map[string]string{
+			return oops.WithMetadata(err, map[string]string{
 				"arg": argName,
 				"val": fmt.Sprintf("%v", val),
 			})
@@ -141,7 +141,7 @@ func validate(t string, min, max *float64, options []*devicedef.Option, v interf
 	switch t {
 	case TypeBool:
 		if _, ok := v.(bool); !ok {
-			return errors.BadRequest("expected type %s but got %T", TypeBool, v)
+			return oops.BadRequest("expected type %s but got %T", TypeBool, v)
 		}
 
 		return nil
@@ -151,25 +151,25 @@ func validate(t string, min, max *float64, options []*devicedef.Option, v interf
 		// unmarshals JSON numbers into float 64
 		f, ok := v.(float64)
 		if !ok {
-			return errors.BadRequest("expected type %s but got %T", TypeInt, v)
+			return oops.BadRequest("expected type %s but got %T", TypeInt, v)
 		}
 
 		if min != nil {
 			if f < *min {
-				return errors.BadRequest("value of %f is lower than minimum %f", f, *min)
+				return oops.BadRequest("value of %f is lower than minimum %f", f, *min)
 			}
 		}
 
 		if max != nil {
 			if f > *max {
-				return errors.BadRequest("value of %f is higher than maximum %f", f, *max)
+				return oops.BadRequest("value of %f is higher than maximum %f", f, *max)
 			}
 		}
 
 	case TypeString:
 		s, ok := v.(string)
 		if !ok {
-			return errors.BadRequest("expected type %s but got %T", TypeString, v)
+			return oops.BadRequest("expected type %s but got %T", TypeString, v)
 		}
 
 		if len(options) > 0 {
@@ -181,7 +181,7 @@ func validate(t string, min, max *float64, options []*devicedef.Option, v interf
 				}
 			}
 			if !valid {
-				return errors.BadRequest("invalid value %q", s)
+				return oops.BadRequest("invalid value %q", s)
 			}
 		}
 	}

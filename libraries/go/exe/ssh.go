@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // RemoteCmd is a command that is executed over SSH
@@ -42,7 +42,7 @@ func (c *RemoteCmd) Run(client *ssh.Client) Result {
 	session, err := client.NewSession()
 	if err != nil {
 		return Result{
-			Err: errors.WithMessage(err, "failed to start session", errParams),
+			Err: oops.WithMessage(err, "failed to start session", errParams),
 		}
 	}
 	defer func() { _ = session.Close() }()
@@ -53,7 +53,7 @@ func (c *RemoteCmd) Run(client *ssh.Client) Result {
 		}
 		if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
 			return Result{
-				Err: errors.WithMessage(err, "failed to request Pty", errParams),
+				Err: oops.WithMessage(err, "failed to request Pty", errParams),
 			}
 		}
 	}
@@ -70,7 +70,7 @@ func (c *RemoteCmd) Run(client *ssh.Client) Result {
 	result.Stderr = strings.TrimSpace(stderr.String())
 
 	if err != nil {
-		result.Err = errors.WithMessage(err, result.Stderr, errParams)
+		result.Err = oops.WithMessage(err, result.Stderr, errParams)
 	}
 
 	return result
@@ -82,7 +82,7 @@ func SSHClient(username, host string) (*ssh.Client, error) {
 	socket := os.Getenv("SSH_AUTH_SOCK")
 	conn, err := net.Dial("unix", socket)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to open SSH_AUTH_SOCK")
+		return nil, oops.WithMessage(err, "failed to open SSH_AUTH_SOCK")
 	}
 
 	agentClient := agent.NewClient(conn)
@@ -97,7 +97,7 @@ func SSHClient(username, host string) (*ssh.Client, error) {
 
 	client, err := ssh.Dial("tcp", host+":22", clientConfig)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to dial %s", host)
+		return nil, oops.WithMessage(err, "failed to dial %s", host)
 	}
 
 	return client, nil

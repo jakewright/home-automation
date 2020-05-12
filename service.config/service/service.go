@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.config/domain"
 )
@@ -38,7 +38,7 @@ func (s *ConfigService) Reload() (bool, error) {
 
 	reloaded, err := s.Config.SetFromBytes(data)
 	if err != nil {
-		return false, errors.InternalService("failed to set config from bytes: %v", err)
+		return false, oops.InternalService("failed to set config from bytes: %v", err)
 	}
 
 	if reloaded {

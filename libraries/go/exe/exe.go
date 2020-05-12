@@ -14,7 +14,7 @@ import (
 	"github.com/creack/pty"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // Cmd represents an external command being prepared or run.
@@ -66,7 +66,7 @@ func (c *Cmd) Run() *Result {
 	if c.PseudoTTY {
 		if err := runPTY(c.Cmd); err != nil {
 			return &Result{
-				Err: errors.WithMetadata(err, errParams),
+				Err: oops.WithMetadata(err, errParams),
 			}
 		}
 
@@ -97,7 +97,7 @@ func (c *Cmd) Run() *Result {
 	result.Stderr = strings.TrimSpace(stderr.String())
 
 	if err != nil {
-		result.Err = errors.WithMessage(err, result.Stderr, errParams)
+		result.Err = oops.WithMessage(err, result.Stderr, errParams)
 	}
 
 	return result

@@ -2,7 +2,7 @@ package domain
 
 import (
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
@@ -26,7 +26,7 @@ type Fixture interface {
 func NewFixtureFromDeviceHeader(h *deviceregistrydef.DeviceHeader) (Fixture, error) {
 	fixtureType, ok := h.Attributes["fixture_type"].(string)
 	if !ok {
-		return nil, errors.PreconditionFailed("fixture_type not found in %s device header", h.Id)
+		return nil, oops.PreconditionFailed("fixture_type not found in %s device header", h.Id)
 	}
 
 	var f Fixture
@@ -35,7 +35,7 @@ func NewFixtureFromDeviceHeader(h *deviceregistrydef.DeviceHeader) (Fixture, err
 	case FixtureTypeMegaParProfile:
 		f = &MegaParProfile{}
 	default:
-		return nil, errors.InternalService("device %s has invalid fixture type '%s'", h.Id, fixtureType)
+		return nil, oops.InternalService("device %s has invalid fixture type '%s'", h.Id, fixtureType)
 	}
 
 	if err := f.SetHeader(h); err != nil {

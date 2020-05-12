@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
@@ -26,12 +26,12 @@ func Decode(r *http.Request, v interface{}) error {
 		TagName: "json",
 	})
 	if err != nil {
-		return errors.WithMessage(err, "failed to create decoder")
+		return oops.WithMessage(err, "failed to create decoder")
 	}
 
 	// Unmarshal route parameters
 	if err := decoder.Decode(mux.Vars(r)); err != nil {
-		return errors.WithMessage(err, "failed to decode route parameters")
+		return oops.WithMessage(err, "failed to decode route parameters")
 	}
 
 	// Query parameters come out as a map[string][]string so we loop through them all
@@ -51,7 +51,7 @@ func Decode(r *http.Request, v interface{}) error {
 
 	// Unmarshal query parameters
 	if err := decoder.Decode(params); err != nil {
-		return errors.WithMessage(err, "failed to decode query parameters")
+		return oops.WithMessage(err, "failed to decode query parameters")
 	}
 
 	// If there's no body, return early
@@ -63,7 +63,7 @@ func Decode(r *http.Request, v interface{}) error {
 	defer func() { _ = r.Body.Close() }()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return errors.WithMessage(err, "failed to read request body")
+		return oops.WithMessage(err, "failed to read request body")
 	}
 
 	// If the body is empty, return early
@@ -73,7 +73,7 @@ func Decode(r *http.Request, v interface{}) error {
 
 	// Assume the body is JSON and unmarshal into v
 	if err := json.Unmarshal(body, v); err != nil {
-		return errors.WithMessage(err, "failed to unmarshal request body")
+		return oops.WithMessage(err, "failed to unmarshal request body")
 	}
 
 	return nil

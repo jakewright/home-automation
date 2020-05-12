@@ -3,7 +3,7 @@ package database
 import (
 	"github.com/jinzhu/gorm"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
@@ -22,10 +22,10 @@ func mustGetDefaultDB() *gorm.DB {
 func Find(out interface{}, where ...interface{}) error {
 	if err := mustGetDefaultDB().Find(out, where...).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
-			return errors.WithCode(err, errors.ErrNotFound)
+			return oops.WithCode(err, oops.ErrNotFound)
 		}
 
-		return errors.Wrap(err, errors.ErrInternalService, "failed to execute find")
+		return oops.Wrap(err, oops.ErrInternalService, "failed to execute find")
 	}
 
 	return nil
@@ -34,7 +34,7 @@ func Find(out interface{}, where ...interface{}) error {
 // Create inserts value into the database
 func Create(value interface{}) error {
 	if err := mustGetDefaultDB().Create(value).Error; err != nil {
-		return errors.Wrap(err, errors.ErrInternalService, "failed to execute create")
+		return oops.Wrap(err, oops.ErrInternalService, "failed to execute create")
 	}
 	return nil
 }
@@ -43,7 +43,7 @@ func Create(value interface{}) error {
 func Delete(value interface{}, where ...interface{}) error {
 	// Unscoped() disables soft delete
 	if err := mustGetDefaultDB().Unscoped().Delete(value, where...).Error; err != nil {
-		return errors.Wrap(err, errors.ErrInternalService, "failed to execute delete")
+		return oops.Wrap(err, oops.ErrInternalService, "failed to execute delete")
 	}
 	return nil
 }

@@ -96,7 +96,7 @@ package {{ .PackageName }}
 				{{ else }}
 					if true {
 				{{ end -}}
-					return errors.BadRequest("field {{ $field.JSONName }} is required")
+					return oops.BadRequest("field {{ $field.JSONName }} is required")
 				}
 			{{ end -}}
 		{{ end -}}
@@ -120,7 +120,7 @@ func (g *typesGenerator) PackageDir() string {
 }
 
 func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
-	im.Add("github.com/jakewright/home-automation/libraries/go/errors")
+	im.Add("github.com/jakewright/home-automation/libraries/go/oops")
 
 	if len(g.file.Messages) == 0 {
 		return nil, nil

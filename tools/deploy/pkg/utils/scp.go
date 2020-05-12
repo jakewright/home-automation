@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/exe"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
 
@@ -15,7 +15,7 @@ func SCP(src, username, host, dst string) error {
 	var args []string
 
 	if fi, err := os.Stat(src); err != nil {
-		return errors.WithMessage(err, "failed to stat src")
+		return oops.WithMessage(err, "failed to stat src")
 	} else if fi.IsDir() {
 		args = append(args, "-r")
 	}
@@ -25,7 +25,7 @@ func SCP(src, username, host, dst string) error {
 	output.Debug("scp %s", strings.Join(args, " "))
 
 	if err := exe.Command("scp", args...).Run().Err; err != nil {
-		return errors.WithMessage(err, "failed to scp file")
+		return oops.WithMessage(err, "failed to scp file")
 	}
 
 	return nil

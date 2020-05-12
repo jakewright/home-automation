@@ -3,7 +3,7 @@
 package devicedef
 
 import (
-	errors "github.com/jakewright/home-automation/libraries/go/errors"
+	oops "github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // Device is defined in the .def file
@@ -98,7 +98,7 @@ func (m *DeviceStateChangedEvent) Validate() error {
 	}
 
 	if m.Device == nil {
-		return errors.BadRequest("field device is required")
+		return oops.BadRequest("field device is required")
 	}
 	return nil
 }

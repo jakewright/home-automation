@@ -5,7 +5,7 @@ package scenedef
 import (
 	time "time"
 
-	errors "github.com/jakewright/home-automation/libraries/go/errors"
+	oops "github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // Scene is defined in the .def file
@@ -120,10 +120,10 @@ func (m *Action) Validate() error {
 // Validate returns an error if any of the fields have bad values
 func (m *CreateSceneRequest) Validate() error {
 	if m.Name == "" {
-		return errors.BadRequest("field name is required")
+		return oops.BadRequest("field name is required")
 	}
 	if m.OwnerId == 0 {
-		return errors.BadRequest("field owner_id is required")
+		return oops.BadRequest("field owner_id is required")
 	}
 	for _, r := range m.Actions {
 		if err := r.Validate(); err != nil {
@@ -132,7 +132,7 @@ func (m *CreateSceneRequest) Validate() error {
 	}
 
 	if len(m.Actions) == 0 {
-		return errors.BadRequest("field actions is required")
+		return oops.BadRequest("field actions is required")
 	}
 	return nil
 }

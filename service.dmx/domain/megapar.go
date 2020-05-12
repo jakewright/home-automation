@@ -7,7 +7,7 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/device"
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
@@ -54,18 +54,18 @@ func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, erro
 
 	b, err := json.Marshal(state)
 	if err != nil {
-		return false, errors.WithMessage(err, "failed to marshal state into JSON")
+		return false, oops.WithMessage(err, "failed to marshal state into JSON")
 	}
 
 	if err := json.Unmarshal(b, &properties); err != nil {
-		return false, errors.WithMessage(err, "failed to unmarshal JSON")
+		return false, oops.WithMessage(err, "failed to unmarshal JSON")
 	}
 
 	var c color.RGBA
 	if properties.RGB != "" {
 		var err error
 		if c, err = util.HexToColor(properties.RGB); err != nil {
-			return false, errors.WithMessage(err, "failed to parse hex value")
+			return false, oops.WithMessage(err, "failed to parse hex value")
 		}
 	}
 

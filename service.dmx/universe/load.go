@@ -3,7 +3,7 @@ package universe
 import (
 	"context"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 	"github.com/jakewright/home-automation/service.dmx/domain"
 )
@@ -20,20 +20,20 @@ func (l *Loader) FetchDevices(ctx context.Context) error {
 		ControllerName: l.ServiceName,
 	}).Do(ctx)
 	if err != nil {
-		return errors.WithMessage(err, "failed to fetch devices")
+		return oops.WithMessage(err, "failed to fetch devices")
 	}
 
 	for _, device := range rsp.DeviceHeaders {
 		switch {
 		case device.ControllerName != l.ServiceName:
-			return errors.InternalService("device %s is not for this controller", device.Id)
+			return oops.InternalService("device %s is not for this controller", device.Id)
 		case device.Type != "dmx":
-			return errors.InternalService("device %s does not have type dmx", device.Id)
+			return oops.InternalService("device %s does not have type dmx", device.Id)
 		}
 
 		fixture, err := domain.NewFixtureFromDeviceHeader(device)
 		if err != nil {
-			return errors.WithMessage(err, "failed to create fixture")
+			return oops.WithMessage(err, "failed to create fixture")
 		}
 
 		l.Universe.AddFixture(fixture)

@@ -13,8 +13,8 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/dsync"
-	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 
@@ -105,7 +105,7 @@ func initFirehose(svc *Service) error {
 	port := config.Get("redis.port").Int()
 
 	if host == "" || port == 0 {
-		return errors.InternalService("Redis host and port not set in config")
+		return oops.InternalService("Redis host and port not set in config")
 	}
 
 	addr := fmt.Sprintf("%s:%d", host, port)
@@ -169,7 +169,7 @@ func initDatabase(opts *Opts, svc *Service) error {
 	charset := "utf8mb4"
 
 	if host == "" || username == "" || password == "" {
-		return errors.InternalService("MySQL host, username and password not set in config")
+		return oops.InternalService("MySQL host, username and password not set in config")
 	}
 
 	addr := fmt.Sprintf("%s:%s@(%s)/%s?charset=%s&parseTime=True&loc=Local", username, password, host, databaseName, charset)

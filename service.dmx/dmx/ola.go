@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // OLA sends DMX information via the ola_set_dmx program
@@ -26,12 +26,12 @@ func (o *OLA) Set(universe int, values [512]byte) error {
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
 	if err := cmd.Run(); err != nil {
-		return errors.WithMessage(err, "failed to run ola_set_dmx %s", strings.Join(a, " "))
+		return oops.WithMessage(err, "failed to run ola_set_dmx %s", strings.Join(a, " "))
 	}
 
 	// Assume anything written to stderr is a bad thing
 	if stderr.Len() > 0 {
-		return errors.InternalService("ola_set_dmx wrote to stderr: %s", stderr.String())
+		return oops.InternalService("ola_set_dmx wrote to stderr: %s", stderr.String())
 	}
 
 	return nil

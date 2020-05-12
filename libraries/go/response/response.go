@@ -9,7 +9,7 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/slog"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 type response struct {
@@ -30,7 +30,7 @@ func WriteJSON(w http.ResponseWriter, data interface{}) {
 	status := http.StatusOK
 	payload := response{}
 
-	if e, ok := data.(*errors.Error); ok {
+	if e, ok := data.(*oops.Error); ok {
 		status = e.HTTPStatus()
 		payload.Message = e.Error()
 	} else if e, ok := (data).(error); ok {

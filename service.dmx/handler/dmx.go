@@ -3,7 +3,7 @@ package handler
 import (
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/dsync"
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	dmxdef "github.com/jakewright/home-automation/service.dmx/def"
 	"github.com/jakewright/home-automation/service.dmx/universe"
 )
@@ -22,7 +22,7 @@ type DMXController struct {
 func (c *DMXController) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
 	fixture := c.Universe.Find(body.DeviceId)
 	if fixture == nil {
-		return nil, errors.NotFound("device %q not found", body.DeviceId)
+		return nil, oops.NotFound("device %q not found", body.DeviceId)
 	}
 
 	return &dmxdef.GetDeviceResponse{
@@ -42,29 +42,29 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 	// update requests to interleave.
 	lock, err := dsync.Lock(r, "dmx-universe", c.Universe.Number)
 	if err != nil {
-		return nil, errors.WithMetadata(err, errParams)
+		return nil, oops.WithMetadata(err, errParams)
 	}
 	defer lock.Unlock()
 
 	fixture := c.Universe.Find(body.DeviceId)
 	if fixture == nil {
-		return nil, errors.NotFound("device %q not found", body.DeviceId, errParams)
+		return nil, oops.NotFound("device %q not found", body.DeviceId, errParams)
 	}
 
 	changed, err := fixture.SetProperties(body.State)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to update fixture", errParams)
+		return nil, oops.WithMessage(err, "failed to update fixture", errParams)
 	}
 
 	if err := c.Setter.Set(c.Universe.Number, c.Universe.DMXValues(fixture)); err != nil {
-		return nil, errors.WithMessage(err, "failed to set DMX values", errParams)
+		return nil, oops.WithMessage(err, "failed to set DMX values", errParams)
 	}
 
 	if changed {
 		if err := (&devicedef.DeviceStateChangedEvent{
 			Device: fixture.ToDef(),
 		}).Publish(); err != nil {
-			return nil, errors.WithMessage(err, "failed to publish state changed event", errParams)
+			return nil, oops.WithMessage(err, "failed to publish state changed event", errParams)
 		}
 	}
 

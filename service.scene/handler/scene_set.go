@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/jakewright/home-automation/libraries/go/database"
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	scenedef "github.com/jakewright/home-automation/service.scene/def"
 	"github.com/jakewright/home-automation/service.scene/domain"
 )
@@ -15,7 +15,7 @@ func HandleSetScene(r *Request, body *scenedef.SetSceneRequest) (*scenedef.SetSc
 	}
 
 	if scene == nil {
-		return nil, errors.NotFound("Scene not found")
+		return nil, oops.NotFound("Scene not found")
 	}
 
 	if err := (&scenedef.SetSceneEvent{

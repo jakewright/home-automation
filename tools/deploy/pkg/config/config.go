@@ -7,7 +7,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
 
@@ -75,11 +75,11 @@ func Init(filename string) (err error) {
 
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return errors.WithMessage(err, "failed to read config file")
+		return oops.WithMessage(err, "failed to read config file")
 	}
 
 	if err := yaml.Unmarshal(b, &cfg); err != nil {
-		return errors.WithMessage(err, "failed to unmarshal config")
+		return oops.WithMessage(err, "failed to unmarshal config")
 	}
 
 	for name, target := range cfg.Targets {
@@ -88,13 +88,13 @@ func Init(filename string) (err error) {
 		switch target.System {
 		case SysDocker, SysSystemd: // ok
 		default:
-			return errors.InternalService("Invalid system %q for target %q", target.System, name)
+			return oops.InternalService("Invalid system %q for target %q", target.System, name)
 		}
 
 		switch target.Architecture {
 		case "", ArchARMv6: // ok
 		default:
-			return errors.InternalService("Invalid architecture %q for target %q", target.Architecture, name)
+			return oops.InternalService("Invalid architecture %q for target %q", target.Architecture, name)
 		}
 	}
 	for name, service := range cfg.Services {
@@ -103,13 +103,13 @@ func Init(filename string) (err error) {
 		switch service.Language {
 		case LangGo, LangJavaScript: // ok
 		default:
-			return errors.InternalService("Invalid language '%s' for service '%s'", service.Language, name)
+			return oops.InternalService("Invalid language '%s' for service '%s'", service.Language, name)
 		}
 
 		for _, targetName := range service.TargetNames {
 			target := findTarget(targetName)
 			if target == nil {
-				return errors.InternalService("Invalid target %q for service %q", targetName, name)
+				return oops.InternalService("Invalid target %q for service %q", targetName, name)
 			}
 
 			service.Targets = append(service.Targets, target)

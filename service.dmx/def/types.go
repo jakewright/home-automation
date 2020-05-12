@@ -4,7 +4,7 @@ package dmxdef
 
 import (
 	def "github.com/jakewright/home-automation/libraries/go/device/def"
-	errors "github.com/jakewright/home-automation/libraries/go/errors"
+	oops "github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // GetDeviceRequest is defined in the .def file
@@ -31,7 +31,7 @@ type UpdateDeviceResponse struct {
 // Validate returns an error if any of the fields have bad values
 func (m *GetDeviceRequest) Validate() error {
 	if m.DeviceId == "" {
-		return errors.BadRequest("field device_id is required")
+		return oops.BadRequest("field device_id is required")
 	}
 	return nil
 }
@@ -48,7 +48,7 @@ func (m *GetDeviceResponse) Validate() error {
 // Validate returns an error if any of the fields have bad values
 func (m *UpdateDeviceRequest) Validate() error {
 	if m.DeviceId == "" {
-		return errors.BadRequest("field device_id is required")
+		return oops.BadRequest("field device_id is required")
 	}
 	return nil
 }

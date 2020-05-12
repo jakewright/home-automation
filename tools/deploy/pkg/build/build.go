@@ -3,7 +3,7 @@ package build
 import (
 	"fmt"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
 )
 
@@ -41,5 +41,5 @@ func Choose(service *config.Service, target *config.Target) (Builder, error) {
 		}, nil
 	}
 
-	return nil, errors.BadRequest("no suitable builder")
+	return nil, oops.BadRequest("no suitable builder")
 }

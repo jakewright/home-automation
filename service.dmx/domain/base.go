@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
@@ -14,7 +14,7 @@ type abstractFixture struct {
 func (f *abstractFixture) SetHeader(h *deviceregistrydef.DeviceHeader) error {
 	offset, ok := h.Attributes["offset"].(float64)
 	if !ok {
-		return errors.PreconditionFailed("offset not found in %s device header", h.Id)
+		return oops.PreconditionFailed("offset not found in %s device header", h.Id)
 	}
 
 	f.DeviceHeader = h

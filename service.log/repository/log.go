@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.log/domain"
 )
@@ -131,7 +131,7 @@ func readLines(filename string) ([][]byte, error) {
 
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to read log file")
+		return nil, oops.WithMessage(err, "failed to read log file")
 	}
 
 	return bytes.Split(data, []byte("\n")), nil

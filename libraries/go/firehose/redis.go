@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-redis/redis/v7"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
@@ -108,7 +108,7 @@ func (c *RedisClient) Start() error {
 	for subs := 0; subs < len(channels)+len(patterns); {
 		msg, err := c.pubsub.ReceiveTimeout(time.Second * 10)
 		if err != nil {
-			return errors.WithMessage(err, "Timeout while waiting for Redis subscription confirmation")
+			return oops.WithMessage(err, "Timeout while waiting for Redis subscription confirmation")
 		}
 
 		switch v := msg.(type) {
@@ -122,12 +122,12 @@ func (c *RedisClient) Start() error {
 			case "psubscribe":
 				slog.Infof("Subscribed to Redis pattern %s", v.Channel)
 			case "unsubscribe":
-				return errors.InternalService("Unexpectedly unsubscribed from Redis channel %s", v.Channel)
+				return oops.InternalService("Unexpectedly unsubscribed from Redis channel %s", v.Channel)
 			case "punsubscribe":
-				return errors.InternalService("Unexpectedly unsubscribed from Redis pattern %s", v.Channel)
+				return oops.InternalService("Unexpectedly unsubscribed from Redis pattern %s", v.Channel)
 			}
 		default:
-			return errors.InternalService("Received unexpected message from Redis")
+			return oops.InternalService("Received unexpected message from Redis")
 		}
 
 		// Exit early if Stop() has been called

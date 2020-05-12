@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/exe"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/git"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
@@ -22,11 +22,11 @@ type GoBuilder struct {
 // Build build a go binary for the target architecture and puts it in workingDir
 func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	if b.Service.Port == 0 {
-		return nil, errors.InternalService("port is not set in config")
+		return nil, oops.InternalService("port is not set in config")
 	}
 
 	if err := git.Init(revision); err != nil {
-		return nil, errors.WithMessage(err, "failed to initialise git mirror")
+		return nil, oops.WithMessage(err, "failed to initialise git mirror")
 	}
 
 	op := output.Info("Compiling binary for %s", b.Target.Architecture)
@@ -35,7 +35,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name)
 	if _, err := os.Stat(filepath.Join(git.Dir(), pkgToBuild)); err != nil {
 		op.Failed()
-		return nil, errors.WithMessage(err, "failed to stat service directory")
+		return nil, oops.WithMessage(err, "failed to stat service directory")
 	}
 
 	binName := b.Service.DashedName()
@@ -47,19 +47,19 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 		binName += "-armv6"
 	default:
 		op.Failed()
-		return nil, errors.InternalService("unsupported architecture %q", b.Target.Architecture)
+		return nil, oops.InternalService("unsupported architecture %q", b.Target.Architecture)
 	}
 
 	hash, err := git.CurrentHash(false)
 	if err != nil {
 		op.Failed()
-		return nil, errors.WithMessage(err, "failed to get hash")
+		return nil, oops.WithMessage(err, "failed to get hash")
 	}
 
 	shortHash, err := git.CurrentHash(true)
 	if err != nil {
 		op.Failed()
-		return nil, errors.WithMessage(err, "failed to get short hash")
+		return nil, oops.WithMessage(err, "failed to get short hash")
 	}
 
 	binName = fmt.Sprintf("%s-%s", binName, shortHash)
@@ -70,7 +70,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	if err := exe.Command("go", "build", "-o", binOut, "-ldflags", flags, pkgToBuild).
 		Dir(git.Dir()).Env(env).Run().Err; err != nil {
 		op.Failed()
-		return nil, errors.WithMessage(err, "failed to compile")
+		return nil, oops.WithMessage(err, "failed to compile")
 	}
 
 	op.Complete()

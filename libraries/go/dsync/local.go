@@ -3,7 +3,7 @@ package dsync
 import (
 	"sync"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // LocalLocksmith implements process-scoped locking
@@ -32,7 +32,7 @@ type mutexWrapper struct {
 
 func (mw *mutexWrapper) Lock() error {
 	if mw == nil {
-		return errors.InternalService("tried to lock a nil locker")
+		return oops.InternalService("tried to lock a nil locker")
 	}
 	mw.mu.Lock()
 	return nil

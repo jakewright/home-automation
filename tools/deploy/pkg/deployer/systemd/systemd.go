@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/exe"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/build"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
@@ -26,7 +26,7 @@ func (d *Systemd) Revision() (string, error) {
 	client, err := exe.SSHClient(d.Target.Username, d.Target.Host)
 	if err != nil {
 		op.Failed()
-		return "", errors.WithMessage(err, "failed to create SSH client")
+		return "", oops.WithMessage(err, "failed to create SSH client")
 	}
 	defer func() { _ = client.Close() }()
 	op.Complete()
@@ -40,14 +40,14 @@ func (d *Systemd) Revision() (string, error) {
 	}
 
 	if result.Err != nil {
-		return "", errors.WithMessage(err, "failed to cat service file")
+		return "", oops.WithMessage(err, "failed to cat service file")
 	}
 
 	re := regexp.MustCompile(`X-Revision=([a-zA-z0-9]+)\n`)
 	matches := re.FindStringSubmatch(result.Stdout)
 
 	if len(matches) != 2 {
-		return "", errors.InternalService("unexpected match length %d", len(matches))
+		return "", oops.InternalService("unexpected match length %d", len(matches))
 	}
 
 	return matches[1], nil
@@ -56,31 +56,31 @@ func (d *Systemd) Revision() (string, error) {
 // Deploy deploys the given revision of the service to the target
 func (d *Systemd) Deploy(revision string) error {
 	if !filepath.IsAbs(d.Target.Directory) {
-		return errors.InternalService("target directory is not absolute: %s", d.Target.Directory)
+		return oops.InternalService("target directory is not absolute: %s", d.Target.Directory)
 	}
 
 	deploymentName, err := d.generateDeploymentName(revision)
 	if err != nil {
-		return errors.WithMessage(err, "failed to generate deployment name")
+		return oops.WithMessage(err, "failed to generate deployment name")
 	}
 
 	workingDir, err := d.workingDir(deploymentName)
 	if err != nil {
-		return errors.WithMessage(err, "failed to create working directory")
+		return oops.WithMessage(err, "failed to create working directory")
 	}
 
 	builder, err := build.Choose(d.Service, d.Target)
 	if err != nil {
-		return errors.WithMessage(err, "failed to choose builder")
+		return oops.WithMessage(err, "failed to choose builder")
 	}
 
 	release, err := builder.Build(revision, workingDir)
 	if err != nil {
-		return errors.WithMessage(err, "failed to build")
+		return oops.WithMessage(err, "failed to build")
 	}
 
 	if ok, err := d.confirm(release); err != nil {
-		return errors.WithMessage(err, "failed to confirm")
+		return oops.WithMessage(err, "failed to confirm")
 	} else if !ok {
 		return nil
 	}
@@ -89,7 +89,7 @@ func (d *Systemd) Deploy(revision string) error {
 	client, err := exe.SSHClient(d.Target.Username, d.Target.Host)
 	if err != nil {
 		op.Failed()
-		return errors.WithMessage(err, "failed to create SSH client")
+		return oops.WithMessage(err, "failed to create SSH client")
 	}
 	defer func() { _ = client.Close() }()
 	op.Complete()
@@ -97,7 +97,7 @@ func (d *Systemd) Deploy(revision string) error {
 	op = output.Info("Copying files to %s", d.Target.Host)
 	if err := utils.SCP(workingDir, d.Target.Username, d.Target.Host, d.Target.Directory); err != nil {
 		op.Failed()
-		return errors.WithMessage(err, "failed to copy binary to target")
+		return oops.WithMessage(err, "failed to copy binary to target")
 	}
 	op.Complete()
 
@@ -105,21 +105,21 @@ func (d *Systemd) Deploy(revision string) error {
 
 	if err := d.updateUnitFile(client, release, deploymentName); err != nil {
 		op.Failed()
-		return errors.WithMessage(err, "failed to update unit file")
+		return oops.WithMessage(err, "failed to update unit file")
 	}
 	op.Complete()
 
 	op = output.Info("Restarting service")
 	if err := d.restartUnit(client); err != nil {
 		op.Failed()
-		return errors.WithMessage(err, "failed to enable service")
+		return oops.WithMessage(err, "failed to enable service")
 	}
 	op.Complete()
 
 	op = output.Info("Cleaning up old files")
 	if err := d.cleanup(client, deploymentName, workingDir); err != nil {
 		op.Failed()
-		return errors.WithMessage(err, "failed to clean up old files")
+		return oops.WithMessage(err, "failed to clean up old files")
 	}
 	op.Complete()
 

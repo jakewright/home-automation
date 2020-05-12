@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 
 	"github.com/jakewright/home-automation/service.device-registry/repository"
@@ -23,17 +23,17 @@ func (h *DeviceHandler) HandleListDevices(r *Request, body *deviceregistrydef.Li
 		devices, err = h.DeviceRepository.FindAll()
 	}
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to find devices")
+		return nil, oops.WithMessage(err, "failed to find devices")
 	}
 
 	// Decorate the devices with their rooms
 	for _, device := range devices {
 		room, err := h.RoomRepository.Find(device.RoomId)
 		if err != nil {
-			return nil, errors.WithMessage(err, "failed to find room %q", device.RoomId)
+			return nil, oops.WithMessage(err, "failed to find room %q", device.RoomId)
 		}
 		if room == nil {
-			return nil, errors.NotFound("room %q not found", device.RoomId)
+			return nil, oops.NotFound("room %q not found", device.RoomId)
 		}
 
 		device.Room = room
@@ -48,19 +48,19 @@ func (h *DeviceHandler) HandleListDevices(r *Request, body *deviceregistrydef.Li
 func (h *DeviceHandler) HandleGetDevice(r *Request, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
 	device, err := h.DeviceRepository.Find(body.DeviceId)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to find device %q", body.DeviceId)
+		return nil, oops.WithMessage(err, "failed to find device %q", body.DeviceId)
 	}
 	if device == nil {
-		return nil, errors.NotFound("device %q not found", body.DeviceId)
+		return nil, oops.NotFound("device %q not found", body.DeviceId)
 	}
 
 	// Decorate device with room
 	room, err := h.RoomRepository.Find(device.RoomId)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to find room %q", device.RoomId)
+		return nil, oops.WithMessage(err, "failed to find room %q", device.RoomId)
 	}
 	if room == nil {
-		return nil, errors.NotFound("room %q not found", device.RoomId)
+		return nil, oops.NotFound("room %q not found", device.RoomId)
 	}
 	device.Room = room
 

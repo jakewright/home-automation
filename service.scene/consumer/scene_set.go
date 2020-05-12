@@ -9,8 +9,8 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/dsync"
-	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	scenedef "github.com/jakewright/home-automation/service.scene/def"
 	"github.com/jakewright/home-automation/service.scene/domain"
@@ -24,17 +24,17 @@ var HandleSetSceneEvent scenedef.SetSceneEventHandler = func(body *scenedef.SetS
 
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, body.SceneId); err != nil {
-		return firehose.Discard(errors.WithMetadata(err, metadata))
+		return firehose.Discard(oops.WithMetadata(err, metadata))
 	}
 
 	if scene == nil {
-		err := errors.NotFound("scene not found", metadata)
+		err := oops.NotFound("scene not found", metadata)
 		return firehose.Discard(err)
 	}
 
 	lock, err := dsync.Lock(nil, "scene", body.SceneId)
 	if err != nil {
-		return firehose.Fail(errors.WithMetadata(err, metadata))
+		return firehose.Fail(oops.WithMetadata(err, metadata))
 	}
 	defer lock.Unlock()
 

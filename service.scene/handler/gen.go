@@ -6,7 +6,7 @@ import (
 	context "context"
 	http "net/http"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/router"
@@ -48,14 +48,14 @@ func NewRouter() *SceneRouter {
 
 		body := &def.CreateSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -68,7 +68,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.createScene(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -86,14 +86,14 @@ func NewRouter() *SceneRouter {
 
 		body := &def.ReadSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -106,7 +106,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.readScene(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -124,14 +124,14 @@ func NewRouter() *SceneRouter {
 
 		body := &def.ListScenesRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -144,7 +144,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.listScenes(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -162,14 +162,14 @@ func NewRouter() *SceneRouter {
 
 		body := &def.DeleteSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -182,7 +182,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.deleteScene(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -200,14 +200,14 @@ func NewRouter() *SceneRouter {
 
 		body := &def.SetSceneRequest{}
 		if err := request.Decode(r, body); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
-			err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return
@@ -220,7 +220,7 @@ func NewRouter() *SceneRouter {
 
 		rsp, err := rr.setScene(req, body)
 		if err != nil {
-			err = errors.WithMessage(err, "failed to handle request")
+			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
 			response.WriteJSON(w, err)
 			return

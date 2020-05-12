@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
@@ -67,10 +67,10 @@ func Lock(ctx context.Context, resource string, args ...interface{}) (Locker, er
 	select {
 	case err := <-c:
 		if err != nil {
-			return nil, errors.WithMessage(err, "failed to acquire lock")
+			return nil, oops.WithMessage(err, "failed to acquire lock")
 		}
 		return locker, nil
 	case <-ctx.Done():
-		return nil, errors.WithMessage(ctx.Err(), "failed to acquire lock in time")
+		return nil, oops.WithMessage(ctx.Err(), "failed to acquire lock in time")
 	}
 }

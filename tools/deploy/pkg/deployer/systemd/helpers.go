@@ -12,8 +12,8 @@ import (
 	"github.com/logrusorgru/aurora"
 	"golang.org/x/crypto/ssh"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
 	"github.com/jakewright/home-automation/libraries/go/exe"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/build"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/git"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
@@ -25,17 +25,17 @@ import (
 // multiple times.
 func (d *Systemd) generateDeploymentName(revision string) (string, error) {
 	if err := git.Init(revision); err != nil {
-		return "", errors.WithMessage(err, "failed to initialise git mirror")
+		return "", oops.WithMessage(err, "failed to initialise git mirror")
 	}
 
 	shortHash, err := git.CurrentHash(true)
 	if err != nil {
-		return "", errors.WithMessage(err, "failed to get short hash")
+		return "", oops.WithMessage(err, "failed to get short hash")
 	}
 
 	random, err := randutils.String(4)
 	if err != nil {
-		return "", errors.WithMessage(err, "failed to generate random string")
+		return "", oops.WithMessage(err, "failed to generate random string")
 	}
 
 	return fmt.Sprintf("%s-%s-%s-%s", d.Service.DashedName(), d.Target.Name, shortHash, random), nil
@@ -55,7 +55,7 @@ func (d *Systemd) workingDir(deploymentName string) (string, error) {
 	workingDir := filepath.Join(utils.CacheDir(), "deployments", deploymentName)
 
 	if err := os.MkdirAll(workingDir, os.ModePerm); err != nil {
-		return "", errors.WithMessage(err, "failed to create working directory")
+		return "", oops.WithMessage(err, "failed to create working directory")
 	}
 
 	return workingDir, nil
@@ -64,12 +64,12 @@ func (d *Systemd) workingDir(deploymentName string) (string, error) {
 func (d *Systemd) confirm(release *build.Release) (bool, error) {
 	currentRevision, err := d.Revision()
 	if err != nil {
-		return false, errors.WithMessage(err, "failed to get current revision")
+		return false, oops.WithMessage(err, "failed to get current revision")
 	}
 
 	currentRevision, err = git.ShortHash(currentRevision)
 	if err != nil {
-		return false, errors.WithMessage(err, "failed to get short hash of current revision")
+		return false, oops.WithMessage(err, "failed to get short hash of current revision")
 	}
 
 	fmt.Println()
@@ -85,7 +85,7 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 
 	commits, err := git.Log(currentRevision, release.ShortHash, "./"+d.Service.Name)
 	if err != nil {
-		return false, errors.WithMessage(err, "failed to get commit list")
+		return false, oops.WithMessage(err, "failed to get commit list")
 	}
 
 	if len(commits) == 0 {
@@ -106,7 +106,7 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 func (d *Systemd) updateUnitFile(client *ssh.Client, release *build.Release, deploymentName string) error {
 	unit, err := d.unitFile(deploymentName, release)
 	if err != nil {
-		return errors.WithMessage(err, "failed to write unit file")
+		return oops.WithMessage(err, "failed to write unit file")
 	}
 
 	// The -e flag on echo interprets backslash escapes. This is piped into
@@ -123,7 +123,7 @@ func (d *Systemd) updateUnitFile(client *ssh.Client, release *build.Release, dep
 			unit,
 			d.Service.DashedName(),
 		)).RequestPseudoTTY().Run(client).Err; err != nil {
-		return errors.WithMessage(err, "failed to edit unit file")
+		return oops.WithMessage(err, "failed to edit unit file")
 	}
 
 	return nil
@@ -149,7 +149,7 @@ WantedBy=multi-user.target
 
 	tmpl, err := template.New("unit").Parse(txt)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to parse template")
+		return nil, oops.WithMessage(err, "failed to parse template")
 	}
 
 	cmd := filepath.Join(d.Target.Directory, deploymentName, release.Cmd)
@@ -172,7 +172,7 @@ WantedBy=multi-user.target
 
 	b := bytes.Buffer{}
 	if err := tmpl.Execute(&b, data); err != nil {
-		return nil, errors.WithMessage(err, "failed to execute template")
+		return nil, oops.WithMessage(err, "failed to execute template")
 	}
 
 	return b.Bytes(), nil
@@ -180,11 +180,11 @@ WantedBy=multi-user.target
 
 func (d *Systemd) restartUnit(client *ssh.Client) error {
 	if err := exe.RemoteCommand("sudo systemctl enable", d.Service.DashedName()).Run(client).Err; err != nil {
-		return errors.WithMessage(err, "failed to enable service")
+		return oops.WithMessage(err, "failed to enable service")
 	}
 
 	if err := exe.RemoteCommand("sudo systemctl restart", d.Service.DashedName()).Run(client).Err; err != nil {
-		return errors.WithMessage(err, "failed to restart service")
+		return oops.WithMessage(err, "failed to restart service")
 	}
 
 	return nil

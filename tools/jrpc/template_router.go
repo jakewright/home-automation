@@ -69,14 +69,14 @@ func NewRouter() *{{ .RouterName }} {
 
 			body := &{{ .InputType }}{}
 			if err := request.Decode(r, body); err != nil {
-				err = errors.Wrap(err, errors.ErrBadRequest, "failed to decode request")
+				err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 				slog.Error(err)
 				response.WriteJSON(w, err)
 				return
 			}
 
 			if err := body.Validate(); err != nil {
-				err = errors.Wrap(err, errors.ErrBadRequest, "failed to validate request")
+				err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 				slog.Error(err)
 				response.WriteJSON(w, err)
 				return
@@ -89,7 +89,7 @@ func NewRouter() *{{ .RouterName }} {
 
 			rsp, err := rr.{{ .NameLower }}(req, body)
 			if err != nil {
-				err = errors.WithMessage(err, "failed to handle request")
+				err = oops.WithMessage(err, "failed to handle request")
 				slog.Error(err)
 				response.WriteJSON(w, err)
 				return

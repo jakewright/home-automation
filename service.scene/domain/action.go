@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/errors"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/util"
 	scenedef "github.com/jakewright/home-automation/service.scene/def"
@@ -42,22 +42,22 @@ type Action struct {
 // Validate checks that the action makes sense
 func (a *Action) Validate() error {
 	if !util.ExactlyOne(a.Func != "", a.Command != "", a.Property != "") {
-		return errors.BadRequest("exactly one of func, command and property should be set")
+		return oops.BadRequest("exactly one of func, command and property should be set")
 	}
 
 	switch {
 	case a.Stage == 0:
-		return errors.BadRequest("stage should be set to 1 or more")
+		return oops.BadRequest("stage should be set to 1 or more")
 	case a.Sequence == 0:
-		return errors.BadRequest("sequence should be set to 1 or more")
+		return oops.BadRequest("sequence should be set to 1 or more")
 	case a.Func == "" && a.ControllerName == "":
-		return errors.BadRequest("controller_name should be set if setting property or calling command")
+		return oops.BadRequest("controller_name should be set if setting property or calling command")
 	case a.Func == "" && a.DeviceID == "":
-		return errors.BadRequest("device_id should be set if setting property or calling command")
+		return oops.BadRequest("device_id should be set if setting property or calling command")
 	case a.Property != "" && a.PropertyType != propertyTypeNull && a.PropertyValue == "":
-		return errors.BadRequest("property_value cannot be blank unless property_type is \"null\"")
+		return oops.BadRequest("property_value cannot be blank unless property_type is \"null\"")
 	case a.Property != "" && a.PropertyType == "":
-		return errors.BadRequest("property_type should be set if setting property")
+		return oops.BadRequest("property_type should be set if setting property")
 
 	case a.Func != "":
 		if _, err := a.parseFunc(); err != nil {
@@ -103,13 +103,13 @@ func (a *Action) Perform(ctx context.Context) error {
 func (a *Action) parseFunc() (func(context.Context) error, error) {
 	parts := strings.Split(a.Func, " ")
 	if len(parts) == 0 {
-		return nil, errors.BadRequest("failed to extract func name from '%s'", a.Func)
+		return nil, oops.BadRequest("failed to extract func name from '%s'", a.Func)
 	}
 
 	switch parts[0] {
 	case funcSleep:
 		if len(parts) != 2 {
-			return nil, errors.BadRequest("sleep func should have one argument")
+			return nil, oops.BadRequest("sleep func should have one argument")
 		}
 
 		d, err := time.ParseDuration(parts[1])
@@ -123,7 +123,7 @@ func (a *Action) parseFunc() (func(context.Context) error, error) {
 		}, nil
 	}
 
-	return nil, errors.BadRequest("unknown func %s", parts[0])
+	return nil, oops.BadRequest("unknown func %s", parts[0])
 }
 
 func (a *Action) parseCommand() (func(context.Context) error, error) {
@@ -138,7 +138,7 @@ func (a *Action) parseProperty() (func(context.Context) error, error) {
 
 	val, err := marshalPropertyValue(a.PropertyType, a.PropertyValue)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to marshal property value %s into type %s", a.PropertyValue, a.PropertyType)
+		return nil, oops.WithMessage(err, "failed to marshal property value %s into type %s", a.PropertyValue, a.PropertyType)
 	}
 
 	body := map[string]interface{}{
@@ -166,7 +166,7 @@ func marshalPropertyValue(t, v string) (interface{}, error) {
 		return nil, nil
 	}
 
-	return nil, errors.BadRequest("unknown property type %s", t)
+	return nil, oops.BadRequest("unknown property type %s", t)
 }
 
 // ToProto marshals to the proto type
