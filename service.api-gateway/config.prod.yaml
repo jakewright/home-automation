@@ -10,17 +10,6 @@ apis:
         config:
           attempts: 3
 
-  service.controller.dmx:
-    name: DMX Controller
-    prefix: service.controller.dmx
-    upstream_url: http://192.168.1.213:7006
-    allow_cross_origin: true
-    plugins:
-      - name: retry
-        enabled: true
-        config:
-          attempts: 3
-
   service.controller.hue:
     name: Hue Controller
     prefix: service.controller.hue
