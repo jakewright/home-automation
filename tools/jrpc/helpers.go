@@ -168,6 +168,7 @@ var typeMap = map[string]typeData{
 	"string":  {"string", ""},
 	"int32":   {"int32", ""},
 	"int64":   {"int64", ""},
+	"uint8":   {"uint8", ""},
 	"uint32":  {"uint32", ""},
 	"uint64":  {"uint64", ""},
 	"float32": {"float32", ""},

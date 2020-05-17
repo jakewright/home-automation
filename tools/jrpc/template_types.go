@@ -89,14 +89,14 @@ package {{ .PackageName }}
 					if len(m.{{ $field.GoName }}) == 0 {
 				{{ else if eq $field.Type "string" -}}
 					if m.{{ $field.GoName }} == "" {
-				{{ else if eq $field.Type "int32" "int64" "uint32" "uint64" "float32" "float64" -}}
+				{{ else if eq $field.Type "int32" "int64" "uint8" "uint32" "uint64" "float32" "float64" -}}
 					if m.{{ $field.GoName }} == 0 {
 				{{ else if eq $field.Type "time.Time" -}} 
 					if m.{{ $field.GoName }}.IsZero() {
 				{{ else }}
 					if true {
 				{{ end -}}
-					return oops.BadRequest("field {{ $field.JSONName }} is required")
+					return oops.BadRequest("field '{{ $field.JSONName }}' is required")
 				}
 			{{ end -}}
 		{{ end -}}
