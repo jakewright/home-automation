@@ -6,30 +6,29 @@ jobs:
     name: Static Analysis
     runs-on: ubuntu-latest
     steps:
-    
+
     - name: Set up Go 1.14
       uses: actions/setup-go@v2
       with:
         go-version: 1.14
-      id: go
-      
+
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
-      
+
     - name: Get dependencies
       run: go get -v -t -d ./...
-      
+
     - name: goimports
       run: |
         go get -u golang.org/x/tools/cmd/goimports
         test -z "$(goimports -l .)"
-    
+
     - name: go vet
       run: go vet ./...
-      
+
     - name: golint
       run: |
-        go get -u golang.org/x/lint/golint    
+        go get -u golang.org/x/lint/golint
         golint -set_exit_status ./...
 
     - name: errcheck
@@ -46,7 +45,6 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.14
-      id: go
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -56,3 +54,27 @@ jobs:
 
     - name: Run unit tests
       run: go test ./...
+
+  gen:
+    name: Generated Code Integrity
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        ./tools/install # Most of the generate statements expect jrpc to be installed
+
+    - name: Run go generate
+      run: go generate ./...
+
+    - name: Inspect working tree
+      run: test -z "$(git status -s)"
