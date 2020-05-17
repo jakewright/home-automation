@@ -120,10 +120,10 @@ func (m *Action) Validate() error {
 // Validate returns an error if any of the fields have bad values
 func (m *CreateSceneRequest) Validate() error {
 	if m.Name == "" {
-		return oops.BadRequest("field name is required")
+		return oops.BadRequest("field 'name' is required")
 	}
 	if m.OwnerId == 0 {
-		return oops.BadRequest("field owner_id is required")
+		return oops.BadRequest("field 'owner_id' is required")
 	}
 	for _, r := range m.Actions {
 		if err := r.Validate(); err != nil {
@@ -132,7 +132,7 @@ func (m *CreateSceneRequest) Validate() error {
 	}
 
 	if len(m.Actions) == 0 {
-		return oops.BadRequest("field actions is required")
+		return oops.BadRequest("field 'actions' is required")
 	}
 	return nil
 }

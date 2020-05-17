@@ -98,7 +98,7 @@ func (m *DeviceStateChangedEvent) Validate() error {
 	}
 
 	if m.Device == nil {
-		return oops.BadRequest("field device is required")
+		return oops.BadRequest("field 'device' is required")
 	}
 	return nil
 }
