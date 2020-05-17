@@ -1,4 +1,4 @@
-# Github Actions
+# GitHub Actions
 
 These are the workflows that run on each commit to test the correctness and integrity of the new code.
 

@@ -1,5 +1,7 @@
 # Devices
 
+![](https://media.giphy.com/media/3o6Mb3dvYo1WSH1lw4/source.gif)
+
 Devices are registered with `service.device-registry`. 
 Various metadata about the devices are stored here, including which controller controls them. This allows the frontend to discover controllers.
 

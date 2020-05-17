@@ -1,52 +1,36 @@
 # Home Automation
 
-Distributed home automation system written in a variety of languages. Largely a learning opportunity rather than a production-ready system.
+Distributed home automation system. Largely a learning opportunity rather than a production-ready system.
+
+The home automation system is made up of separate microservices which run on various devices that are distributed physically around the home.
+Most of the core services run within a Kubernetes cluster, however there are some periphery services that sit outside of the cluster.
+The hardware used is a combination of Raspberry Pis and a Synology NAS.
+
+A series of YouTube videos accompanies this project. They can be found in [this YouTube playlist](https://www.youtube.com/playlist?list=PLlj9BrHKq9WI4R30l_M_tdRMPF4AZ6dcs).
+
+## Will this work for me?
+
+This is not designed as a general-purpose home automation system. It is pretty specific to my use cases. If you’re looking for something generic, check out [Home Assistant](https://www.home-assistant.io) or [openHAB](https://www.openhab.org). If, however, it does work for youm, feel free to use it but don’t expect any support. I also don’t plan to take feature requests. If you would like to make any changes then I suggest [forking the repository](https://help.github.com/en/github/getting-started-with-github/fork-a-repo).
 
 
-## API Specification
+## Getting started
 
-All responses will have the form:
+There are various tools that can be installed to aid development.
 
-```json
-{
-    "data": "Mixed type holding the content of the response"
-}
-```
+```shell
+./tools/install
+``` 
 
-Individual service's READMEs will only detail the expected value of the `data` field.
-
-## Errors
-
-An error will be indicated by a non-2xx status code. The response will include a message.
-
-```json
-{
-    "message": "Description of what went wrong"
-}
-```
-
-### Controllers
-
-Controllers must implement a standardised interface for fetching and updating device state.
-
-`GET service.controller.x/device/<device-identifier>`
-
-- 200: success
-
-```json
-{
-    "identifier": "table-lamp",
-    "name": "Table Lamp",
-    "type": "light",
-    "controller_name": "service.controller.hue",
-    "state": {
-        "brightness": {
-            "type": "int",
-            "min": 0,
-            "max": 254,
-            "interpolation": "continuous",
-            "value": 100
-        }
-    }
-}
-```
+## Project structure
+- `docs/`
+  - Documentation about the system
+- `libraries/`
+  - Library code shared between all services
+- `private/`
+  - A git submodule containing mostly private configuration
+- `service.x`
+  - A backend microservice
+- `tools/`
+  - Useful tools for working with the system
+- `web.x`
+  - A web-based application
