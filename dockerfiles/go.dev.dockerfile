@@ -1,3 +1,5 @@
+# This is a generic Dockerfile used for running golang services locally. It's referenced in the project's Docker Compose file.
+
 FROM golang:1.14-alpine
 
 # Alpine doesn't have git but go get needs it
