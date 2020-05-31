@@ -45,6 +45,10 @@ type Service struct {
 
 // Opts defines basic initialisation options for a service
 type Opts struct {
+	// Config is a pointer to a struct which, if not nil, will
+	// be populated with config from environment variables.
+	Config interface{}
+
 	// ServiceName is the name of the service e.g. service.foo
 	ServiceName string
 
@@ -59,26 +63,21 @@ type Opts struct {
 func Init(opts *Opts) (*Service, error) {
 	service := &Service{}
 
-	// Create default API client
-	apiGateway := os.Getenv("API_GATEWAY")
-	if apiGateway == "" {
-		return nil, fmt.Errorf("API_GATEWAY env var not set")
+	config.DefaultProvider = config.EnvProvider{
+		Prefix: "HA",
 	}
-	apiClient, err := rpc.New(apiGateway, "data")
+
+	// Load config if requested
+	if opts.Config != nil {
+		config.Load(opts.Config)
+	}
+
+	// Create default API client
+	apiClient, err := rpc.New("data")
 	if err != nil {
 		return nil, err
 	}
 	rpc.DefaultClient = apiClient
-
-	// Load config
-	configLoader := &config.Loader{
-		ServiceName: opts.ServiceName,
-	}
-	if err := configLoader.Load(context.Background()); err != nil {
-		return nil, err
-	}
-	slog.Infof("Config loaded")
-	service.processes = append(service.processes, configLoader)
 
 	// Connect to Redis
 	if opts.Firehose {
@@ -101,12 +100,8 @@ func Init(opts *Opts) (*Service, error) {
 }
 
 func initFirehose(svc *Service) error {
-	host := config.Get("redis.host").String()
-	port := config.Get("redis.port").Int()
-
-	if host == "" || port == 0 {
-		return oops.InternalService("Redis host and port not set in config")
-	}
+	host := config.Get("REDIS_HOST").String()
+	port := config.Get("REDIS_PORT").Int()
 
 	addr := fmt.Sprintf("%s:%d", host, port)
 	slog.Infof("Connecting to Redis at address %s", addr)
@@ -143,6 +138,15 @@ func initFirehose(svc *Service) error {
 }
 
 func initDatabase(opts *Opts, svc *Service) error {
+	conf := struct {
+		MySQLHost         string
+		MySQLUsername     string
+		MySQLPassword     string
+		MySQLDatabaseName string `envconfig:"default=home_automation"`
+		MySQLCharset      string `envconfig:"default=utf8mb4"`
+	}{}
+	config.Load(&conf)
+
 	// Replace hyphens and dots in the service name with underscores
 	re, err := regexp.Compile(`[-.]`)
 	if err != nil {
@@ -162,17 +166,16 @@ func initDatabase(opts *Opts, svc *Service) error {
 		return prefix + "_" + defaultTableName
 	}
 
-	host := config.Get("mysql.host").String()
-	username := config.Get("mysql.username").String()
-	password := config.Get("mysql.password").String()
-	databaseName := "home_automation"
-	charset := "utf8mb4"
-
-	if host == "" || username == "" || password == "" {
+	if conf.MySQLHost == "" || conf.MySQLUsername == "" || conf.MySQLPassword == "" {
 		return oops.InternalService("MySQL host, username and password not set in config")
 	}
 
-	addr := fmt.Sprintf("%s:%s@(%s)/%s?charset=%s&parseTime=True&loc=Local", username, password, host, databaseName, charset)
+	addr := fmt.Sprintf("%s:%s@(%s)/%s?charset=%s&parseTime=True&loc=Local",
+		conf.MySQLUsername,
+		conf.MySQLPassword,
+		conf.MySQLHost,
+		conf.MySQLDatabaseName,
+		conf.MySQLCharset)
 
 	db, err := gorm.Open("mysql", addr)
 	if err != nil {

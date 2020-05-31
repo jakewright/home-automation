@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.dmx/dmx"
 	"github.com/jakewright/home-automation/service.dmx/handler"
@@ -14,8 +13,11 @@ import (
 //go:generate jrpc dmx.def
 
 func main() {
+	conf := struct{ UniverseNumber int }{}
+
 	svc, err := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.dmx",
+		Config:      &conf,
 		Firehose:    true,
 	})
 
@@ -23,8 +25,7 @@ func main() {
 		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
-	universeNumber := config.Get("universe.number").Int()
-	u := universe.New(universeNumber)
+	u := universe.New(conf.UniverseNumber)
 
 	l := universe.Loader{
 		ServiceName: "service.dmx",

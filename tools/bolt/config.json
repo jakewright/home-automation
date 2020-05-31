@@ -12,7 +12,7 @@
   "goVersion": "1.14",
   "goDockerfileTemplate": "./tools/bolt/dockerfiles/go.dockerfile.tmpl",
   "groups": {
-    "core": ["service.api-gateway", "service.config", "service.device-registry", "redis", "mysql"],
+    "core": ["service.api-gateway", "service.device-registry", "redis", "mysql"],
     "log": ["filebeat", "logstash", "service.log"]
   }
 }

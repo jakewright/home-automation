@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.log/handler"
@@ -11,26 +10,30 @@ import (
 )
 
 func main() {
+	conf := struct {
+		LogDirectory      string
+		TemplateDirectory string
+	}{}
+
 	svc, err := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.log",
+		Config:      &conf,
 	})
 
 	if err != nil {
 		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
-	logDirectory := config.Get("logDirectory").String()
-	if logDirectory == "" {
+	if conf.LogDirectory == "" {
 		slog.Panicf("logDirectory not set in config")
 	}
 
-	templateDirectory := config.Get("templateDirectory").String()
-	if templateDirectory == "" {
+	if conf.TemplateDirectory == "" {
 		slog.Panicf("templateDirectory not set in config")
 	}
 
 	logRepository := &repository.LogRepository{
-		LogDirectory: logDirectory,
+		LogDirectory: conf.LogDirectory,
 	}
 
 	watcher := &watch.Watcher{
@@ -38,7 +41,7 @@ func main() {
 	}
 
 	readHandler := handler.ReadHandler{
-		TemplateDirectory: templateDirectory,
+		TemplateDirectory: conf.TemplateDirectory,
 		LogRepository:     logRepository,
 		Watcher:           watcher,
 	}

@@ -1,15 +1,4 @@
 apis:
-  service.config:
-    name: Config Service
-    prefix: service.config
-    upstream_url: http://192.168.1.100:7002
-    allow_cross_origin: true
-    plugins:
-      - name: retry
-        enabled: true
-        config:
-          attempts: 3
-
   service.controller.hue:
     name: Hue Controller
     prefix: service.controller.hue

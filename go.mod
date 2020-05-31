@@ -21,6 +21,7 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.2.2
 	github.com/urfave/negroni v1.0.0 // indirect
+	github.com/vrischmann/envconfig v1.2.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/mod v0.2.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e

@@ -1,15 +1,4 @@
 apis:
-  service.config:
-    name: Config Service
-    prefix: service.config
-    upstream_url: http://service.config
-    allow_cross_origin: true
-    plugins:
-      - name: retry
-        enabled: true
-        config:
-          attempts: 1
-
   service.controller.hue:
     name: Hue Controller
     prefix: service.controller.hue

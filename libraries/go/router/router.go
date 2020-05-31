@@ -36,7 +36,8 @@ func (r *Router) GetName() string {
 
 // Start will listen for TCP connections on the port defined in config
 func (r *Router) Start() error {
-	port := config.Get("port").Int(80)
+	port := config.Get("PORT").Int()
+
 	slog.Infof("Listening on port %d", port)
 	err := r.r.ListenAndServe(fmt.Sprintf(":%d", port))
 

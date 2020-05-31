@@ -63,17 +63,6 @@ services:
     ports:
       - 7005:80
 
-  service.config:
-    extends:
-      service: go-service
-    build:
-      args:
-        service_name: service.config
-    volumes:
-      - ./private/config/dev.yaml:/data/config.yaml
-    ports:
-      - 7002:80
-
   service.controller.hue:
     build:
       dockerfile: ./service.controller.hue/dev.dockerfile

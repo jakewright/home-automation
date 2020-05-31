@@ -10,7 +10,7 @@ A series of YouTube videos accompanies this project. They can be found in [this 
 
 ## Will this work for me?
 
-This is not designed as a general-purpose home automation system. It is pretty specific to my use cases. If you’re looking for something generic, check out [Home Assistant](https://www.home-assistant.io) or [openHAB](https://www.openhab.org). If, however, it does work for youm, feel free to use it but don’t expect any support. I also don’t plan to take feature requests. If you would like to make any changes then I suggest [forking the repository](https://help.github.com/en/github/getting-started-with-github/fork-a-repo).
+This is not designed as a general-purpose home automation system. It is pretty specific to my use cases. If you’re looking for something generic, check out [Home Assistant](https://www.home-assistant.io) or [openHAB](https://www.openhab.org). If, however, it does work for you, feel free to use it but don’t expect any support. I also don’t plan to take feature requests. If you would like to make any changes then I suggest [forking the repository](https://help.github.com/en/github/getting-started-with-github/fork-a-repo).
 
 
 ## Getting started
