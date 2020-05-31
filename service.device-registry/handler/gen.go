@@ -6,23 +6,21 @@ import (
 	context "context"
 	http "net/http"
 
-	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/request"
-	"github.com/jakewright/home-automation/libraries/go/response"
-	"github.com/jakewright/home-automation/libraries/go/router"
-	"github.com/jakewright/home-automation/libraries/go/slog"
+	network "github.com/jakewright/home-automation/libraries/go/network"
+	oops "github.com/jakewright/home-automation/libraries/go/oops"
+	router "github.com/jakewright/home-automation/libraries/go/router"
+	slog "github.com/jakewright/home-automation/libraries/go/slog"
 	def "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
 type controller interface {
-	GetDevice(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
-	ListDevices(*Request, *def.ListDevicesRequest) (*def.ListDevicesResponse, error)
-	GetRoom(*Request, *def.GetRoomRequest) (*def.GetRoomResponse, error)
-	ListRooms(*Request, *def.ListRoomsRequest) (*def.ListRoomsResponse, error)
+	GetDevice(*request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
+	ListDevices(*request, *def.ListDevicesRequest) (*def.ListDevicesResponse, error)
+	GetRoom(*request, *def.GetRoomRequest) (*def.GetRoomResponse, error)
+	ListRooms(*request, *def.ListRoomsRequest) (*def.ListRoomsResponse, error)
 }
 
-// Request wraps http.Request but exposes the context
-type Request struct {
+type request struct {
 	context.Context
 	*http.Request
 }
@@ -33,21 +31,21 @@ func NewRouter(c controller) *router.Router {
 
 	r.Handle("GET", "/device", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.GetDeviceRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -56,30 +54,30 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	r.Handle("GET", "/devices", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.ListDevicesRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -88,30 +86,30 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	r.Handle("GET", "/room", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.GetRoomRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -120,30 +118,30 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	r.Handle("GET", "/rooms", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.ListRoomsRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -152,11 +150,11 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	return r

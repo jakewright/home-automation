@@ -6,24 +6,22 @@ import (
 	context "context"
 	http "net/http"
 
-	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/request"
-	"github.com/jakewright/home-automation/libraries/go/response"
-	"github.com/jakewright/home-automation/libraries/go/router"
-	"github.com/jakewright/home-automation/libraries/go/slog"
+	network "github.com/jakewright/home-automation/libraries/go/network"
+	oops "github.com/jakewright/home-automation/libraries/go/oops"
+	router "github.com/jakewright/home-automation/libraries/go/router"
+	slog "github.com/jakewright/home-automation/libraries/go/slog"
 	def "github.com/jakewright/home-automation/service.scene/def"
 )
 
 type controller interface {
-	CreateScene(*Request, *def.CreateSceneRequest) (*def.CreateSceneResponse, error)
-	ReadScene(*Request, *def.ReadSceneRequest) (*def.ReadSceneResponse, error)
-	ListScenes(*Request, *def.ListScenesRequest) (*def.ListScenesResponse, error)
-	DeleteScene(*Request, *def.DeleteSceneRequest) (*def.DeleteSceneResponse, error)
-	SetScene(*Request, *def.SetSceneRequest) (*def.SetSceneResponse, error)
+	CreateScene(*request, *def.CreateSceneRequest) (*def.CreateSceneResponse, error)
+	ReadScene(*request, *def.ReadSceneRequest) (*def.ReadSceneResponse, error)
+	ListScenes(*request, *def.ListScenesRequest) (*def.ListScenesResponse, error)
+	DeleteScene(*request, *def.DeleteSceneRequest) (*def.DeleteSceneResponse, error)
+	SetScene(*request, *def.SetSceneRequest) (*def.SetSceneResponse, error)
 }
 
-// Request wraps http.Request but exposes the context
-type Request struct {
+type request struct {
 	context.Context
 	*http.Request
 }
@@ -34,21 +32,21 @@ func NewRouter(c controller) *router.Router {
 
 	r.Handle("POST", "/scenes", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.CreateSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -57,30 +55,30 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	r.Handle("GET", "/scene", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.ReadSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -89,30 +87,30 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	r.Handle("GET", "/scenes", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.ListScenesRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -121,30 +119,30 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	r.Handle("DELETE", "/scene", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.DeleteSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -153,30 +151,30 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	r.Handle("POST", "/scene/set", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.SetSceneRequest{}
-		if err := request.Decode(r, body); err != nil {
+		if err := network.DecodeRequest(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
 		if err := body.Validate(); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		req := &Request{
+		req := &request{
 			Context: r.Context(),
 			Request: r,
 		}
@@ -185,11 +183,11 @@ func NewRouter(c controller) *router.Router {
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 			return
 		}
 
-		response.WriteJSON(w, rsp)
+		network.WriteJSONResponse(w, rsp)
 	})
 
 	return r

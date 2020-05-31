@@ -7,7 +7,7 @@ import (
 )
 
 // GetUser reads a user by ID
-func (h *Handler) GetUser(r *Request, body *userdef.GetUserRequest) (*userdef.GetUserResponse, error) {
+func (h *Handler) GetUser(r *request, body *userdef.GetUserRequest) (*userdef.GetUserResponse, error) {
 	user := &userdef.User{}
 	if err := database.Find(user, body.UserId); err != nil {
 		return nil, oops.WithMessage(err, "failed to find")

@@ -19,7 +19,7 @@ type Handler struct {
 }
 
 // GetDevice returns the current state of a fixture
-func (h *Handler) GetDevice(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
+func (h *Handler) GetDevice(r *request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
 	fixture := h.Universe.Find(body.DeviceId)
 	if fixture == nil {
 		return nil, oops.NotFound("device %q not found", body.DeviceId)
@@ -31,7 +31,7 @@ func (h *Handler) GetDevice(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.
 }
 
 // UpdateDevice modifies fixture properties
-func (h *Handler) UpdateDevice(r *Request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
+func (h *Handler) UpdateDevice(r *request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
 	errParams := map[string]string{
 		"device_id": body.DeviceId,
 	}

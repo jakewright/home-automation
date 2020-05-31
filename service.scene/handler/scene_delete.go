@@ -9,7 +9,7 @@ import (
 )
 
 // DeleteScene deletes a scene and associated actions
-func (h *Handler) DeleteScene(r *Request, body *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
+func (h *Handler) DeleteScene(r *request, body *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
 	if body.SceneId == 0 {
 		return nil, oops.BadRequest("scene_id empty")
 	}

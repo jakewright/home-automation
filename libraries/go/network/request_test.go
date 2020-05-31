@@ -1,4 +1,4 @@
-package request
+package network
 
 import (
 	"bytes"
@@ -19,7 +19,7 @@ func TestDecodeMux(t *testing.T) {
 		Foo string
 	}
 
-	err = Decode(r, &v)
+	err = DecodeRequest(r, &v)
 	assert.NilError(t, err)
 
 	assert.Equal(t, v.Foo, "bar")
@@ -33,7 +33,7 @@ func TestDecodeQuery(t *testing.T) {
 		Foo string
 	}
 
-	err = Decode(r, &v)
+	err = DecodeRequest(r, &v)
 	assert.NilError(t, err)
 
 	assert.Equal(t, v.Foo, "bar")
@@ -48,7 +48,7 @@ func TestDecodeBody(t *testing.T) {
 		Foo string
 	}
 
-	err = Decode(r, &v)
+	err = DecodeRequest(r, &v)
 	assert.NilError(t, err)
 
 	assert.Equal(t, v.Foo, "bar")
@@ -63,7 +63,7 @@ func TestDecodeIntoMap(t *testing.T) {
 
 	var v map[string]string
 
-	err = Decode(r, &v)
+	err = DecodeRequest(r, &v)
 	assert.NilError(t, err)
 
 	assert.Equal(t, v["foo"], "bar")
@@ -84,7 +84,7 @@ func TestDecodeComplexParamNames(t *testing.T) {
 		FavoriteNumber int    `json:"favorite_number"`
 	}
 
-	err = Decode(r, &v)
+	err = DecodeRequest(r, &v)
 	assert.NilError(t, err)
 
 	assert.Equal(t, v.AnimalColor, "black")

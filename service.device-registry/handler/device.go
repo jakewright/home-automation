@@ -6,7 +6,7 @@ import (
 )
 
 // ListDevices lists all devices known by the registry. Results can be filtered by controller name.
-func (h *Handler) ListDevices(r *Request, body *deviceregistrydef.ListDevicesRequest) (*deviceregistrydef.ListDevicesResponse, error) {
+func (h *Handler) ListDevices(r *request, body *deviceregistrydef.ListDevicesRequest) (*deviceregistrydef.ListDevicesResponse, error) {
 	var devices []*deviceregistrydef.DeviceHeader
 	var err error
 	if body.ControllerName != "" {
@@ -37,7 +37,7 @@ func (h *Handler) ListDevices(r *Request, body *deviceregistrydef.ListDevicesReq
 }
 
 // GetDevice returns a specific device by ID
-func (h *Handler) GetDevice(r *Request, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
+func (h *Handler) GetDevice(r *request, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
 	device, err := h.DeviceRepository.Find(body.DeviceId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find device %q", body.DeviceId)

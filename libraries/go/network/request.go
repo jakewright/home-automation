@@ -1,4 +1,4 @@
-package request
+package network
 
 import (
 	"encoding/json"
@@ -12,9 +12,9 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// Decode unmarshals URL parameters and the JSON body of the given request into the output interface.
+// DecodeRequest unmarshals URL parameters and the JSON body of the given request into the output interface.
 // Parameters can be unmarshalled into primitive types or time.Time providing it conforms to time.RFC3339.
-func Decode(r *http.Request, v interface{}) error {
+func DecodeRequest(r *http.Request, v interface{}) error {
 	// This does a load of reflection to unmarshal a map into the type of v
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		DecodeHook:       mapstructure.StringToTimeHookFunc(time.RFC3339),

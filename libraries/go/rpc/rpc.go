@@ -70,18 +70,12 @@ func Patch(ctx context.Context, url string, body map[string]interface{}, respons
 }
 
 // New returns a new RPC Client
-func New(base string, envelope string) (Requester, error) {
-	u, err := url.Parse(base)
-	if err != nil {
-		return nil, err
-	}
-
+func New(envelope string) (Requester, error) {
 	httpClient := &http.Client{
 		Timeout: defaultTimeout,
 	}
 
 	return &Client{
-		Base: strings.TrimRight(u.String(), "/"),
 		ValidateStatus: func(status int) bool {
 			return status >= 200 && status < 300
 		},
@@ -128,7 +122,7 @@ func (c Client) Do(ctx context.Context, request *Request, v interface{}) (*Respo
 	if err != nil {
 		return nil, err
 	}
-	if !u.IsAbs() {
+	if c.Base != "" && !u.IsAbs() {
 		absURL = fmt.Sprintf("%s/%s", c.Base, strings.TrimLeft(request.URL, "/"))
 	}
 

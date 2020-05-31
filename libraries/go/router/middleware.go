@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/jakewright/home-automation/libraries/go/network"
 	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/libraries/go/util"
 )
@@ -21,7 +21,7 @@ func panicRecovery(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 			err := oops.Wrap(v, oops.ErrPanic, "recovered from panic", map[string]string{
 				"stack": string(stack),
 			})
-			response.WriteJSON(w, err)
+			network.WriteJSONResponse(w, err)
 
 			if util.IsProd() {
 				slog.Error(err)
@@ -50,7 +50,7 @@ type PingResponse struct {
 
 func ping(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	if r.Method == http.MethodGet && r.URL.Path == "/ping" {
-		response.WriteJSON(w, &PingResponse{
+		network.WriteJSONResponse(w, &PingResponse{
 			Ping: "pong",
 		})
 		return

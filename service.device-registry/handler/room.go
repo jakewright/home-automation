@@ -6,7 +6,7 @@ import (
 )
 
 // ListRooms returns all rooms known by the registry
-func (h *Handler) ListRooms(r *Request, body *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
+func (h *Handler) ListRooms(r *request, body *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
 	rooms, err := h.RoomRepository.FindAll()
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find rooms")
@@ -27,7 +27,7 @@ func (h *Handler) ListRooms(r *Request, body *deviceregistrydef.ListRoomsRequest
 }
 
 // GetRoom returns a specific room by ID, including its devices.
-func (h *Handler) GetRoom(r *Request, body *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
+func (h *Handler) GetRoom(r *request, body *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
 	room, err := h.RoomRepository.Find(body.RoomId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find room %q", body.RoomId)

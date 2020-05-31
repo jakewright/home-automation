@@ -38,12 +38,11 @@ package {{ .PackageName }}
 
 type controller interface {
 	{{- range .Endpoints }}
-		{{ .NameUpper }}(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)
+		{{ .NameUpper }}(*request, *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
-// Request wraps http.Request but exposes the context
-type Request struct {
+type request struct {
 	context.Context
 	*http.Request
 }
@@ -55,21 +54,21 @@ func NewRouter(c controller) *router.Router {
 	{{ range .Endpoints }}
 		r.Handle("{{ .HTTPMethod }}", "{{ .Path }}", func(w http.ResponseWriter, r *http.Request) {
 			body := &{{ .InputType }}{}
-			if err := request.Decode(r, body); err != nil {
+			if err := network.DecodeRequest(r, body); err != nil {
 				err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
 				slog.Error(err)
-				response.WriteJSON(w, err)
+				network.WriteJSONResponse(w, err)
 				return
 			}
 
 			if err := body.Validate(); err != nil {
 				err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
 				slog.Error(err)
-				response.WriteJSON(w, err)
+				network.WriteJSONResponse(w, err)
 				return
 			}
 
-			req := &Request{
+			req := &request{
 				Context: r.Context(),
 				Request: r,
 			}
@@ -78,11 +77,11 @@ func NewRouter(c controller) *router.Router {
 			if err != nil {
 				err = oops.WithMessage(err, "failed to handle request")
 				slog.Error(err)
-				response.WriteJSON(w, err)
+				network.WriteJSONResponse(w, err)
 				return
 			}
 
-			response.WriteJSON(w, rsp)
+			network.WriteJSONResponse(w, rsp)
 		})
 	{{ end }}
 
@@ -115,6 +114,10 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 
 	im.Add("context")
 	im.Add("net/http")
+	im.Add("github.com/jakewright/home-automation/libraries/go/network")
+	im.Add("github.com/jakewright/home-automation/libraries/go/oops")
+	im.Add("github.com/jakewright/home-automation/libraries/go/router")
+	im.Add("github.com/jakewright/home-automation/libraries/go/slog")
 
 	// Make sure the service name is a suitable go struct name
 	if ok := reValidGoStruct.MatchString(g.file.Service.Name); !ok {
