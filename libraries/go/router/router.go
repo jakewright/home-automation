@@ -12,6 +12,12 @@ import (
 	"github.com/jakewright/muxinator"
 )
 
+var conf struct{ Port int }
+
+func init() {
+	config.Load(&conf)
+}
+
 // Router is a wrapper around muxinator.Router that conforms to the bootstrap.Process interface
 type Router struct {
 	r               muxinator.Router
@@ -36,10 +42,8 @@ func (r *Router) GetName() string {
 
 // Start will listen for TCP connections on the port defined in config
 func (r *Router) Start() error {
-	port := config.Get("PORT").Int()
-
-	slog.Infof("Listening on port %d", port)
-	err := r.r.ListenAndServe(fmt.Sprintf(":%d", port))
+	slog.Infof("Listening on port %d", conf.Port)
+	err := r.r.ListenAndServe(fmt.Sprintf(":%d", conf.Port))
 
 	// This error will always be returned after Shutdown is called so swallow it here
 	if atomic.LoadInt32(r.shutdownInvoked) > 0 && err == http.ErrServerClosed {
