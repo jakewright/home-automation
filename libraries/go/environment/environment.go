@@ -1,4 +1,4 @@
-package util
+package environment
 
 import "github.com/jakewright/home-automation/libraries/go/config"
 

@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/jakewright/home-automation/libraries/go/environment"
 	"github.com/jakewright/home-automation/libraries/go/network"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
 // Revision is the service's revision and should be
@@ -23,7 +23,7 @@ func panicRecovery(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 			})
 			network.WriteJSONResponse(w, err)
 
-			if util.IsProd() {
+			if environment.IsProd() {
 				slog.Error(err)
 			} else {
 				// Panicking is useful in dev for the pretty-printed stack trace in terminal
