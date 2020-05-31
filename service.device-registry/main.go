@@ -21,7 +21,6 @@ func main() {
 		ServiceName: "service.device-registry",
 		Config:      &conf,
 	})
-
 	if err != nil {
 		slog.Panicf("Failed to initialise service: %v", err)
 	}
@@ -43,20 +42,10 @@ func main() {
 		ReloadInterval: conf.ReloadInterval,
 	}
 
-	deviceHandler := handler.DeviceHandler{
+	r := handler.NewRouter(&handler.Handler{
 		DeviceRepository: dr,
 		RoomRepository:   rr,
-	}
-	roomHandler := handler.RoomHandler{
-		DeviceRepository: dr,
-		RoomRepository:   rr,
-	}
-
-	r := handler.NewRouter().
-		GetDevice(deviceHandler.HandleGetDevice).
-		ListDevices(deviceHandler.HandleListDevices).
-		GetRoom(roomHandler.HandleGetRoom).
-		ListRooms(roomHandler.HandleListRooms)
+	})
 
 	svc.Run(r)
 }

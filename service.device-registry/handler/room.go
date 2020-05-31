@@ -3,18 +3,10 @@ package handler
 import (
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
-
-	"github.com/jakewright/home-automation/service.device-registry/repository"
 )
 
-// RoomHandler has functions that deal with room-related requests
-type RoomHandler struct {
-	DeviceRepository *repository.DeviceRepository
-	RoomRepository   *repository.RoomRepository
-}
-
-// HandleListRooms returns all rooms known by the registry
-func (h *RoomHandler) HandleListRooms(r *Request, body *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
+// ListRooms returns all rooms known by the registry
+func (h *Handler) ListRooms(r *Request, body *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
 	rooms, err := h.RoomRepository.FindAll()
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find rooms")
@@ -34,8 +26,8 @@ func (h *RoomHandler) HandleListRooms(r *Request, body *deviceregistrydef.ListRo
 	}, nil
 }
 
-// HandleGetRoom returns a specific room by ID, including its devices.
-func (h *RoomHandler) HandleGetRoom(r *Request, body *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
+// GetRoom returns a specific room by ID, including its devices.
+func (h *Handler) GetRoom(r *Request, body *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
 	room, err := h.RoomRepository.Find(body.RoomId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find room %q", body.RoomId)

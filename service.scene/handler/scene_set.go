@@ -7,8 +7,8 @@ import (
 	"github.com/jakewright/home-automation/service.scene/domain"
 )
 
-// HandleSetScene emits an event to trigger the scene to be set asynchronously
-func HandleSetScene(r *Request, body *scenedef.SetSceneRequest) (*scenedef.SetSceneResponse, error) {
+// SetScene emits an event to trigger the scene to be set asynchronously
+func (h *Handler) SetScene(r *Request, body *scenedef.SetSceneRequest) (*scenedef.SetSceneResponse, error) {
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, body.SceneId); err != nil {
 		return nil, err

@@ -6,8 +6,8 @@ import (
 	userdef "github.com/jakewright/home-automation/service.user/def"
 )
 
-// HandleGetUser reads a user by ID
-func HandleGetUser(r *Request, body *userdef.GetUserRequest) (*userdef.GetUserResponse, error) {
+// GetUser reads a user by ID
+func (h *Handler) GetUser(r *Request, body *userdef.GetUserRequest) (*userdef.GetUserResponse, error) {
 	user := &userdef.User{}
 	if err := database.Find(user, body.UserId); err != nil {
 		return nil, oops.WithMessage(err, "failed to find")

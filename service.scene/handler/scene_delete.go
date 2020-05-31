@@ -8,8 +8,8 @@ import (
 	"github.com/jakewright/home-automation/service.scene/domain"
 )
 
-// HandleDeleteScene deletes a scene and associated actions
-func HandleDeleteScene(r *Request, body *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
+// DeleteScene deletes a scene and associated actions
+func (h *Handler) DeleteScene(r *Request, body *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
 	if body.SceneId == 0 {
 		return nil, oops.BadRequest("scene_id empty")
 	}

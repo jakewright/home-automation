@@ -6,8 +6,8 @@ import (
 	"github.com/jakewright/home-automation/service.scene/domain"
 )
 
-// HandleListScenes lists all scenes in the database
-func HandleListScenes(r *Request, body *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
+// ListScenes lists all scenes in the database
+func (h *Handler) ListScenes(r *Request, body *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
 	where := make(map[string]interface{})
 	if body.OwnerId > 0 {
 		where["owner_id"] = body.OwnerId

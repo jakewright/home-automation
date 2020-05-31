@@ -7,8 +7,8 @@ import (
 	"github.com/jakewright/home-automation/service.scene/domain"
 )
 
-// HandleCreateScene persists a new scene
-func HandleCreateScene(r *Request, body *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
+// CreateScene persists a new scene
+func (h *Handler) CreateScene(r *Request, body *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
 	actions := make([]*domain.Action, len(body.Actions))
 	for i, a := range body.Actions {
 		actions[i] = &domain.Action{

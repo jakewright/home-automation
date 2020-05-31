@@ -45,7 +45,7 @@ func TestDMXHandler_Update(t *testing.T) {
 	s := &dmx.Mock{}
 
 	// Create the controller
-	h := &DMXController{
+	h := &Handler{
 		Universe: u,
 		Setter:   s,
 	}

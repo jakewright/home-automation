@@ -18,7 +18,7 @@ type writeRequest struct {
 }
 
 // HandleWrite writes a slog line for testing purposes
-func HandleWrite(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleWrite(w http.ResponseWriter, r *http.Request) {
 	body := writeRequest{}
 	if err := request.Decode(r, &body); err != nil {
 		response.WriteJSON(w, err)

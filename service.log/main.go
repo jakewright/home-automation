@@ -40,16 +40,16 @@ func main() {
 		LogRepository: logRepository,
 	}
 
-	readHandler := handler.ReadHandler{
+	h := &handler.Handler{
 		TemplateDirectory: conf.TemplateDirectory,
 		LogRepository:     logRepository,
 		Watcher:           watcher,
 	}
 
 	r := router.New()
-	r.Get("/", readHandler.HandleRead)
-	r.Get("/ws", readHandler.HandleWebSocket)
-	r.Post("/write", handler.HandleWrite)
+	r.Get("/", h.HandleRead)
+	r.Get("/ws", h.HandleWebSocket)
+	r.Post("/write", h.HandleWrite)
 
 	svc.Run(r, watcher)
 }

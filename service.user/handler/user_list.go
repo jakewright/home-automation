@@ -6,8 +6,8 @@ import (
 	userdef "github.com/jakewright/home-automation/service.user/def"
 )
 
-// HandleListUsers lists all users
-func HandleListUsers(r *Request, body *userdef.ListUsersRequest) (*userdef.ListUsersResponse, error) {
+// ListUsers lists all users
+func (h *Handler) ListUsers(r *Request, body *userdef.ListUsersRequest) (*userdef.ListUsersResponse, error) {
 	var users []*userdef.User
 	if err := database.Find(&users); err != nil {
 		return nil, oops.WithMessage(err, "failed to find")

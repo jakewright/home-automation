@@ -17,9 +17,6 @@ func main() {
 		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
-	r := handler.NewRouter().
-		GetUser(handler.HandleGetUser).
-		ListUsers(handler.HandleListUsers)
-
+	r := handler.NewRouter(&handler.Handler{})
 	svc.Run(r)
 }

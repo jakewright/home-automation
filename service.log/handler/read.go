@@ -10,25 +10,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/websocket"
+
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/request"
 	"github.com/jakewright/home-automation/libraries/go/response"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.log/domain"
 	"github.com/jakewright/home-automation/service.log/repository"
-	"github.com/jakewright/home-automation/service.log/watch"
-
-	"github.com/gorilla/websocket"
 )
 
 const htmlTimeFormat = "2006-01-02T15:04"
-
-// ReadHandler has functions that deal with reading log lines
-type ReadHandler struct {
-	TemplateDirectory string
-	LogRepository     *repository.LogRepository
-	Watcher           *watch.Watcher
-}
 
 type readRequest struct {
 	Services  string `json:"services"`
@@ -40,7 +32,7 @@ type readRequest struct {
 }
 
 // HandleRead renders an HTML page with log lines according to the query in the request
-func (h *ReadHandler) HandleRead(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	query, metadata, err := decodeBody(r)
 	if err != nil {
 		slog.Errorf("Failed to decode body: %v", err)
@@ -121,7 +113,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // HandleWebSocket sends new log lines over a web socket
-func (h *ReadHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	query, metadata, err := decodeBody(r)
 	if err != nil {
 		slog.Errorf("Failed to decode body: %v", err)

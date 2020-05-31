@@ -12,15 +12,15 @@ type setter interface {
 	Set(universe int, values [512]byte) error
 }
 
-// DMXController handles device requests
-type DMXController struct {
+// Handler handles requests
+type Handler struct {
 	Universe *universe.Universe
 	Setter   setter
 }
 
-// Read returns the current state of a fixture
-func (c *DMXController) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
-	fixture := c.Universe.Find(body.DeviceId)
+// GetDevice returns the current state of a fixture
+func (h *Handler) GetDevice(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
+	fixture := h.Universe.Find(body.DeviceId)
 	if fixture == nil {
 		return nil, oops.NotFound("device %q not found", body.DeviceId)
 	}
@@ -30,8 +30,8 @@ func (c *DMXController) Read(r *Request, body *dmxdef.GetDeviceRequest) (*dmxdef
 	}, nil
 }
 
-// Update modifies fixture properties
-func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
+// UpdateDevice modifies fixture properties
+func (h *Handler) UpdateDevice(r *Request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
 	errParams := map[string]string{
 		"device_id": body.DeviceId,
 	}
@@ -40,13 +40,13 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 	// updating a single device, we need to send the entire universe's state
 	// over the wire to the fixtures. We therefore don't want simultaneous
 	// update requests to interleave.
-	lock, err := dsync.Lock(r, "dmx-universe", c.Universe.Number)
+	lock, err := dsync.Lock(r, "dmx-universe", h.Universe.Number)
 	if err != nil {
 		return nil, oops.WithMetadata(err, errParams)
 	}
 	defer lock.Unlock()
 
-	fixture := c.Universe.Find(body.DeviceId)
+	fixture := h.Universe.Find(body.DeviceId)
 	if fixture == nil {
 		return nil, oops.NotFound("device %q not found", body.DeviceId, errParams)
 	}
@@ -56,7 +56,7 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 		return nil, oops.WithMessage(err, "failed to update fixture", errParams)
 	}
 
-	if err := c.Setter.Set(c.Universe.Number, c.Universe.DMXValues(fixture)); err != nil {
+	if err := h.Setter.Set(h.Universe.Number, h.Universe.DMXValues(fixture)); err != nil {
 		return nil, oops.WithMessage(err, "failed to set DMX values", errParams)
 	}
 
@@ -68,7 +68,7 @@ func (c *DMXController) Update(r *Request, body *dmxdef.UpdateDeviceRequest) (*d
 		}
 	}
 
-	c.Universe.Save(fixture)
+	h.Universe.Save(fixture)
 
 	return &dmxdef.UpdateDeviceResponse{
 		Device: fixture.ToDef(),

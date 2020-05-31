@@ -14,36 +14,24 @@ import (
 	def "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
+type controller interface {
+	GetDevice(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
+	ListDevices(*Request, *def.ListDevicesRequest) (*def.ListDevicesResponse, error)
+	GetRoom(*Request, *def.GetRoomRequest) (*def.GetRoomResponse, error)
+	ListRooms(*Request, *def.ListRoomsRequest) (*def.ListRoomsResponse, error)
+}
+
 // Request wraps http.Request but exposes the context
 type Request struct {
 	context.Context
 	*http.Request
 }
 
-// DeviceRegistryRouter wraps router.Router to provide a convenient way to set handlers
-type DeviceRegistryRouter struct {
-	*router.Router
-	getDevice              func(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
-	listDevices            func(*Request, *def.ListDevicesRequest) (*def.ListDevicesResponse, error)
-	getRoom                func(*Request, *def.GetRoomRequest) (*def.GetRoomResponse, error)
-	listRooms              func(*Request, *def.ListRoomsRequest) (*def.ListRoomsResponse, error)
-	getDeviceHandlerFunc   http.HandlerFunc
-	listDevicesHandlerFunc http.HandlerFunc
-	getRoomHandlerFunc     http.HandlerFunc
-	listRoomsHandlerFunc   http.HandlerFunc
-}
+// NewRouter returns a router with appropriate handlers set
+func NewRouter(c controller) *router.Router {
+	r := router.New()
 
-// NewRouter returns a router that is ready to add handlers to
-func NewRouter() *DeviceRegistryRouter {
-	rr := &DeviceRegistryRouter{
-		Router: router.New(),
-	}
-
-	rr.getDeviceHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-		if rr.getDevice == nil {
-			slog.Panicf("No handler exists for GET /device")
-		}
-
+	r.Handle("GET", "/device", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.GetDeviceRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
@@ -64,7 +52,7 @@ func NewRouter() *DeviceRegistryRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.getDevice(req, body)
+		rsp, err := c.GetDevice(req, body)
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -73,15 +61,9 @@ func NewRouter() *DeviceRegistryRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	}
+	})
 
-	rr.Router.Handle("GET", "/device", rr.getDeviceHandlerFunc)
-
-	rr.listDevicesHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-		if rr.listDevices == nil {
-			slog.Panicf("No handler exists for GET /devices")
-		}
-
+	r.Handle("GET", "/devices", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.ListDevicesRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
@@ -102,7 +84,7 @@ func NewRouter() *DeviceRegistryRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.listDevices(req, body)
+		rsp, err := c.ListDevices(req, body)
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -111,15 +93,9 @@ func NewRouter() *DeviceRegistryRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	}
+	})
 
-	rr.Router.Handle("GET", "/devices", rr.listDevicesHandlerFunc)
-
-	rr.getRoomHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-		if rr.getRoom == nil {
-			slog.Panicf("No handler exists for GET /room")
-		}
-
+	r.Handle("GET", "/room", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.GetRoomRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
@@ -140,7 +116,7 @@ func NewRouter() *DeviceRegistryRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.getRoom(req, body)
+		rsp, err := c.GetRoom(req, body)
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -149,15 +125,9 @@ func NewRouter() *DeviceRegistryRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	}
+	})
 
-	rr.Router.Handle("GET", "/room", rr.getRoomHandlerFunc)
-
-	rr.listRoomsHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-		if rr.listRooms == nil {
-			slog.Panicf("No handler exists for GET /rooms")
-		}
-
+	r.Handle("GET", "/rooms", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.ListRoomsRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
@@ -178,7 +148,7 @@ func NewRouter() *DeviceRegistryRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.listRooms(req, body)
+		rsp, err := c.ListRooms(req, body)
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -187,29 +157,7 @@ func NewRouter() *DeviceRegistryRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	}
+	})
 
-	rr.Router.Handle("GET", "/rooms", rr.listRoomsHandlerFunc)
-
-	return rr
-}
-
-func (r *DeviceRegistryRouter) GetDevice(f func(*Request, *def.GetDeviceRequest) (*def.GetDeviceResponse, error)) *DeviceRegistryRouter {
-	r.getDevice = f
-	return r
-}
-
-func (r *DeviceRegistryRouter) ListDevices(f func(*Request, *def.ListDevicesRequest) (*def.ListDevicesResponse, error)) *DeviceRegistryRouter {
-	r.listDevices = f
-	return r
-}
-
-func (r *DeviceRegistryRouter) GetRoom(f func(*Request, *def.GetRoomRequest) (*def.GetRoomResponse, error)) *DeviceRegistryRouter {
-	r.getRoom = f
-	return r
-}
-
-func (r *DeviceRegistryRouter) ListRooms(f func(*Request, *def.ListRoomsRequest) (*def.ListRoomsResponse, error)) *DeviceRegistryRouter {
-	r.listRooms = f
 	return r
 }

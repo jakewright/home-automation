@@ -11,7 +11,6 @@ import (
 const packageDirRouter = "handler"
 
 type routerDataEndpoint struct {
-	NameLower  string
 	NameUpper  string
 	InputType  string
 	OutputType string
@@ -22,7 +21,6 @@ type routerDataEndpoint struct {
 type routerData struct {
 	PackageName string
 	Imports     []*imports.Imp
-	RouterName  string
 	Endpoints   []*routerDataEndpoint
 }
 
@@ -38,35 +36,24 @@ package {{ .PackageName }}
 	)
 {{ end }}
 
+type controller interface {
+	{{- range .Endpoints }}
+		{{ .NameUpper }}(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)
+	{{- end }}
+}
+
 // Request wraps http.Request but exposes the context
 type Request struct {
 	context.Context
 	*http.Request
 }
 
-// {{ .RouterName }} wraps router.Router to provide a convenient way to set handlers
-type {{ .RouterName }} struct {
-	*router.Router
-	{{- range .Endpoints }}
-		{{ .NameLower }} func(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)
-	{{- end }}
-	{{- range .Endpoints }}
-		{{ .NameLower }}HandlerFunc http.HandlerFunc
-	{{- end}}
-}
-
-// NewRouter returns a router that is ready to add handlers to
-func NewRouter() *{{ .RouterName }} {
-	rr := &{{ .RouterName }}{
-		Router: router.New(),
-	}
+// NewRouter returns a router with appropriate handlers set
+func NewRouter(c controller) *router.Router {
+	r := router.New()
 
 	{{ range .Endpoints }}
-		rr.{{ .NameLower }}HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-			if rr.{{ .NameLower }} == nil {
-				slog.Panicf("No handler exists for {{ .HTTPMethod }} {{ .Path }}")
-			}
-
+		r.Handle("{{ .HTTPMethod }}", "{{ .Path }}", func(w http.ResponseWriter, r *http.Request) {
 			body := &{{ .InputType }}{}
 			if err := request.Decode(r, body); err != nil {
 				err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
@@ -87,7 +74,7 @@ func NewRouter() *{{ .RouterName }} {
 				Request: r,
 			}
 
-			rsp, err := rr.{{ .NameLower }}(req, body)
+			rsp, err := c.{{ .NameUpper }}(req, body)
 			if err != nil {
 				err = oops.WithMessage(err, "failed to handle request")
 				slog.Error(err)
@@ -96,22 +83,11 @@ func NewRouter() *{{ .RouterName }} {
 			}
 
 			response.WriteJSON(w, rsp)
-		}
-
-		rr.Router.Handle("{{ .HTTPMethod }}", "{{ .Path }}", rr.{{ .NameLower }}HandlerFunc)
+		})
 	{{ end }}
 
-	return rr
+	return r
 }
-
-{{ $routerName := .RouterName }}
-
-{{- range .Endpoints }}
-	func (r *{{ $routerName }}) {{ .NameUpper }}(f func(*Request, *{{ .InputType }}) (*{{ .OutputType }}, error)) *{{ $routerName }} {
-		r.{{ .NameLower }} = f
-		return r
-	}
-{{ end }}
 
 `
 
@@ -144,7 +120,6 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 	if ok := reValidGoStruct.MatchString(g.file.Service.Name); !ok {
 		return "", fmt.Errorf("service name should be alphanumeric camelcase")
 	}
-	routerName := g.file.Service.Name + "Router"
 
 	if g.file.Service == nil {
 		return nil, nil
@@ -156,7 +131,6 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 
 	endpoints := make([]*routerDataEndpoint, len(g.file.Service.RPCs))
 	for i, r := range g.file.Service.RPCs {
-		nameLower := strings.ToLower(r.Name[0:1]) + r.Name[1:]
 		nameUpper := strings.ToUpper(r.Name[0:1]) + r.Name[1:]
 
 		method, err := getMethod(r)
@@ -180,7 +154,6 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 		}
 
 		endpoints[i] = &routerDataEndpoint{
-			NameLower:  nameLower,
 			NameUpper:  nameUpper,
 			InputType:  inType.TypeName,
 			OutputType: outType.TypeName,
@@ -192,7 +165,6 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 	return &routerData{
 		PackageName: g.PackageDir(), // This doesn't support separate package name to dir
 		Imports:     im.Get(),
-		RouterName:  routerName,
 		Endpoints:   endpoints,
 	}, nil
 }

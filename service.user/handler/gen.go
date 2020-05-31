@@ -14,32 +14,22 @@ import (
 	def "github.com/jakewright/home-automation/service.user/def"
 )
 
+type controller interface {
+	GetUser(*Request, *def.GetUserRequest) (*def.GetUserResponse, error)
+	ListUsers(*Request, *def.ListUsersRequest) (*def.ListUsersResponse, error)
+}
+
 // Request wraps http.Request but exposes the context
 type Request struct {
 	context.Context
 	*http.Request
 }
 
-// UserRouter wraps router.Router to provide a convenient way to set handlers
-type UserRouter struct {
-	*router.Router
-	getUser              func(*Request, *def.GetUserRequest) (*def.GetUserResponse, error)
-	listUsers            func(*Request, *def.ListUsersRequest) (*def.ListUsersResponse, error)
-	getUserHandlerFunc   http.HandlerFunc
-	listUsersHandlerFunc http.HandlerFunc
-}
+// NewRouter returns a router with appropriate handlers set
+func NewRouter(c controller) *router.Router {
+	r := router.New()
 
-// NewRouter returns a router that is ready to add handlers to
-func NewRouter() *UserRouter {
-	rr := &UserRouter{
-		Router: router.New(),
-	}
-
-	rr.getUserHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-		if rr.getUser == nil {
-			slog.Panicf("No handler exists for GET /user")
-		}
-
+	r.Handle("GET", "/user", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.GetUserRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
@@ -60,7 +50,7 @@ func NewRouter() *UserRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.getUser(req, body)
+		rsp, err := c.GetUser(req, body)
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -69,15 +59,9 @@ func NewRouter() *UserRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	}
+	})
 
-	rr.Router.Handle("GET", "/user", rr.getUserHandlerFunc)
-
-	rr.listUsersHandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-		if rr.listUsers == nil {
-			slog.Panicf("No handler exists for GET /users")
-		}
-
+	r.Handle("GET", "/users", func(w http.ResponseWriter, r *http.Request) {
 		body := &def.ListUsersRequest{}
 		if err := request.Decode(r, body); err != nil {
 			err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
@@ -98,7 +82,7 @@ func NewRouter() *UserRouter {
 			Request: r,
 		}
 
-		rsp, err := rr.listUsers(req, body)
+		rsp, err := c.ListUsers(req, body)
 		if err != nil {
 			err = oops.WithMessage(err, "failed to handle request")
 			slog.Error(err)
@@ -107,19 +91,7 @@ func NewRouter() *UserRouter {
 		}
 
 		response.WriteJSON(w, rsp)
-	}
+	})
 
-	rr.Router.Handle("GET", "/users", rr.listUsersHandlerFunc)
-
-	return rr
-}
-
-func (r *UserRouter) GetUser(f func(*Request, *def.GetUserRequest) (*def.GetUserResponse, error)) *UserRouter {
-	r.getUser = f
-	return r
-}
-
-func (r *UserRouter) ListUsers(f func(*Request, *def.ListUsersRequest) (*def.ListUsersResponse, error)) *UserRouter {
-	r.listUsers = f
 	return r
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/jakewright/home-automation/service.scene/domain"
 )
 
-// HandleReadScene returns the scene with the given ID
-func HandleReadScene(r *Request, body *scenedef.ReadSceneRequest) (*scenedef.ReadSceneResponse, error) {
+// ReadScene returns the scene with the given ID
+func (h *Handler) ReadScene(r *Request, body *scenedef.ReadSceneRequest) (*scenedef.ReadSceneResponse, error) {
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, body.SceneId); err != nil {
 		return nil, oops.WithMessage(err, "failed to find")
