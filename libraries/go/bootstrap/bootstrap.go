@@ -63,10 +63,6 @@ type Opts struct {
 func Init(opts *Opts) (*Service, error) {
 	service := &Service{}
 
-	config.DefaultProvider = config.EnvProvider{
-		Prefix: "HA",
-	}
-
 	// Load config if requested
 	if opts.Config != nil {
 		config.Load(opts.Config)
@@ -100,10 +96,13 @@ func Init(opts *Opts) (*Service, error) {
 }
 
 func initFirehose(svc *Service) error {
-	host := config.Get("REDIS_HOST").String()
-	port := config.Get("REDIS_PORT").Int()
+	conf := struct {
+		RedisHost string
+		RedisPort int
+	}{}
+	config.Load(&conf)
 
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := fmt.Sprintf("%s:%d", conf.RedisHost, conf.RedisPort)
 	slog.Infof("Connecting to Redis at address %s", addr)
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:            addr,

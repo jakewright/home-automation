@@ -4,7 +4,13 @@ import "github.com/jakewright/home-automation/libraries/go/config"
 
 const envProd = "prod"
 
+var conf = struct{ Environment string }{}
+
+func init() {
+	config.Load(&conf)
+}
+
 // IsProd returns whether the current environment is production, based on config.
 func IsProd() bool {
-	return config.Get("ENV").String(envProd) == envProd
+	return conf.Environment == envProd
 }
