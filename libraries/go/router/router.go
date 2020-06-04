@@ -12,7 +12,9 @@ import (
 	"github.com/jakewright/muxinator"
 )
 
-var conf struct{ Port int }
+var conf struct {
+	Port int `envconfig:"default=80"`
+}
 
 func init() {
 	config.Load(&conf)
