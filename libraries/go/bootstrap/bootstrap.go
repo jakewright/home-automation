@@ -69,11 +69,11 @@ func Init(opts *Opts) (*Service, error) {
 	}
 
 	// Create default API client
-	apiClient, err := rpc.New("data")
+	apiClient, err := rpc.NewHTTPClient("data")
 	if err != nil {
 		return nil, err
 	}
-	rpc.DefaultClient = apiClient
+	rpc.SetDefaultClient(apiClient)
 
 	// Connect to Redis
 	if opts.Firehose {
