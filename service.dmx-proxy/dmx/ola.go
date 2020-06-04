@@ -10,6 +10,11 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
+// Setter is an interface of things that can set DMX values
+type Setter interface {
+	Set(universe int, values [512]byte) error
+}
+
 // OLA sends DMX information via the ola_set_dmx program
 type OLA struct {
 	m sync.Mutex

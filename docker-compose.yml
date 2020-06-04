@@ -77,8 +77,6 @@ services:
       - 7007:80
     environment:
       NODE_ENV: development
-    env_file:
-      - ./.env
 
   service.controller.infrared:
     build:
@@ -92,8 +90,6 @@ services:
       - /usr/src/libraries/javascript/node_modules
     ports:
       - 7008:80
-    env_file:
-      - ./.env
 
   service.controller.plug:
     build:
@@ -109,8 +105,6 @@ services:
       - 7009:80
     environment:
       NODE_ENV: development
-    env_file:
-      - ./.env
 
   service.device-registry:
     extends:
@@ -127,9 +121,18 @@ services:
     extends:
       service: go-service
     build:
-      dockerfile: ./service.dmx/dev.dockerfile
+      args:
+        service_name: service.dmx
     ports:
       - 7012:80
+
+  service.dmx-proxy:
+    extends:
+      service: go-service
+    build:
+      dockerfile: service.dmx-proxy/dev.dockerfile
+    ports:
+      - 7014:80
 
   service.event-bus:
     build:
@@ -145,8 +148,6 @@ services:
       - 7004:80
     environment:
       NODE_ENV: development
-    env_file:
-      - ./.env
 
   service.log:
     extends:
@@ -198,5 +199,3 @@ services:
       - /usr/src/libraries/javascript/node_modules
     ports:
       - 7000:8080
-    env_file:
-      - ./.env

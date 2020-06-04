@@ -13,7 +13,7 @@ EXPOSE 80
 WORKDIR /app
 COPY . .
 
-RUN go get -v -t -d ./...
+RUN go mod download
 
 # In order for a build argument to be available in the CMD, we must make it an
 # environment variable. This is because the CMD is only executed at runtime.

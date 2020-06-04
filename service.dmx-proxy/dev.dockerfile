@@ -10,13 +10,13 @@ RUN go get github.com/jakewright/compile-daemon
 
 EXPOSE 80
 
-COPY ./service.dmx/ola_set_dmx /bin/ola_set_dmx
+COPY ./service.dmx-proxy/ola_set_dmx /bin/ola_set_dmx
 
 WORKDIR /app
 COPY . .
 
-RUN go get -v -t -d ./...
+RUN go mod download
 
 # Must use exec form so that compile-daemon receives signals. The graceful-kill option then forwards them to the go binary.
 # The -directories option doesn't work with the directories the other way around. It might be because of the dot in the service name.
-CMD ["sh", "-c", "compile-daemon -build=\"go install ./service.dmx\" -command=/go/bin/service.dmx -directories=libraries/go,service.dmx -log-prefix=false -log-prefix=false -graceful-kill=true -graceful-timeout=10"]
+CMD ["sh", "-c", "compile-daemon -build=\"go install ./service.dmx-proxy\" -command=/go/bin/service.dmx-proxy -directories=libraries/go,service.dmx-proxy -log-prefix=false -log-prefix=false -graceful-kill=true -graceful-timeout=10"]

@@ -1,0 +1,17 @@
+service DMXProxy {
+    path = "service.dmx-proxy"
+
+    rpc Set(SetRequest) SetResponse {
+        method = "PUT"
+        path = "/set"
+    }
+}
+
+message SetRequest {
+    // Making universe a required field forbids 0 as a value
+    // but that's fine because OLA doesn't allow it either.
+    uint8 universe (required)
+    []uint8 values (required)
+}
+
+message SetResponse {}
