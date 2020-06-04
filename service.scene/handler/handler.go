@@ -1,4 +1,4 @@
 package handler
 
-// Handler handles requests
-type Handler struct{}
+// Controller handles requests
+type Controller struct{}

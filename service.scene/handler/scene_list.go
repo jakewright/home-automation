@@ -7,7 +7,7 @@ import (
 )
 
 // ListScenes lists all scenes in the database
-func (h *Handler) ListScenes(r *request, body *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
+func (c *Controller) ListScenes(r *request, body *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
 	where := make(map[string]interface{})
 	if body.OwnerId > 0 {
 		where["owner_id"] = body.OwnerId

@@ -12,7 +12,7 @@ import (
 //go:generate jrpc dmx.def
 
 func main() {
-	conf := struct{ UniverseNumber int }{}
+	conf := struct{ UniverseNumber uint8 }{}
 
 	svc, err := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.dmx",
@@ -35,7 +35,7 @@ func main() {
 		slog.Panicf("Failed to load devices: %v", err)
 	}
 
-	r := handler.NewRouter(&handler.Handler{
+	r := handler.NewRouter(&handler.Controller{
 		Universe: u,
 	})
 

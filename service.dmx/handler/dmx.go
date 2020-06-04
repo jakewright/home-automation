@@ -9,14 +9,14 @@ import (
 	"github.com/jakewright/home-automation/service.dmx/universe"
 )
 
-// Handler handles requests
-type Handler struct {
+// Controller handles requests
+type Controller struct {
 	Universe *universe.Universe
 }
 
 // GetDevice returns the current state of a fixture
-func (h *Handler) GetDevice(r *request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
-	fixture := h.Universe.Find(body.DeviceId)
+func (c *Controller) GetDevice(r *request, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
+	fixture := c.Universe.Find(body.DeviceId)
 	if fixture == nil {
 		return nil, oops.NotFound("device %q not found", body.DeviceId)
 	}
@@ -27,7 +27,7 @@ func (h *Handler) GetDevice(r *request, body *dmxdef.GetDeviceRequest) (*dmxdef.
 }
 
 // UpdateDevice modifies fixture properties
-func (h *Handler) UpdateDevice(r *request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
+func (c *Controller) UpdateDevice(r *request, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
 	errParams := map[string]string{
 		"device_id": body.DeviceId,
 	}
@@ -36,13 +36,13 @@ func (h *Handler) UpdateDevice(r *request, body *dmxdef.UpdateDeviceRequest) (*d
 	// updating a single device, we need to send the entire universe's state
 	// over the wire to the fixtures. We therefore don't want simultaneous
 	// update requests to interleave.
-	lock, err := dsync.Lock(r, "dmx-universe", h.Universe.Number)
+	lock, err := dsync.Lock(r, "dmx-universe", c.Universe.Number)
 	if err != nil {
 		return nil, oops.WithMetadata(err, errParams)
 	}
 	defer lock.Unlock()
 
-	fixture := h.Universe.Find(body.DeviceId)
+	fixture := c.Universe.Find(body.DeviceId)
 	if fixture == nil {
 		return nil, oops.NotFound("device %q not found", body.DeviceId, errParams)
 	}
@@ -52,9 +52,9 @@ func (h *Handler) UpdateDevice(r *request, body *dmxdef.UpdateDeviceRequest) (*d
 		return nil, oops.WithMessage(err, "failed to update fixture", errParams)
 	}
 
-	values := h.Universe.DMXValues(fixture)
+	values := c.Universe.DMXValues(fixture)
 	if _, err = (&dmxproxydef.SetRequest{
-		Universe: h.Universe.Number,
+		Universe: c.Universe.Number,
 		Values:   values[:],
 	}).Do(r); err != nil {
 		return nil, oops.WithMessage(err, "failed to set DMX values", errParams)
@@ -68,7 +68,7 @@ func (h *Handler) UpdateDevice(r *request, body *dmxdef.UpdateDeviceRequest) (*d
 		}
 	}
 
-	h.Universe.Save(fixture)
+	c.Universe.Save(fixture)
 
 	return &dmxdef.UpdateDeviceResponse{
 		Device: fixture.ToDef(),

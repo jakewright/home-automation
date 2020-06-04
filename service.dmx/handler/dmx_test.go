@@ -51,11 +51,11 @@ func TestDMXHandler_Update(t *testing.T) {
 	}).RespondWith(&dmxproxydef.SetResponse{})
 
 	// Create the controller
-	h := &Handler{
+	c := &Controller{
 		Universe: u,
 	}
 
-	rsp, err := h.UpdateDevice(&request{Context: ctx},
+	rsp, err := c.UpdateDevice(&request{Context: ctx},
 		&dmxdef.UpdateDeviceRequest{
 			DeviceId: "fixture 1",
 			State: map[string]interface{}{

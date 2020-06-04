@@ -17,7 +17,7 @@ func main() {
 		slog.Panicf("Failed to initialise service: %v", err)
 	}
 
-	r := handler.NewRouter(&handler.Handler{
+	r := handler.NewRouter(&handler.Controller{
 		Setter: &dmx.OLA{},
 	})
 

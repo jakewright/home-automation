@@ -8,7 +8,7 @@ import (
 )
 
 // CreateScene persists a new scene
-func (h *Handler) CreateScene(r *request, body *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
+func (c *Controller) CreateScene(r *request, body *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
 	actions := make([]*domain.Action, len(body.Actions))
 	for i, a := range body.Actions {
 		actions[i] = &domain.Action{
