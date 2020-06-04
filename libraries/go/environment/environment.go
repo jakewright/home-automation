@@ -4,7 +4,9 @@ import "github.com/jakewright/home-automation/libraries/go/config"
 
 const envProd = "prod"
 
-var conf struct{ Environment string }
+var conf struct {
+	Environment string `envconfig:"default=prod"`
+}
 
 func init() {
 	config.Load(&conf)
