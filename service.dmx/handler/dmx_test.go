@@ -1,15 +1,15 @@
 package handler
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/jakewright/home-automation/libraries/go/test"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
+	dmxproxydef "github.com/jakewright/home-automation/service.dmx-proxy/def"
 	dmxdef "github.com/jakewright/home-automation/service.dmx/def"
-	"github.com/jakewright/home-automation/service.dmx/dmx"
 	"github.com/jakewright/home-automation/service.dmx/domain"
 	"github.com/jakewright/home-automation/service.dmx/universe"
 )
@@ -41,25 +41,29 @@ func TestDMXHandler_Update(t *testing.T) {
 	u := universe.New(1)
 	u.AddFixture(f)
 
-	// Create a mock DMX setter
-	s := &dmx.Mock{}
+	m, ctx := test.NewMock(t)
+	defer m.Stop()
+
+	expectedDMXValues := [512]byte{0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 50, 0, 100}
+	m.ExpectOne(&dmxproxydef.SetRequest{
+		Universe: 1,
+		Values:   expectedDMXValues[:],
+	}).RespondWith(&dmxproxydef.SetResponse{})
 
 	// Create the controller
 	h := &Handler{
 		Universe: u,
-		Setter:   s,
 	}
 
-	rsp, err := h.Update(&Request{
-		Context: context.Background(),
-	}, &dmxdef.UpdateDeviceRequest{
-		DeviceId: "fixture 1",
-		State: map[string]interface{}{
-			"brightness": float64(100),
-			"rgb":        "#00FF00",
-			"strobe":     float64(50),
-		},
-	})
+	rsp, err := h.UpdateDevice(&request{Context: ctx},
+		&dmxdef.UpdateDeviceRequest{
+			DeviceId: "fixture 1",
+			State: map[string]interface{}{
+				"brightness": float64(100),
+				"rgb":        "#00FF00",
+				"strobe":     float64(50),
+			},
+		})
 	require.NoError(t, err)
 
 	require.Equal(t, "fixture 1", rsp.Device.Id)
@@ -68,7 +72,5 @@ func TestDMXHandler_Update(t *testing.T) {
 	require.Equal(t, "#00FF00", rsp.Device.State["rgb"].Value)
 	require.Equal(t, byte(50), rsp.Device.State["strobe"].Value)
 
-	expectedDMXValues := [512]byte{0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 50, 0, 100}
-	require.Equal(t, 1, s.Universe)
-	require.Equal(t, expectedDMXValues, s.Values, "expected %v\ngot      %v", expectedDMXValues, s.Values)
+	m.RunAssertions()
 }

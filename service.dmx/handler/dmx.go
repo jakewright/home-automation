@@ -4,18 +4,14 @@ import (
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/dsync"
 	"github.com/jakewright/home-automation/libraries/go/oops"
+	dmxproxydef "github.com/jakewright/home-automation/service.dmx-proxy/def"
 	dmxdef "github.com/jakewright/home-automation/service.dmx/def"
 	"github.com/jakewright/home-automation/service.dmx/universe"
 )
 
-type setter interface {
-	Set(universe int, values [512]byte) error
-}
-
 // Handler handles requests
 type Handler struct {
 	Universe *universe.Universe
-	Setter   setter
 }
 
 // GetDevice returns the current state of a fixture
@@ -56,7 +52,11 @@ func (h *Handler) UpdateDevice(r *request, body *dmxdef.UpdateDeviceRequest) (*d
 		return nil, oops.WithMessage(err, "failed to update fixture", errParams)
 	}
 
-	if err := h.Setter.Set(h.Universe.Number, h.Universe.DMXValues(fixture)); err != nil {
+	values := h.Universe.DMXValues(fixture)
+	if _, err = (&dmxproxydef.SetRequest{
+		Universe: h.Universe.Number,
+		Values:   values[:],
+	}).Do(r); err != nil {
 		return nil, oops.WithMessage(err, "failed to set DMX values", errParams)
 	}
 
