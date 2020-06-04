@@ -17,13 +17,10 @@ func main() {
 		ReloadInterval time.Duration
 	}{}
 
-	svc, err := bootstrap.Init(&bootstrap.Opts{
+	svc := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.device-registry",
 		Config:      &conf,
 	})
-	if err != nil {
-		slog.Panicf("Failed to initialise service: %v", err)
-	}
 
 	if conf.ConfigFilename == "" {
 		slog.Panicf("configFilename is empty")
@@ -42,7 +39,7 @@ func main() {
 		ReloadInterval: conf.ReloadInterval,
 	}
 
-	r := handler.NewRouter(&handler.Handler{
+	r := handler.NewRouter(&handler.Controller{
 		DeviceRepository: dr,
 		RoomRepository:   rr,
 	})

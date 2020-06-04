@@ -6,15 +6,15 @@ import (
 )
 
 // ListRooms returns all rooms known by the registry
-func (h *Handler) ListRooms(r *request, body *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
-	rooms, err := h.RoomRepository.FindAll()
+func (c *Controller) ListRooms(r *request, body *deviceregistrydef.ListRoomsRequest) (*deviceregistrydef.ListRoomsResponse, error) {
+	rooms, err := c.RoomRepository.FindAll()
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find rooms")
 	}
 
 	// Decorate the rooms with their devices
 	for _, room := range rooms {
-		devices, err := h.DeviceRepository.FindByRoom(room.Id)
+		devices, err := c.DeviceRepository.FindByRoom(room.Id)
 		if err != nil {
 			return nil, oops.WithMessage(err, "failed to find devices for message %q", room.Id)
 		}
@@ -27,8 +27,8 @@ func (h *Handler) ListRooms(r *request, body *deviceregistrydef.ListRoomsRequest
 }
 
 // GetRoom returns a specific room by ID, including its devices.
-func (h *Handler) GetRoom(r *request, body *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
-	room, err := h.RoomRepository.Find(body.RoomId)
+func (c *Controller) GetRoom(r *request, body *deviceregistrydef.GetRoomRequest) (*deviceregistrydef.GetRoomResponse, error) {
+	room, err := c.RoomRepository.Find(body.RoomId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find room %q", body.RoomId)
 	} else if room == nil {
@@ -36,7 +36,7 @@ func (h *Handler) GetRoom(r *request, body *deviceregistrydef.GetRoomRequest) (*
 	}
 
 	// Decorate the room with its devices
-	devices, err := h.DeviceRepository.FindByRoom(body.RoomId)
+	devices, err := c.DeviceRepository.FindByRoom(body.RoomId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find devices for room %q", body.RoomId)
 	}

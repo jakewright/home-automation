@@ -60,7 +60,15 @@ type Opts struct {
 }
 
 // Init performs standard service startup tasks and returns a Service
-func Init(opts *Opts) (*Service, error) {
+func Init(opts *Opts) *Service {
+	svc, err := initService(opts)
+	if err != nil {
+		slog.Panicf("Failed to initialise service: %v", err)
+	}
+	return svc
+}
+
+func initService(opts *Opts) (*Service, error) {
 	service := &Service{}
 
 	// Load config if requested

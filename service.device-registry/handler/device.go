@@ -6,13 +6,13 @@ import (
 )
 
 // ListDevices lists all devices known by the registry. Results can be filtered by controller name.
-func (h *Handler) ListDevices(r *request, body *deviceregistrydef.ListDevicesRequest) (*deviceregistrydef.ListDevicesResponse, error) {
+func (c *Controller) ListDevices(r *request, body *deviceregistrydef.ListDevicesRequest) (*deviceregistrydef.ListDevicesResponse, error) {
 	var devices []*deviceregistrydef.DeviceHeader
 	var err error
 	if body.ControllerName != "" {
-		devices, err = h.DeviceRepository.FindByController(body.ControllerName)
+		devices, err = c.DeviceRepository.FindByController(body.ControllerName)
 	} else {
-		devices, err = h.DeviceRepository.FindAll()
+		devices, err = c.DeviceRepository.FindAll()
 	}
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find devices")
@@ -20,7 +20,7 @@ func (h *Handler) ListDevices(r *request, body *deviceregistrydef.ListDevicesReq
 
 	// Decorate the devices with their rooms
 	for _, device := range devices {
-		room, err := h.RoomRepository.Find(device.RoomId)
+		room, err := c.RoomRepository.Find(device.RoomId)
 		if err != nil {
 			return nil, oops.WithMessage(err, "failed to find room %q", device.RoomId)
 		}
@@ -37,8 +37,8 @@ func (h *Handler) ListDevices(r *request, body *deviceregistrydef.ListDevicesReq
 }
 
 // GetDevice returns a specific device by ID
-func (h *Handler) GetDevice(r *request, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
-	device, err := h.DeviceRepository.Find(body.DeviceId)
+func (c *Controller) GetDevice(r *request, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
+	device, err := c.DeviceRepository.Find(body.DeviceId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find device %q", body.DeviceId)
 	}
@@ -47,7 +47,7 @@ func (h *Handler) GetDevice(r *request, body *deviceregistrydef.GetDeviceRequest
 	}
 
 	// Decorate device with room
-	room, err := h.RoomRepository.Find(device.RoomId)
+	room, err := c.RoomRepository.Find(device.RoomId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find room %q", device.RoomId)
 	}

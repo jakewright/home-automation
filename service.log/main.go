@@ -15,14 +15,10 @@ func main() {
 		TemplateDirectory string
 	}{}
 
-	svc, err := bootstrap.Init(&bootstrap.Opts{
+	svc := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.log",
 		Config:      &conf,
 	})
-
-	if err != nil {
-		slog.Panicf("Failed to initialise service: %v", err)
-	}
 
 	if conf.LogDirectory == "" {
 		slog.Panicf("logDirectory not set in config")

@@ -14,15 +14,11 @@ import (
 func main() {
 	conf := struct{ UniverseNumber uint8 }{}
 
-	svc, err := bootstrap.Init(&bootstrap.Opts{
+	svc := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.dmx",
 		Config:      &conf,
 		Firehose:    true,
 	})
-
-	if err != nil {
-		slog.Panicf("Failed to initialise service: %v", err)
-	}
 
 	u := universe.New(conf.UniverseNumber)
 
