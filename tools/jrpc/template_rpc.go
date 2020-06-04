@@ -34,7 +34,7 @@ package {{ .PackageName }}
 {{- end }}
 
 {{ range .Endpoints }}
-	// Do performs the request
+	// Request builds an RPC request
 	func (m *{{ .InputType }}) Request() *rpc.Request {
 		return &rpc.Request{
 			Method: "{{ .HTTPMethod }}",
@@ -43,6 +43,7 @@ package {{ .PackageName }}
 		}
 	}
 
+	// Do performs the request
 	func (m *{{ .InputType }}) Do(ctx context.Context) (*{{ .OutputType }}, error) {
 		rsp := &{{ .OutputType }}{}
 		_, err := rpc.Do(ctx, m.Request(), rsp)

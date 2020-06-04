@@ -8,7 +8,7 @@ import (
 	rpc "github.com/jakewright/home-automation/libraries/go/rpc"
 )
 
-// Do performs the request
+// Request builds an RPC request
 func (m *GetDeviceRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "GET",
@@ -17,13 +17,14 @@ func (m *GetDeviceRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *GetDeviceRequest) Do(ctx context.Context) (*GetDeviceResponse, error) {
 	rsp := &GetDeviceResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *ListDevicesRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "GET",
@@ -32,13 +33,14 @@ func (m *ListDevicesRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *ListDevicesRequest) Do(ctx context.Context) (*ListDevicesResponse, error) {
 	rsp := &ListDevicesResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *GetRoomRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "GET",
@@ -47,13 +49,14 @@ func (m *GetRoomRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *GetRoomRequest) Do(ctx context.Context) (*GetRoomResponse, error) {
 	rsp := &GetRoomResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *ListRoomsRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "GET",
@@ -62,6 +65,7 @@ func (m *ListRoomsRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *ListRoomsRequest) Do(ctx context.Context) (*ListRoomsResponse, error) {
 	rsp := &ListRoomsResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)

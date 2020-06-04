@@ -8,7 +8,7 @@ import (
 	rpc "github.com/jakewright/home-automation/libraries/go/rpc"
 )
 
-// Do performs the request
+// Request builds an RPC request
 func (m *GetDeviceRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "GET",
@@ -17,13 +17,14 @@ func (m *GetDeviceRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *GetDeviceRequest) Do(ctx context.Context) (*GetDeviceResponse, error) {
 	rsp := &GetDeviceResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *UpdateDeviceRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "PATCH",
@@ -32,6 +33,7 @@ func (m *UpdateDeviceRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *UpdateDeviceRequest) Do(ctx context.Context) (*UpdateDeviceResponse, error) {
 	rsp := &UpdateDeviceResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)

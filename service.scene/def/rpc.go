@@ -8,7 +8,7 @@ import (
 	rpc "github.com/jakewright/home-automation/libraries/go/rpc"
 )
 
-// Do performs the request
+// Request builds an RPC request
 func (m *CreateSceneRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "POST",
@@ -17,13 +17,14 @@ func (m *CreateSceneRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *CreateSceneRequest) Do(ctx context.Context) (*CreateSceneResponse, error) {
 	rsp := &CreateSceneResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *ReadSceneRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "GET",
@@ -32,13 +33,14 @@ func (m *ReadSceneRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *ReadSceneRequest) Do(ctx context.Context) (*ReadSceneResponse, error) {
 	rsp := &ReadSceneResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *ListScenesRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "GET",
@@ -47,13 +49,14 @@ func (m *ListScenesRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *ListScenesRequest) Do(ctx context.Context) (*ListScenesResponse, error) {
 	rsp := &ListScenesResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *DeleteSceneRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "DELETE",
@@ -62,13 +65,14 @@ func (m *DeleteSceneRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *DeleteSceneRequest) Do(ctx context.Context) (*DeleteSceneResponse, error) {
 	rsp := &DeleteSceneResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
-// Do performs the request
+// Request builds an RPC request
 func (m *SetSceneRequest) Request() *rpc.Request {
 	return &rpc.Request{
 		Method: "POST",
@@ -77,6 +81,7 @@ func (m *SetSceneRequest) Request() *rpc.Request {
 	}
 }
 
+// Do performs the request
 func (m *SetSceneRequest) Do(ctx context.Context) (*SetSceneResponse, error) {
 	rsp := &SetSceneResponse{}
 	_, err := rpc.Do(ctx, m.Request(), rsp)
