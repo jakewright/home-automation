@@ -1,6 +1,6 @@
 module github.com/jakewright/home-automation
 
-go 1.13
+go 1.14
 
 require (
 	github.com/creack/pty v1.1.7
@@ -9,9 +9,9 @@ require (
 	github.com/go-redis/redis/v7 v7.2.0
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.3.0 // indirect
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.1
-	github.com/jakewright/muxinator v0.0.0-20190505163137-fedb92b26321
+	github.com/jakewright/muxinator v1.0.0
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jinzhu/gorm v1.9.10
 	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381
@@ -19,8 +19,7 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
-	github.com/stretchr/testify v1.2.2
-	github.com/urfave/negroni v1.0.0 // indirect
+	github.com/stretchr/testify v1.6.0
 	github.com/vrischmann/envconfig v1.2.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/mod v0.2.0
