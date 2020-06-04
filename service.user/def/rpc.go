@@ -9,27 +9,31 @@ import (
 )
 
 // Do performs the request
-func (m *GetUserRequest) Do(ctx context.Context) (*GetUserResponse, error) {
-	req := &rpc.Request{
+func (m *GetUserRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "GET",
 		URL:    "service.user/user",
 		Body:   m,
 	}
+}
 
+func (m *GetUserRequest) Do(ctx context.Context) (*GetUserResponse, error) {
 	rsp := &GetUserResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *ListUsersRequest) Do(ctx context.Context) (*ListUsersResponse, error) {
-	req := &rpc.Request{
+func (m *ListUsersRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "GET",
 		URL:    "service.user/users",
 		Body:   m,
 	}
+}
 
+func (m *ListUsersRequest) Do(ctx context.Context) (*ListUsersResponse, error) {
 	rsp := &ListUsersResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }

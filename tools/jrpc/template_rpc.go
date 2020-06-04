@@ -35,15 +35,17 @@ package {{ .PackageName }}
 
 {{ range .Endpoints }}
 	// Do performs the request
-	func (m *{{ .InputType }}) Do(ctx context.Context) (*{{ .OutputType }}, error) {
-		req := &rpc.Request{
+	func (m *{{ .InputType }}) Request() *rpc.Request {
+		return &rpc.Request{
 			Method: "{{ .HTTPMethod }}",
 			URL: "{{ .URL }}",
 			Body: m,
 		}
+	}
 
+	func (m *{{ .InputType }}) Do(ctx context.Context) (*{{ .OutputType }}, error) {
 		rsp := &{{ .OutputType }}{}
-		_, err := rpc.Do(ctx, req, rsp)
+		_, err := rpc.Do(ctx, m.Request(), rsp)
 		return rsp, err
 	}
 {{ end }}

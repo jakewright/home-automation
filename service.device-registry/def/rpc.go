@@ -9,53 +9,61 @@ import (
 )
 
 // Do performs the request
-func (m *GetDeviceRequest) Do(ctx context.Context) (*GetDeviceResponse, error) {
-	req := &rpc.Request{
+func (m *GetDeviceRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/device",
 		Body:   m,
 	}
+}
 
+func (m *GetDeviceRequest) Do(ctx context.Context) (*GetDeviceResponse, error) {
 	rsp := &GetDeviceResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *ListDevicesRequest) Do(ctx context.Context) (*ListDevicesResponse, error) {
-	req := &rpc.Request{
+func (m *ListDevicesRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/devices",
 		Body:   m,
 	}
+}
 
+func (m *ListDevicesRequest) Do(ctx context.Context) (*ListDevicesResponse, error) {
 	rsp := &ListDevicesResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *GetRoomRequest) Do(ctx context.Context) (*GetRoomResponse, error) {
-	req := &rpc.Request{
+func (m *GetRoomRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/room",
 		Body:   m,
 	}
+}
 
+func (m *GetRoomRequest) Do(ctx context.Context) (*GetRoomResponse, error) {
 	rsp := &GetRoomResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *ListRoomsRequest) Do(ctx context.Context) (*ListRoomsResponse, error) {
-	req := &rpc.Request{
+func (m *ListRoomsRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "GET",
 		URL:    "service.device-registry/rooms",
 		Body:   m,
 	}
+}
 
+func (m *ListRoomsRequest) Do(ctx context.Context) (*ListRoomsResponse, error) {
 	rsp := &ListRoomsResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }

@@ -9,27 +9,31 @@ import (
 )
 
 // Do performs the request
-func (m *GetDeviceRequest) Do(ctx context.Context) (*GetDeviceResponse, error) {
-	req := &rpc.Request{
+func (m *GetDeviceRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "GET",
 		URL:    "service.dmx/device",
 		Body:   m,
 	}
+}
 
+func (m *GetDeviceRequest) Do(ctx context.Context) (*GetDeviceResponse, error) {
 	rsp := &GetDeviceResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
 
 // Do performs the request
-func (m *UpdateDeviceRequest) Do(ctx context.Context) (*UpdateDeviceResponse, error) {
-	req := &rpc.Request{
+func (m *UpdateDeviceRequest) Request() *rpc.Request {
+	return &rpc.Request{
 		Method: "PATCH",
 		URL:    "service.dmx/device",
 		Body:   m,
 	}
+}
 
+func (m *UpdateDeviceRequest) Do(ctx context.Context) (*UpdateDeviceResponse, error) {
 	rsp := &UpdateDeviceResponse{}
-	_, err := rpc.Do(ctx, req, rsp)
+	_, err := rpc.Do(ctx, m.Request(), rsp)
 	return rsp, err
 }
