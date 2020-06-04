@@ -10,7 +10,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - ./.env
+      - ./private/config/dev/common.env
 
   # Services
   adminer:
@@ -120,6 +120,8 @@ services:
         service_name: service.device-registry
     ports:
       - 7001:80
+    env_file:
+      - ./private/config/dev/service.device-registry.env
 
   service.dmx:
     extends:
