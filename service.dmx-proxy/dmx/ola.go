@@ -47,18 +47,20 @@ func args(universe int, values [512]byte) []string {
 	// find the first non-zero value. This should
 	// make sure we're not actually sending 512
 	// arguments to ola_set_dmx.
-	var slice []byte
-	for i := 511; i >= 0; i-- {
+	var i int
+	for i = 511; i >= 0; i-- {
 		if values[i] > 0 {
 			break
 		}
-		slice = values[:i]
 	}
 
-	args := []string{"--universe", strconv.Itoa(universe), "--dmx"}
-	for _, v := range slice {
-		args = append(args, strconv.Itoa(int(v)))
+	// Convert the remaining values to strings
+	vs := make([]string, i+1)
+	for j := 0; j <= i; j++ {
+		vs[j] = strconv.Itoa(int(values[j]))
 	}
+
+	args := []string{"--universe", strconv.Itoa(universe), "--dmx", strings.Join(vs, ",")}
 
 	return args
 }

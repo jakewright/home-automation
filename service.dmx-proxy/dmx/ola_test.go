@@ -18,7 +18,7 @@ func Test_args(t *testing.T) {
 		{
 			universe: 0,
 			values:   [512]byte{255, 0, 0, 0, 0, 0, 255},
-			want:     []string{"--universe", "0", "--dmx", "255", "0", "0", "0", "0", "0", "255"},
+			want:     []string{"--universe", "0", "--dmx", "255,0,0,0,0,0,255"},
 		},
 	}
 	for i, tt := range tests {
