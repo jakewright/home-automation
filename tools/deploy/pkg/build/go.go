@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/jakewright/home-automation/libraries/go/exe"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
+	"github.com/jakewright/home-automation/tools/deploy/pkg/env"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/git"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
@@ -21,15 +21,19 @@ type GoBuilder struct {
 
 // Build build a go binary for the target architecture and puts it in workingDir
 func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
-	if b.Service.Port == 0 {
-		return nil, oops.InternalService("port is not set in config")
-	}
-
 	if err := git.Init(revision); err != nil {
 		return nil, oops.WithMessage(err, "failed to initialise git mirror")
 	}
 
-	op := output.Info("Compiling binary for %s", b.Target.Architecture)
+	op := output.Info("Parsing service's config")
+	runtimeEnv, err := env.Parse(b.Service.EnvFiles...)
+	if err != nil {
+		op.Failed()
+		return nil, oops.WithMessage(err, "failed to parse service's env files")
+	}
+	op.Complete()
+
+	op = output.Info("Compiling binary for %s", b.Target.Architecture)
 
 	// Make sure the service exists in the mirror
 	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name)
@@ -40,10 +44,10 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 
 	binName := b.Service.DashedName()
 
-	env := os.Environ()
+	buildEnv := os.Environ()
 	switch b.Target.Architecture {
 	case config.ArchARMv6:
-		env = append(env, "GOOS=linux", "GOARCH=arm", "GOARM=6")
+		buildEnv = append(buildEnv, "GOOS=linux", "GOARCH=arm", "GOARM=6")
 		binName += "-armv6"
 	default:
 		op.Failed()
@@ -68,7 +72,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	flags := fmt.Sprintf("-X github.com/jakewright/home-automation/libraries/go/router.Revision=%s", hash)
 
 	if err := exe.Command("go", "build", "-o", binOut, "-ldflags", flags, pkgToBuild).
-		Dir(git.Dir()).Env(env).Run().Err; err != nil {
+		Dir(git.Dir()).Env(buildEnv).Run().Err; err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to compile")
 	}
@@ -77,7 +81,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 
 	return &Release{
 		Cmd:       binName,
-		Env:       []*EnvVar{{"PORT", strconv.Itoa(b.Service.Port)}},
+		Env:       runtimeEnv,
 		Revision:  hash,
 		ShortHash: shortHash,
 	}, nil

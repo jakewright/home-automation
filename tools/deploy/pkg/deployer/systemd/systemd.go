@@ -123,7 +123,7 @@ func (d *Systemd) Deploy(revision string) error {
 	}
 	op.Complete()
 
-	d.success()
+	d.success(release)
 
 	return nil
 }

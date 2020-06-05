@@ -1,29 +1,17 @@
 package build
 
 import (
-	"fmt"
-
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
+	"github.com/jakewright/home-automation/tools/deploy/pkg/env"
 )
 
 // Release represents something that can be deployed
 type Release struct {
 	Cmd       string
-	Env       []*EnvVar
+	Env       env.Environment
 	Revision  string
 	ShortHash string
-}
-
-// EnvVar represents a single environment variable
-type EnvVar struct {
-	Name  string
-	Value string
-}
-
-// AsSh returns the environment variable in the Bourne shell format name=value.
-func (e *EnvVar) AsSh() string {
-	return fmt.Sprintf("%s=%s", e.Name, e.Value)
 }
 
 // Builder prepares a release

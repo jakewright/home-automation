@@ -23,7 +23,7 @@ const (
 var cfg config
 
 type config struct {
-	Repository string
+	Repository string              `yaml:"repository"`
 	Targets    map[string]*Target  `yaml:"targets"`
 	Services   map[string]*Service `yaml:"services"`
 }
@@ -44,7 +44,7 @@ type Service struct {
 	TargetNames []string  `yaml:"targets"`
 	Targets     []*Target `yaml:"-"`
 	Language    string    `yaml:"language"`
-	Port        int       `yaml:"port"`
+	EnvFiles    []string  `yaml:"env_files"`
 }
 
 // DashedName returns home-automation-s-foo for service.foo

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"text/template"
 
 	"github.com/danielchatfield/go-randutils"
@@ -138,7 +137,7 @@ SyslogIdentifier={{ .SyslogIdentifier }}
 WorkingDirectory={{ .WorkingDirectory }}
 {{- range .Environment }}
 Environment={{ . }}
-{{ end -}}
+{{- end }}
 Type=idle
 ExecStart={{ .ExecStart }}
 X-Revision={{ .Revision }}
@@ -209,8 +208,9 @@ func (d *Systemd) cleanup(client *ssh.Client, deploymentName, workingDir string)
 	return nil
 }
 
-func (d *Systemd) success() {
+func (d *Systemd) success(release *build.Release) {
 	output.InfoLn("\n%s", aurora.Green("Successfully deployed"))
-	svc := aurora.Sprintf(aurora.Index(105, "http://%s:%s/"), d.Target.Host, strconv.Itoa(d.Service.Port))
+	port, _ := release.Env.Lookup("PORT")
+	svc := aurora.Sprintf(aurora.Index(105, "http://%s:%s/"), d.Target.Host, port)
 	output.InfoLn("Service available at %s\n", svc)
 }
