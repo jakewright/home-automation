@@ -66,9 +66,11 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 		return false, oops.WithMessage(err, "failed to get current revision")
 	}
 
-	currentRevision, err = git.ShortHash(currentRevision)
-	if err != nil {
-		return false, oops.WithMessage(err, "failed to get short hash of current revision")
+	if currentRevision != "" {
+		currentRevision, err = git.ShortHash(currentRevision)
+		if err != nil {
+			return false, oops.WithMessage(err, "failed to get short hash of current revision")
+		}
 	}
 
 	fmt.Println()
