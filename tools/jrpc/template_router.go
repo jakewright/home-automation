@@ -38,54 +38,27 @@ package {{ .PackageName }}
 
 type controller interface {
 	{{- range .Endpoints }}
-		{{ .NameUpper }}(*request, *{{ .InputType }}) (*{{ .OutputType }}, error)
+		{{ .NameUpper }}(ctx *context.Context, body *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
-type request struct {
-	context.Context
-	*http.Request
-}
-
-// NewRouter returns a router with appropriate handlers set
-func NewRouter(c controller) *router.Router {
-	r := router.New()
-
-	{{ range .Endpoints }}
-		r.Handle("{{ .HTTPMethod }}", "{{ .Path }}", func(w http.ResponseWriter, r *http.Request) {
+// Init registers the service's handlers with the global router
+func Init(c controller) {
+	{{ range .Endpoints -}}
+		router.RegisterHandler("{{ .HTTPMethod }}", "{{ .Path }}", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 			body := &{{ .InputType }}{}
-			if err := network.DecodeRequest(r, body); err != nil {
-				err = oops.Wrap(err, oops.ErrBadRequest, "failed to decode request")
-				slog.Error(err)
-				network.WriteJSONResponse(w, err)
-				return
+			if err := decode(body); err != nil {
+				return nil, err
 			}
 
 			if err := body.Validate(); err != nil {
-				err = oops.Wrap(err, oops.ErrBadRequest, "failed to validate request")
-				slog.Error(err)
-				network.WriteJSONResponse(w, err)
-				return
+				return nil, err
 			}
 
-			req := &request{
-				Context: r.Context(),
-				Request: r,
-			}
-
-			rsp, err := c.{{ .NameUpper }}(req, body)
-			if err != nil {
-				err = oops.WithMessage(err, "failed to handle request")
-				slog.Error(err)
-				network.WriteJSONResponse(w, err)
-				return
-			}
-
-			network.WriteJSONResponse(w, rsp)
+			return c.{{ .NameUpper }}(ctx, body)
 		})
-	{{ end }}
 
-	return r
+	{{ end -}}
 }
 
 `
@@ -113,11 +86,8 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 	}
 
 	im.Add("context")
-	im.Add("net/http")
-	im.Add("github.com/jakewright/home-automation/libraries/go/network")
-	im.Add("github.com/jakewright/home-automation/libraries/go/oops")
 	im.Add("github.com/jakewright/home-automation/libraries/go/router")
-	im.Add("github.com/jakewright/home-automation/libraries/go/slog")
+	im.Add("github.com/jakewright/home-automation/libraries/go/taxi")
 
 	// Make sure the service name is a suitable go struct name
 	if ok := reValidGoStruct.MatchString(g.file.Service.Name); !ok {
