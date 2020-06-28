@@ -126,14 +126,6 @@ services:
     ports:
       - 7012:80
 
-  service.dmx-proxy:
-    extends:
-      service: go-service
-    build:
-      dockerfile: service.dmx-proxy/dev.dockerfile
-    ports:
-      - 7014:80
-
   service.event-bus:
     build:
       dockerfile: ./service.event-bus/dev.dockerfile
