@@ -4,36 +4,69 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"sync/atomic"
 
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-
-	"github.com/jakewright/muxinator"
+	"github.com/jakewright/home-automation/libraries/go/taxi"
 )
 
-var conf struct {
-	Port int `envconfig:"default=80"`
+var (
+	defaultRouter *Router
+	once          = &sync.Once{}
+)
+
+// SetDefaultRouter sets the global Router instance
+func SetDefaultRouter(r *Router) {
+	once.Do(func() { defaultRouter = r })
 }
 
-func init() {
-	config.Load(&conf)
+func mustGetDefaultRouter() *Router {
+	if defaultRouter == nil {
+		panic(fmt.Errorf("no default router set"))
+	}
+
+	return defaultRouter
 }
 
-// Router is a wrapper around muxinator.Router that conforms to the bootstrap.Process interface
+// RegisterHandler registers a Taxi handler on the default router
+func RegisterHandler(method, path string, handler taxi.HandlerFunc) {
+	mustGetDefaultRouter().RegisterHandler(method, path, handler)
+}
+
+// Router sets up a Taxi server
 type Router struct {
-	r               muxinator.Router
+	port            int
+	router          *taxi.Router
+	server          *http.Server
 	shutdownInvoked *int32
 }
 
 // New returns a new router initialised with default middleware
 func New() *Router {
+	var conf struct {
+		Port int `envconfig:"default=80"`
+	}
+
+	config.Load(&conf)
+
+	router := taxi.NewRouter().WithLogger(slog.Errorf)
+	router.UseMiddleware(panicRecovery, revision)
+	router.RegisterHandlerFunc(http.MethodGet, "/ping", pingHandler)
+
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", conf.Port),
+		Handler: router,
+	}
+
 	r := &Router{
-		r:               muxinator.NewRouter(),
+		port:            conf.Port,
+		router:          router,
+		server:          server,
 		shutdownInvoked: new(int32),
 	}
 
-	r.AddMiddleware(panicRecovery, revision, ping)
 	return r
 }
 
@@ -44,8 +77,8 @@ func (r *Router) GetName() string {
 
 // Start will listen for TCP connections on the port defined in config
 func (r *Router) Start() error {
-	slog.Infof("Listening on port %d", conf.Port)
-	err := r.r.ListenAndServe(fmt.Sprintf(":%d", conf.Port))
+	slog.Infof("Listening on port %d", r.port)
+	err := r.server.ListenAndServe()
 
 	// This error will always be returned after Shutdown is called so swallow it here
 	if atomic.LoadInt32(r.shutdownInvoked) > 0 && err == http.ErrServerClosed {
@@ -58,41 +91,10 @@ func (r *Router) Start() error {
 // Stop will gracefully shutdown the server
 func (r *Router) Stop(ctx context.Context) error {
 	atomic.StoreInt32(r.shutdownInvoked, 1)
-	return r.r.Shutdown(ctx)
+	return r.server.Shutdown(ctx)
 }
 
-// AddMiddleware adds middleware that will be applied to every request.
-// Middleware handlers are executed in the order defined.
-func (r *Router) AddMiddleware(middlewares ...muxinator.Middleware) {
-	r.r.AddMiddleware(middlewares...)
-}
-
-// Handle adds a route to the router
-func (r *Router) Handle(method, path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
-	r.r.Handle(method, path, handler, middlewares...)
-}
-
-// Get is a helper function to add a GET route
-func (r *Router) Get(path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
-	r.r.Get(path, handler, middlewares...)
-}
-
-// Post is a helper function to add a POST route
-func (r *Router) Post(path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
-	r.r.Post(path, handler, middlewares...)
-}
-
-// Put is a helper function to add a PUT route
-func (r *Router) Put(path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
-	r.r.Put(path, handler, middlewares...)
-}
-
-// Patch is a helper function to add a PATCH route
-func (r *Router) Patch(path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
-	r.r.Patch(path, handler, middlewares...)
-}
-
-// Delete is a helper function to add a DELETE route
-func (r *Router) Delete(path string, handler http.HandlerFunc, middlewares ...muxinator.Middleware) {
-	r.r.Delete(path, handler, middlewares...)
+// RegisterHandler adds a route to the router
+func (r *Router) RegisterHandler(method, path string, handler taxi.HandlerFunc) {
+	r.router.RegisterHandler(method, path, handler)
 }

@@ -15,8 +15,9 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/dsync"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/rpc"
+	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/libraries/go/taxi"
 
 	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
@@ -76,12 +77,13 @@ func initService(opts *Opts) (*Service, error) {
 		config.Load(opts.Config)
 	}
 
-	// Create default API client
-	apiClient, err := rpc.NewHTTPClient("data")
-	if err != nil {
-		return nil, err
-	}
-	rpc.SetDefaultClient(apiClient)
+	// Create default RPC client
+	taxi.SetDefaultDispatcher(taxi.NewClient())
+
+	// Set up a global router
+	r := router.New()
+	router.SetDefaultRouter(r)
+	service.processes = append(service.processes, r)
 
 	// Connect to Redis
 	if opts.Firehose {
