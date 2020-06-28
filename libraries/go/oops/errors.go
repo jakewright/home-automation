@@ -10,21 +10,42 @@ import (
 	pkgerrors "github.com/pkg/errors"
 )
 
+// Code is an identifier of a particular class of error
+type Code string
+
 // Generic error codes. Each of these has their own constructor for convenience.
 const (
-	ErrBadRequest         = "bad_request"
-	ErrForbidden          = "forbidden"
-	ErrInternalService    = "internal_service"
-	ErrNotFound           = "not_found"
-	ErrPreconditionFailed = "precondition_failed"
-	ErrTimeout            = "timeout"
-	ErrUnauthorized       = "unauthorized"
-	ErrPanic              = "panic"
+	ErrBadRequest         Code = "bad_request"
+	ErrForbidden          Code = "forbidden"
+	ErrInternalService    Code = "internal_service"
+	ErrNotFound           Code = "not_found"
+	ErrPreconditionFailed Code = "precondition_failed"
+	ErrTimeout            Code = "timeout"
+	ErrUnauthorized       Code = "unauthorized"
 )
+
+var httpStatusByCode = map[Code]int{
+	ErrBadRequest:         http.StatusBadRequest,
+	ErrForbidden:          http.StatusForbidden,
+	ErrInternalService:    http.StatusInternalServerError,
+	ErrNotFound:           http.StatusNotFound,
+	ErrPreconditionFailed: http.StatusPreconditionFailed,
+	ErrTimeout:            http.StatusRequestTimeout,
+	ErrUnauthorized:       http.StatusUnauthorized,
+}
+
+var codeByHTTPStatus map[int]Code
+
+func init() {
+	codeByHTTPStatus = make(map[int]Code, len(httpStatusByCode))
+	for code, status := range httpStatusByCode {
+		codeByHTTPStatus[status] = code
+	}
+}
 
 // Error is a custom error type that implements Go's error interface
 type Error struct {
-	code     string
+	code     Code
 	message  string
 	metadata map[string]string
 	cause    error
@@ -34,9 +55,9 @@ type Error struct {
 // GetCode unwinds the error stack and returns the
 // first code encountered. If no codes exist, then
 // ErrInternalService is returned.
-func (e *Error) GetCode() string {
+func (e *Error) GetCode() Code {
 	if e == nil {
-		return ""
+		return ErrInternalService
 	}
 
 	if e.code != "" {
@@ -80,7 +101,7 @@ func (e *Error) Error() string {
 
 	// Call GetMessage() recursively instead of
 	// Error() to avoid repeating the code
-	return join(": ", e.GetCode(), e.GetMessage())
+	return join(": ", string(e.GetCode()), e.GetMessage())
 }
 
 // GetMetadata returns the metadata map of the error
@@ -98,26 +119,11 @@ func (e *Error) GetMetadata() map[string]string {
 
 // HTTPStatus returns an appropriate HTTP status code to use when returning the error in a response
 func (e *Error) HTTPStatus() int {
-	switch e.GetCode() {
-	case ErrBadRequest:
-		return http.StatusBadRequest
-	case ErrForbidden:
-		return http.StatusForbidden
-	case ErrInternalService:
-		return http.StatusInternalServerError
-	case ErrNotFound:
-		return http.StatusNotFound
-	case ErrPreconditionFailed:
-		return http.StatusPreconditionFailed
-	case ErrTimeout:
-		return http.StatusRequestTimeout
-	case ErrUnauthorized:
-		return http.StatusUnauthorized
-	case ErrPanic:
-		return http.StatusInternalServerError
-	default:
-		return http.StatusInternalServerError
+	if status := httpStatusByCode[e.GetCode()]; status != 0 {
+		return status
 	}
+
+	return http.StatusInternalServerError
 }
 
 // StackTrace returns the stack of Frames from
@@ -176,8 +182,18 @@ func Unauthorized(format string, a ...interface{}) *Error {
 	return newError(ErrUnauthorized, format, a, nil)
 }
 
+// FromHTTPStatus returns an error where the code is derived from the HTTP status code
+func FromHTTPStatus(status int, format string, a ...interface{}) *Error {
+	code := codeByHTTPStatus[status]
+	if code == "" {
+		code = ErrInternalService
+	}
+
+	return newError(code, format, a, nil)
+}
+
 // Is returns whether the code matches that of the error
-func Is(err error, code string) bool {
+func Is(err error, code Code) bool {
 	if v, ok := err.(*Error); ok {
 		return v.GetCode() == code
 	}
@@ -186,7 +202,7 @@ func Is(err error, code string) bool {
 }
 
 // WithCode wraps the error with a new code
-func WithCode(err interface{}, code string) *Error {
+func WithCode(err interface{}, code Code) *Error {
 	return Wrap(err, code, "")
 }
 
@@ -205,7 +221,7 @@ func WithMetadata(err interface{}, metadata map[string]string) *Error {
 // already an *Error, the metadata will me merged and the existing
 // code will remain the same. If the error is not an *Error, the
 // code will default to ErrInternalService.
-func Wrap(err interface{}, code, format string, a ...interface{}) *Error {
+func Wrap(err interface{}, code Code, format string, a ...interface{}) *Error {
 	// Accepting an interface allows us to wrap
 	// things like the result of recover().
 	var cause error
@@ -221,7 +237,7 @@ func Wrap(err interface{}, code, format string, a ...interface{}) *Error {
 
 // newError returns a new Error with the given code. The message is formatted using Sprintf.
 // If the last parameter is a map[string]string, it is assumed to be the error params.
-func newError(code, format string, a []interface{}, cause error) *Error {
+func newError(code Code, format string, a []interface{}, cause error) *Error {
 	metadata, a := extractMetadata(format, a)
 	message := fmt.Sprintf(format, a...)
 	return &Error{code, message, metadata, cause, stack()}
