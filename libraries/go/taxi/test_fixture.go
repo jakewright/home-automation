@@ -113,9 +113,7 @@ func NewStub(t *testing.T) *Stub {
 	return &Stub{
 		t:  t,
 		mu: &sync.Mutex{},
-		rw: &responseWriter{
-			logFunc: t.Logf,
-		},
+		rw: &responseWriter{},
 	}
 }
 
@@ -250,7 +248,9 @@ func (s *Stub) WithAssertion(f func(t *testing.T, requests []*http.Request)) *St
 // in JSON. The logic is the same as that of Taxi router handlers.
 func (s *Stub) RespondWith(v interface{}) *Stub {
 	s.serve = func(w http.ResponseWriter, r *http.Request) {
-		s.rw.writeResponse(w, v)
+		if err := s.rw.Write(w, v); err != nil {
+			s.t.Errorf("Failed to write response: %v", err)
+		}
 	}
 
 	return s

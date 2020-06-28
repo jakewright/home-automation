@@ -27,7 +27,7 @@ type Handler interface {
 }
 
 // HandlerFunc is a type that allows normal functions to be used as Handlers
-type HandlerFunc func(context.Context, Decoder) (interface{}, error)
+type HandlerFunc func(ctx context.Context, decode Decoder) (interface{}, error)
 
 // ServeRPC calls f(ctx, decode)
 func (f HandlerFunc) ServeRPC(ctx context.Context, decode Decoder) (interface{}, error) {
@@ -37,7 +37,7 @@ func (f HandlerFunc) ServeRPC(ctx context.Context, decode Decoder) (interface{},
 // Router registers routes and handlers to handle RPCs over HTTP.
 type Router struct {
 	router  *mux.Router
-	rw      *responseWriter
+	rw      ResponseWriter
 	logFunc func(format string, v ...interface{})
 }
 
@@ -53,28 +53,18 @@ func NewRouter() *Router {
 // wrong. If not set, no logs will be output.
 func (r *Router) WithLogger(f func(format string, v ...interface{})) *Router {
 	r.logFunc = f
-	r.rw.logFunc = f
+	return r
+}
+
+// WithResponseWriter sets a custom response writer
+func (r *Router) WithResponseWriter(rw ResponseWriter) *Router {
+	r.rw = rw
 	return r
 }
 
 // RegisterHandler registers a new route
 func (r *Router) RegisterHandler(method, path string, handler Handler) {
-	var fn http.HandlerFunc = func(w http.ResponseWriter, req *http.Request) {
-		decoder := func(v interface{}) error {
-			return decodeRequest(req, v)
-		}
-
-		rsp, err := handler.ServeRPC(req.Context(), decoder)
-		if err != nil {
-			r.log("Failed to handle request: %v", err)
-			r.rw.writeResponse(w, err)
-			return
-		}
-
-		r.rw.writeResponse(w, rsp)
-	}
-
-	r.RegisterRawHandler(method, path, fn)
+	r.RegisterRawHandler(method, path, r.toHTTPHandler(handler))
 }
 
 // RegisterHandlerFunc registers a new route
@@ -88,8 +78,12 @@ func (r *Router) RegisterRawHandler(method, path string, handler http.Handler) {
 }
 
 // UseMiddleware adds a stack of middleware to the router
-func (r *Router) UseMiddleware(mw ...mux.MiddlewareFunc) {
-	r.router.Use(mw...)
+func (r *Router) UseMiddleware(mw ...func(http.Handler) http.Handler) {
+	mws := make([]mux.MiddlewareFunc, len(mw))
+	for i, mw := range mw {
+		mws[i] = mw
+	}
+	r.router.Use(mws...)
 }
 
 // ServeHTTP dispatches requests to the appropriate handler
@@ -170,4 +164,25 @@ func decodeRequest(r *http.Request, v interface{}) error {
 	}
 
 	return nil
+}
+
+func (r *Router) toHTTPHandler(handler Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		decoder := func(v interface{}) error {
+			return decodeRequest(req, v)
+		}
+
+		rsp, err := handler.ServeRPC(req.Context(), decoder)
+		if err != nil {
+			r.log("Failed to handle request: %v", err)
+			if err := r.rw.Write(w, err); err != nil {
+				r.log("Failed to write response: %v", err)
+			}
+			return
+		}
+
+		if err := r.rw.Write(w, rsp); err != nil {
+			r.log("Failed to handle request: %v", err)
+		}
+	})
 }

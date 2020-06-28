@@ -8,19 +8,21 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
-type responseWriter struct {
-	logFunc func(format string, v ...interface{})
+// ResponseWriter constructs and writes responses to RPC requests
+type ResponseWriter interface {
+	Write(w http.ResponseWriter, v interface{}) error
 }
 
-func (rw *responseWriter) log(format string, v ...interface{}) {
-	if rw.logFunc == nil {
-		return
-	}
+type responseWriter struct{}
 
-	rw.logFunc(format, v...)
+func (*responseWriter) Write(w http.ResponseWriter, v interface{}) error {
+	return WriteResponse(w, v)
 }
 
-func (rw *responseWriter) writeResponse(w http.ResponseWriter, v interface{}) {
+// WriteResponse marshals the body to JSON and wraps it in a
+// "data" field in a JSON response. If the body is an error, the
+// error's string is put in an "error" field in a JSON response.
+func WriteResponse(w http.ResponseWriter, v interface{}) error {
 	status := http.StatusOK
 	payload := struct {
 		Error string
@@ -44,17 +46,18 @@ func (rw *responseWriter) writeResponse(w http.ResponseWriter, v interface{}) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		msg := fmt.Sprintf("Failed to marshal response payload: %v", err)
-		if _, err = fmt.Fprintf(w, msg); err != nil {
-			rw.log("Failed to write response: %v", err)
+		if _, err := fmt.Fprintf(w, msg); err != nil {
+			return err
 		}
 
-		rw.log(msg)
-		return
+		return err
 	}
 
 	w.Header().Set("Content-Type", contentTypeJSON)
 	w.WriteHeader(status)
 	if _, err := fmt.Fprint(w, string(rsp)); err != nil {
-		rw.log("Failed to write response: %v", err)
+		return err
 	}
+
+	return nil
 }
