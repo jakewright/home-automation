@@ -12,8 +12,20 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
+// RequestDecoder unmarshals the request into the value pointed to by v
+type RequestDecoder interface {
+	Decode(r *http.Request, v interface{}) error
+}
+
+type requestDecoder struct{}
+
+func (*requestDecoder) Decode(r *http.Request, v interface{}) error {
+	return DecodeRequest(r, v)
+}
+
 // DecodeRequest unmarshals URL parameters and the JSON body
 // of the given request into the value pointed to by v.
+// It is exported because it might be useful, e.g. in middleware.
 func DecodeRequest(r *http.Request, v interface{}) error {
 	// This does a load of reflection to unmarshal a map into the type of v
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{

@@ -31,6 +31,7 @@ func (f HandlerFunc) ServeRPC(ctx context.Context, decode Decoder) (interface{},
 // Router registers routes and handlers to handle RPCs over HTTP.
 type Router struct {
 	router  *mux.Router
+	decoder RequestDecoder
 	rw      ResponseWriter
 	logFunc func(format string, v ...interface{})
 }
@@ -38,8 +39,9 @@ type Router struct {
 // NewRouter returns an initialised Router
 func NewRouter() *Router {
 	return &Router{
-		router: mux.NewRouter(),
-		rw:     &responseWriter{},
+		router:  mux.NewRouter(),
+		decoder: &requestDecoder{},
+		rw:      &responseWriter{},
 	}
 }
 
@@ -47,6 +49,12 @@ func NewRouter() *Router {
 // wrong. If not set, no logs will be output.
 func (r *Router) WithLogger(f func(format string, v ...interface{})) *Router {
 	r.logFunc = f
+	return r
+}
+
+// WithRequestDecoder sets a custom request decoder
+func (r *Router) WithRequestDecoder(decoder RequestDecoder) *Router {
+	r.decoder = decoder
 	return r
 }
 
@@ -96,7 +104,7 @@ func (r *Router) log(format string, v ...interface{}) {
 func (r *Router) toHTTPHandler(handler Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		decoder := func(v interface{}) error {
-			return DecodeRequest(req, v)
+			return r.decoder.Decode(req, v)
 		}
 
 		rsp, err := handler.ServeRPC(req.Context(), decoder)
