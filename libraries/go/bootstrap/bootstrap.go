@@ -138,9 +138,9 @@ func initFirehose(svc *Service) error {
 
 func initDatabase(opts *Opts, svc *Service) error {
 	conf := struct {
-		MySQLHost         string
-		MySQLUsername     string
-		MySQLPassword     string
+		MySQLHost         string `envconfig:"MYSQL_HOST"`
+		MySQLUsername     string `envconfig:"MYSQL_USERNAME"`
+		MySQLPassword     string `envconfig:"MYSQL_PASSWORD"`
 		MySQLDatabaseName string `envconfig:"default=home_automation"`
 		MySQLCharset      string `envconfig:"default=utf8mb4"`
 	}{}
