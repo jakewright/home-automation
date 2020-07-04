@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	scenedef "github.com/jakewright/home-automation/service.scene/def"
@@ -8,7 +10,7 @@ import (
 )
 
 // SetScene emits an event to trigger the scene to be set asynchronously
-func (c *Controller) SetScene(r *request, body *scenedef.SetSceneRequest) (*scenedef.SetSceneResponse, error) {
+func (c *Controller) SetScene(ctx context.Context, body *scenedef.SetSceneRequest) (*scenedef.SetSceneResponse, error) {
 	scene := &domain.Scene{}
 	if err := database.Find(&scene, body.SceneId); err != nil {
 		return nil, err

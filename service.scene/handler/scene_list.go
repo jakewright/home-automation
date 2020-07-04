@@ -1,13 +1,15 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/jakewright/home-automation/libraries/go/database"
 	scenedef "github.com/jakewright/home-automation/service.scene/def"
 	"github.com/jakewright/home-automation/service.scene/domain"
 )
 
 // ListScenes lists all scenes in the database
-func (c *Controller) ListScenes(r *request, body *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
+func (c *Controller) ListScenes(ctx context.Context, body *scenedef.ListScenesRequest) (*scenedef.ListScenesResponse, error) {
 	where := make(map[string]interface{})
 	if body.OwnerId > 0 {
 		where["owner_id"] = body.OwnerId

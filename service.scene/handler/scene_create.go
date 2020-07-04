@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	scenedef "github.com/jakewright/home-automation/service.scene/def"
@@ -8,7 +10,7 @@ import (
 )
 
 // CreateScene persists a new scene
-func (c *Controller) CreateScene(r *request, body *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
+func (c *Controller) CreateScene(ctx context.Context, body *scenedef.CreateSceneRequest) (*scenedef.CreateSceneResponse, error) {
 	actions := make([]*domain.Action, len(body.Actions))
 	for i, a := range body.Actions {
 		actions[i] = &domain.Action{

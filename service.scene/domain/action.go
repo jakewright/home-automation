@@ -2,13 +2,11 @@ package domain
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/rpc"
 	"github.com/jakewright/home-automation/libraries/go/util"
 	scenedef "github.com/jakewright/home-automation/service.scene/def"
 )
@@ -134,20 +132,22 @@ func (a *Action) parseCommand() (func(context.Context) error, error) {
 }
 
 func (a *Action) parseProperty() (func(context.Context) error, error) {
-	url := fmt.Sprintf("%s/device/%s", a.ControllerName, a.DeviceID)
+	//url := fmt.Sprintf("%s/device/%s", a.ControllerName, a.DeviceID)
 
-	val, err := marshalPropertyValue(a.PropertyType, a.PropertyValue)
-	if err != nil {
-		return nil, oops.WithMessage(err, "failed to marshal property value %s into type %s", a.PropertyValue, a.PropertyType)
-	}
+	//val, err := marshalPropertyValue(a.PropertyType, a.PropertyValue)
+	//if err != nil {
+	//	return nil, oops.WithMessage(err, "failed to marshal property value %s into type %s", a.PropertyValue, a.PropertyType)
+	//}
 
-	body := map[string]interface{}{
-		a.Property: val,
-	}
+	//body := map[string]interface{}{
+	//	a.Property: val,
+	//}
 
 	return func(ctx context.Context) error {
-		_, err := rpc.Patch(ctx, url, body, nil)
-		return err
+		// Todo: make this work again
+		//_, err := rpc.Patch(ctx, url, body, nil)
+		//return err
+		return nil
 	}, nil
 }
 

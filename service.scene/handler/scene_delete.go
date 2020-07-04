@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
@@ -9,7 +11,7 @@ import (
 )
 
 // DeleteScene deletes a scene and associated actions
-func (c *Controller) DeleteScene(r *request, body *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
+func (c *Controller) DeleteScene(ctx context.Context, body *scenedef.DeleteSceneRequest) (*scenedef.DeleteSceneResponse, error) {
 	if body.SceneId == 0 {
 		return nil, oops.BadRequest("scene_id empty")
 	}
