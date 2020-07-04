@@ -12,7 +12,7 @@ import (
 
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
-	"github.com/jakewright/home-automation/tools/toolutils"
+	"github.com/jakewright/home-automation/tools/libraries/cache"
 )
 
 var (
@@ -31,7 +31,7 @@ func Execute() {
 }
 
 func init() {
-	if err := toolutils.Init("run"); err != nil {
+	if err := cache.Init("run"); err != nil {
 		output.Fatal("Failed to initialise toolutils: %v", err)
 	}
 

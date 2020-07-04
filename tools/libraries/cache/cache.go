@@ -1,4 +1,4 @@
-package toolutils
+package cache
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 var dir string
 
-// Init must be called before CacheDir() can be used
+// Init must be called before Dir() can be used
 func Init(tool string) error {
 	osCacheDir, err := os.UserCacheDir()
 	if err != nil {
@@ -23,11 +23,11 @@ func Init(tool string) error {
 	return nil
 }
 
-// CacheDir returns the directory that can be used
+// Dir returns the directory that can be used
 // as a temporary working directory by the tool.
-func CacheDir() string {
+func Dir() string {
 	if dir == "" {
-		panic(fmt.Errorf("CacheDir() called before toolutils.Init()"))
+		panic(fmt.Errorf("function Dir() called before cache.Init()"))
 	}
 
 	return dir
