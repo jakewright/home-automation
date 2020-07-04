@@ -9,8 +9,8 @@ import (
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 )
 
-// DeviceRegistry is the public interface of this service
-type DeviceRegistry interface {
+// DeviceRegistryService is the public interface of this service
+type DeviceRegistryService interface {
 	GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture
 	ListDevices(ctx context.Context, body *ListDevicesRequest) *ListDevicesFuture
 	GetRoom(ctx context.Context, body *GetRoomRequest) *GetRoomFuture
@@ -75,7 +75,7 @@ type DeviceRegistryClient struct {
 }
 
 // Compile-time assertion that the client implements the interface
-var _ DeviceRegistry = (*DeviceRegistryClient)(nil)
+var _ DeviceRegistryService = (*DeviceRegistryClient)(nil)
 
 // NewDeviceRegistryClient returns a new client
 func NewDeviceRegistryClient(d taxi.Dispatcher) *DeviceRegistryClient {
@@ -174,7 +174,7 @@ type MockDeviceRegistryClient struct {
 }
 
 // Compile-time assertion that the mock client implements the interface
-var _ DeviceRegistry = (*MockDeviceRegistryClient)(nil)
+var _ DeviceRegistryService = (*MockDeviceRegistryClient)(nil)
 
 // NewMockDeviceRegistryClient returns a new mock client
 func NewMockDeviceRegistryClient(ctx context.Context, t *testing.T) *MockDeviceRegistryClient {
