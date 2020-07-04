@@ -88,7 +88,12 @@ func DecodeRequest(r *http.Request, v interface{}) error {
 // WriteSuccess writes the data to the ResponseWriter.
 // A status code of 200 is set.
 func WriteSuccess(w http.ResponseWriter, v interface{}) error {
-	payload := struct{ Data interface{} }{Data: v}
+	payload := struct {
+		Data interface{} `json:"data"`
+	}{
+		Data: v,
+	}
+
 	rsp, err := json.Marshal(&payload)
 	if err != nil {
 		// Best effort attempt to respond
