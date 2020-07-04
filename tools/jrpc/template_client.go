@@ -36,8 +36,8 @@ package {{ .PackageName }}
 	)
 {{- end }}
 
-// {{ .ServiceName }} is the public interface of this service
-type {{ .ServiceName }} interface {
+// {{ .ServiceName }}Service is the public interface of this service
+type {{ .ServiceName }}Service interface {
 	{{- range .Endpoints }}
 		{{ .NameUpper }}(ctx context.Context, body *{{ .InputType }}) *{{ .NameUpper }}Future
 	{{- end }}
@@ -64,7 +64,7 @@ type {{ .ServiceName }}Client struct {
 }
 
 // Compile-time assertion that the client implements the interface
-var _ {{ .ServiceName }} = (*{{ .ServiceName }}Client)(nil)
+var _ {{ .ServiceName }}Service = (*{{ .ServiceName }}Client)(nil)
 
 // New{{ .ServiceName }}Client returns a new client
 func New{{ .ServiceName }}Client(d taxi.Dispatcher) *{{ .ServiceName }}Client {
@@ -102,7 +102,7 @@ type Mock{{ .ServiceName }}Client struct {
 }
 
 // Compile-time assertion that the mock client implements the interface
-var _ {{ .ServiceName }} = (*Mock{{ .ServiceName }}Client)(nil)
+var _ {{ .ServiceName }}Service = (*Mock{{ .ServiceName }}Client)(nil)
 
 // NewMock{{ .ServiceName }}Client returns a new mock client
 func NewMock{{ .ServiceName }}Client(ctx context.Context, t *testing.T) *Mock{{ .ServiceName }}Client {
