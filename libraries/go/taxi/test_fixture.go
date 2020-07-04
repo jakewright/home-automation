@@ -1,7 +1,6 @@
 package taxi
 
 import (
-	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -30,24 +29,6 @@ func NewTestFixture(t *testing.T) *TestFixture {
 	}
 }
 
-// RegisterTestFixture sets a mock client using a ContextMux as the default
-// Dispatcher and registers the given TestFixture as a handler. A modified
-// context is returned that can be used by RPCs to have them be handled
-// by the TestFixture.
-func RegisterTestFixture(ctx context.Context, f *TestFixture) context.Context {
-	SetDefaultDispatcher(NewMockClient(NewContextMux()))
-
-	dispatcher, ok := mustGetDefaultDispatcher().(*MockClient)
-	require.True(f.t, ok, "default Dispatcher was unexpected type")
-
-	mux, ok := dispatcher.handler.(ContextMultiplexer)
-	require.True(f.t, ok, "mock client's handler was unexpected type")
-
-	ctx, stop := mux.RegisterHandler(ctx, f)
-	f.t.Cleanup(stop)
-	return ctx
-}
-
 // ServeHTTP dispatches requests to the first stub that matches
 func (f *TestFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.mu.Lock()
@@ -73,26 +54,43 @@ func (f *TestFixture) RunAssertions() {
 	}
 }
 
-// Expect returns a new stub that matches on the method and path, and asserts
-// that it is called n times.
-func (f *TestFixture) Expect(n int, method, path string) *Stub {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+// ExpectOne returns a new stub that matches on the RPC, and asserts that
+// it is called exactly once.
+func (f *TestFixture) ExpectOne(rpc rpcProvider, fields ...string) *Stub {
+	return f.Expect(1, rpc, fields...)
+}
 
-	s := NewStub(f.t).Expect(n).MatchMethod(method).MatchPath(path)
-	f.stubs = append(f.stubs, s)
-	return s
+// Expect returns a new stub that matches on the RPC, and asserts
+// that it is called n times.
+func (f *TestFixture) Expect(n int, rpc rpcProvider, fields ...string) *Stub {
+	return f.Allow(rpc, fields...).Expect(n)
 }
 
 // Allow returns a new stub that matches on the method and path but does
 // not care how many times it is called.
-func (f *TestFixture) Allow(method, path string) *Stub {
+func (f *TestFixture) Allow(rpc rpcProvider, fields ...string) *Stub {
+	r := rpc.RPC()
+	s := f.NewStub().MatchMethod(r.Method).MatchPath(r.URL)
+	if len(fields) == 0 {
+		s.MatchBody(r.Body)
+	} else {
+		s.MatchPartialBody(r.Body, fields)
+	}
+	return s
+}
+
+// NewStub returns a new empty stub
+func (f *TestFixture) NewStub() *Stub {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	s := NewStub(f.t).MatchMethod(method).MatchPath(path)
+	s := NewStub(f.t)
 	f.stubs = append(f.stubs, s)
 	return s
+}
+
+type rpcProvider interface {
+	RPC() *RPC
 }
 
 // Stub is an http.Handler to use with a TestFixture. It can be configured to
@@ -105,7 +103,6 @@ type Stub struct {
 	matchers   []func(r *http.Request) bool
 	assertions []func(t *testing.T, requests []*http.Request)
 	serve      func(w http.ResponseWriter, r *http.Request)
-	rw         *responseWriter
 }
 
 // NewStub returns an initialised Stub
@@ -113,7 +110,6 @@ func NewStub(t *testing.T) *Stub {
 	return &Stub{
 		t:  t,
 		mu: &sync.Mutex{},
-		rw: &responseWriter{},
 	}
 }
 
@@ -244,12 +240,24 @@ func (s *Stub) WithAssertion(f func(t *testing.T, requests []*http.Request)) *St
 
 // RespondWith sets the data that should be returned by the stub when handling
 // requests. The interface will be marshaled to JSON and wrapped in a data
-// field. If v is an error, the string value will be put in an error field
-// in JSON. The logic is the same as that of Taxi router handlers.
+// field.
 func (s *Stub) RespondWith(v interface{}) *Stub {
 	s.serve = func(w http.ResponseWriter, r *http.Request) {
-		if err := s.rw.Write(w, v); err != nil {
+		if err := WriteSuccess(w, v); err != nil {
 			s.t.Errorf("Failed to write response: %v", err)
+		}
+	}
+
+	return s
+}
+
+// RespondWithError sets the error that should be returned by the stub when
+// handling requests. The error will be converted to a string and sent
+// in the error field of the JSON payload.
+func (s *Stub) RespondWithError(err error) *Stub {
+	s.serve = func(w http.ResponseWriter, r *http.Request) {
+		if werr := WriteError(w, err); werr != nil {
+			s.t.Errorf("Failed to write error response: %v", werr)
 		}
 	}
 

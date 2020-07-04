@@ -7,11 +7,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	contentTypeJSON = "application/json; charset=UTF-8"
-	contentTypeText = "text/plain"
-)
-
 // Decoder is a function that decodes a request body into the given interface
 type Decoder func(v interface{}) error
 
@@ -31,17 +26,13 @@ func (f HandlerFunc) ServeRPC(ctx context.Context, decode Decoder) (interface{},
 // Router registers routes and handlers to handle RPCs over HTTP.
 type Router struct {
 	router  *mux.Router
-	decoder RequestDecoder
-	rw      ResponseWriter
 	logFunc func(format string, v ...interface{})
 }
 
 // NewRouter returns an initialised Router
 func NewRouter() *Router {
 	return &Router{
-		router:  mux.NewRouter(),
-		decoder: &requestDecoder{},
-		rw:      &responseWriter{},
+		router: mux.NewRouter(),
 	}
 }
 
@@ -52,21 +43,26 @@ func (r *Router) WithLogger(f func(format string, v ...interface{})) *Router {
 	return r
 }
 
-// WithRequestDecoder sets a custom request decoder
-func (r *Router) WithRequestDecoder(decoder RequestDecoder) *Router {
-	r.decoder = decoder
-	return r
-}
-
-// WithResponseWriter sets a custom response writer
-func (r *Router) WithResponseWriter(rw ResponseWriter) *Router {
-	r.rw = rw
-	return r
-}
-
 // RegisterHandler registers a new route
 func (r *Router) RegisterHandler(method, path string, handler Handler) {
-	r.RegisterRawHandler(method, path, r.toHTTPHandler(handler))
+	r.RegisterRawHandler(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		decoder := func(v interface{}) error {
+			return DecodeRequest(req, v)
+		}
+
+		rsp, err := handler.ServeRPC(req.Context(), decoder)
+		if err != nil {
+			r.log("Failed to handle request: %v", err)
+			if err := WriteError(w, err); err != nil {
+				r.log("Failed to write response: %v", err)
+			}
+			return
+		}
+
+		if err := WriteSuccess(w, rsp); err != nil {
+			r.log("Failed to handle request: %v", err)
+		}
+	}))
 }
 
 // RegisterHandlerFunc registers a new route
@@ -99,25 +95,4 @@ func (r *Router) log(format string, v ...interface{}) {
 	}
 
 	r.logFunc(format, v...)
-}
-
-func (r *Router) toHTTPHandler(handler Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		decoder := func(v interface{}) error {
-			return r.decoder.Decode(req, v)
-		}
-
-		rsp, err := handler.ServeRPC(req.Context(), decoder)
-		if err != nil {
-			r.log("Failed to handle request: %v", err)
-			if err := r.rw.Write(w, err); err != nil {
-				r.log("Failed to write response: %v", err)
-			}
-			return
-		}
-
-		if err := r.rw.Write(w, rsp); err != nil {
-			r.log("Failed to handle request: %v", err)
-		}
-	})
 }
