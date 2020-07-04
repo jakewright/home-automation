@@ -10,17 +10,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-redis/redis/v7"
+	"github.com/jinzhu/gorm"
+
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/dsync"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	"github.com/jakewright/home-automation/libraries/go/taxi"
-
-	"github.com/go-redis/redis/v7"
-	"github.com/jinzhu/gorm"
 
 	// Register MySQL driver
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -76,14 +74,6 @@ func initService(opts *Opts) (*Service, error) {
 	if opts.Config != nil {
 		config.Load(opts.Config)
 	}
-
-	// Create default RPC client
-	taxi.SetDefaultDispatcher(taxi.NewClient())
-
-	// Set up a global router
-	r := router.New()
-	router.SetDefaultRouter(r)
-	service.processes = append(service.processes, r)
 
 	// Connect to Redis
 	if opts.Firehose {
