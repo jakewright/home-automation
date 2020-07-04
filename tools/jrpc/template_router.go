@@ -36,16 +36,18 @@ package {{ .PackageName }}
 	)
 {{ end }}
 
-type controller interface {
+type service interface {
 	{{- range .Endpoints }}
 		{{ .NameUpper }}(ctx *context.Context, body *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
-// Init registers the service's handlers with the global router
-func Init(c controller) {
+// NewRouter creates a new router for this service
+func NewRouter(s service) *router.Router {
+	r := router.New()
+
 	{{ range .Endpoints -}}
-		router.RegisterHandler("{{ .HTTPMethod }}", "{{ .Path }}", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+		r.RegisterHandler("{{ .HTTPMethod }}", "{{ .Path }}", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 			body := &{{ .InputType }}{}
 			if err := decode(body); err != nil {
 				return nil, err
@@ -55,10 +57,12 @@ func Init(c controller) {
 				return nil, err
 			}
 
-			return c.{{ .NameUpper }}(ctx, body)
+			return s.{{ .NameUpper }}(ctx, body)
 		})
 
 	{{ end -}}
+
+	return r
 }
 
 `

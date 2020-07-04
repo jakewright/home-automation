@@ -48,9 +48,9 @@ type options struct {
 
 func generate(defPath string, file *svcdef.File) error {
 	generators := []generator{
+		&clientGenerator{},
 		&firehoseGenerator{},
 		&routerGenerator{},
-		&rpcGenerator{},
 		&typesGenerator{},
 	}
 
