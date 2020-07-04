@@ -1,9 +1,9 @@
 package build
 
 import (
+	"github.com/jakewright/home-automation/libraries/go/env"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
-	"github.com/jakewright/home-automation/tools/deploy/pkg/env"
 )
 
 // Release represents something that can be deployed

@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jakewright/home-automation/libraries/go/env"
 	"github.com/jakewright/home-automation/libraries/go/exe"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
-	"github.com/jakewright/home-automation/tools/deploy/pkg/env"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/git"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
