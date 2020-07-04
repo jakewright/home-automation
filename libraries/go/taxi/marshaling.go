@@ -3,6 +3,7 @@ package taxi
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -66,9 +67,18 @@ func DecodeRequest(r *http.Request, v interface{}) error {
 		return nil
 	}
 
-	// Assume the body is JSON and unmarshal into v
 	defer func() { _ = r.Body.Close() }()
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return oops.Wrap(err, oops.ErrInternalService, "failed to read request body")
+	}
+
+	if len(body) == 0 {
+		return nil
+	}
+
+	// Assume the body is JSON and unmarshal into v
+	if err := json.Unmarshal(body, v); err != nil {
 		return oops.Wrap(err, oops.ErrBadRequest, "failed to unmarshal request body")
 	}
 
