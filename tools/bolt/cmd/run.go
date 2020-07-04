@@ -32,7 +32,7 @@ var (
 				}
 			}
 
-			if err := c.Run(services); err != nil {
+			if err := service.Run(c, services); err != nil {
 				output.Fatal("Failed to run: %v", err)
 			}
 		},

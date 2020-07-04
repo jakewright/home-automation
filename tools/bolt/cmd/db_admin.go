@@ -9,6 +9,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/exe"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
+	"github.com/jakewright/home-automation/tools/bolt/pkg/service"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
 
@@ -28,7 +29,7 @@ var (
 			if running, err := c.IsRunning(serviceName); err != nil {
 				output.Fatal("Failed to get status of %s: %v", serviceName, err)
 			} else if !running {
-				if err := c.Run([]string{serviceName}); err != nil {
+				if err := service.Run(c, []string{serviceName}); err != nil {
 					output.Fatal("Failed to start %s: %v", serviceName, err)
 				}
 			}

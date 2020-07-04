@@ -8,6 +8,7 @@ import (
 
 	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
+	"github.com/jakewright/home-automation/tools/bolt/pkg/service"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
 
@@ -76,7 +77,7 @@ func (d *Database) applyMySQLSchema(serviceName, schema string) error {
 	}
 
 	if !running {
-		if err := d.c.Run([]string{d.cfg.Service}); err != nil {
+		if err := service.Run(d.c, []string{d.cfg.Service}); err != nil {
 			return fmt.Errorf("failed to start %s: %v", d.cfg.Service, err)
 		}
 

@@ -25,6 +25,15 @@ func (e Environment) Lookup(key string) (string, bool) {
 	return "", false
 }
 
+// AsSh returns a slice of the variables in teh Bourne shell format name=value.
+func (e Environment) AsSh() []string {
+	s := make([]string, len(e))
+	for i, v := range e {
+		s[i] = v.AsSh()
+	}
+	return s
+}
+
 // Variable represents a single environment variable
 type Variable struct {
 	Name  string
