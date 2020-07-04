@@ -147,5 +147,5 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 }
 
 func (g *routerGenerator) Filename() string {
-	return "gen.go"
+	return "router.go"
 }
