@@ -23,7 +23,7 @@ func panicRecovery(next http.Handler) http.Handler {
 				err := oops.Wrap(v, oops.ErrInternalService, "recovered from panic", map[string]string{
 					"stack": string(stack),
 				})
-				if err := taxi.WriteResponse(w, err); err != nil {
+				if err := taxi.WriteError(w, err); err != nil {
 					slog.Errorf("Failed to write response: %v", err)
 				}
 
