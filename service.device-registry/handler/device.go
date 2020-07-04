@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
 // ListDevices lists all devices known by the registry. Results can be filtered by controller name.
-func (c *Controller) ListDevices(r *request, body *deviceregistrydef.ListDevicesRequest) (*deviceregistrydef.ListDevicesResponse, error) {
+func (c *Controller) ListDevices(ctx context.Context, body *deviceregistrydef.ListDevicesRequest) (*deviceregistrydef.ListDevicesResponse, error) {
 	var devices []*deviceregistrydef.DeviceHeader
 	var err error
 	if body.ControllerName != "" {
@@ -37,7 +39,7 @@ func (c *Controller) ListDevices(r *request, body *deviceregistrydef.ListDevices
 }
 
 // GetDevice returns a specific device by ID
-func (c *Controller) GetDevice(r *request, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
+func (c *Controller) GetDevice(ctx context.Context, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
 	device, err := c.DeviceRepository.Find(body.DeviceId)
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to find device %q", body.DeviceId)
