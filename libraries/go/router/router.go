@@ -4,36 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync"
 	"sync/atomic"
 
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/libraries/go/taxi"
 )
-
-var (
-	defaultRouter *Router
-	once          = &sync.Once{}
-)
-
-// SetDefaultRouter sets the global Router instance
-func SetDefaultRouter(r *Router) {
-	once.Do(func() { defaultRouter = r })
-}
-
-func mustGetDefaultRouter() *Router {
-	if defaultRouter == nil {
-		panic(fmt.Errorf("no default router set"))
-	}
-
-	return defaultRouter
-}
-
-// RegisterHandler registers a Taxi handler on the default router
-func RegisterHandler(method, path string, handler taxi.HandlerFunc) {
-	mustGetDefaultRouter().RegisterHandler(method, path, handler)
-}
 
 // Router sets up a Taxi server
 type Router struct {
