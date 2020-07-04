@@ -39,7 +39,7 @@ package {{ .PackageName }}
 // {{ .ServiceName }} is the public interface of this service
 type {{ .ServiceName }} interface {
 	{{- range .Endpoints }}
-		{{ .NameUpper }}(ctx *context.Context, body *{{ .InputType }}) (*{{ .NameUpper }}Future, error)
+		{{ .NameUpper }}(ctx context.Context, body *{{ .InputType }}) *{{ .NameUpper }}Future
 	{{- end }}
 }
 
@@ -75,8 +75,8 @@ func New{{ .ServiceName }}Client(d taxi.Dispatcher) *{{ .ServiceName }}Client {
 
 {{- range $endpoint := .Endpoints }}
 	// {{ $endpoint.NameUpper }} dispatches an RPC to the service
-	func (c *{{ $.ServiceName }}Client) {{ $endpoint.NameUpper }}(ctx *context.Context, body *{{ $endpoint.InputType }})(*{{ $endpoint.NameUpper }}Future, error) {
-		taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.Request{
+	func (c *{{ $.ServiceName }}Client) {{ $endpoint.NameUpper }}(ctx context.Context, body *{{ $endpoint.InputType }}) *{{ $endpoint.NameUpper }}Future {
+		taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 			Method: "{{ $endpoint.HTTPMethod }}",
 			URL: "{{ $endpoint.URL }}",
 			Body: body,
@@ -108,15 +108,15 @@ var _ {{ .ServiceName }} = (*Mock{{ .ServiceName }}Client)(nil)
 func NewMock{{ .ServiceName }}Client(ctx context.Context, t *testing.T) *Mock{{ .ServiceName }}Client {
 	f := taxi.NewTestFixture(t)
 
-	return &{{ .ServiceName }}Client{
+	return &Mock{{ .ServiceName }}Client{
 		dispatcher: &taxi.MockClient{Handler: f},
 	}
 }
 
 {{- range $endpoint := .Endpoints }}
 	// {{ $endpoint.NameUpper }} dispatches an RPC to the mock client
-	func (c *Mock{{ $.ServiceName }}Client) {{ $endpoint.NameUpper }}(ctx context.Context, body *{{ $endpoint.InputType }})(*{{ $endpoint.NameUpper }}Future, error) {
-		taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.Request{
+	func (c *Mock{{ $.ServiceName }}Client) {{ $endpoint.NameUpper }}(ctx context.Context, body *{{ $endpoint.InputType }}) *{{ $endpoint.NameUpper }}Future {
+		taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 			Method: "{{ $endpoint.HTTPMethod }}",
 			URL: "{{ $endpoint.URL }}",
 			Body: body,

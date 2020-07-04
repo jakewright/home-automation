@@ -38,7 +38,7 @@ package {{ .PackageName }}
 
 type service interface {
 	{{- range .Endpoints }}
-		{{ .NameUpper }}(ctx *context.Context, body *{{ .InputType }}) (*{{ .OutputType }}, error)
+		{{ .NameUpper }}(ctx context.Context, body *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
