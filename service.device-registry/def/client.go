@@ -69,133 +69,138 @@ func (f *ListRoomsFuture) Wait() (*ListRoomsResponse, error) {
 	return f.rsp, f.err
 }
 
-// DeviceRegistryClient makes requests to this service
-type DeviceRegistryClient struct {
+// Client makes requests to this service
+type Client struct {
 	dispatcher taxi.Dispatcher
 }
 
 // Compile-time assertion that the client implements the interface
-var _ DeviceRegistryService = (*DeviceRegistryClient)(nil)
+var _ DeviceRegistryService = (*Client)(nil)
 
-// NewDeviceRegistryClient returns a new client
-func NewDeviceRegistryClient(d taxi.Dispatcher) *DeviceRegistryClient {
-	return &DeviceRegistryClient{
-		dispatcher: d,
+// NewClient returns a new client
+func NewClient(dispatcher taxi.Dispatcher) *Client {
+	return &Client{
+		dispatcher: dispatcher,
 	}
 }
 
 // GetDevice dispatches an RPC to the service
-func (c *DeviceRegistryClient) GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture {
+func (c *Client) GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/device",
+		URL:    "http://service.device-registry/device",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &GetDeviceFuture{
 		done: done,
+		rsp:  &GetDeviceResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // ListDevices dispatches an RPC to the service
-func (c *DeviceRegistryClient) ListDevices(ctx context.Context, body *ListDevicesRequest) *ListDevicesFuture {
+func (c *Client) ListDevices(ctx context.Context, body *ListDevicesRequest) *ListDevicesFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/devices",
+		URL:    "http://service.device-registry/devices",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListDevicesFuture{
 		done: done,
+		rsp:  &ListDevicesResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // GetRoom dispatches an RPC to the service
-func (c *DeviceRegistryClient) GetRoom(ctx context.Context, body *GetRoomRequest) *GetRoomFuture {
+func (c *Client) GetRoom(ctx context.Context, body *GetRoomRequest) *GetRoomFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/room",
+		URL:    "http://service.device-registry/room",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &GetRoomFuture{
 		done: done,
+		rsp:  &GetRoomResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // ListRooms dispatches an RPC to the service
-func (c *DeviceRegistryClient) ListRooms(ctx context.Context, body *ListRoomsRequest) *ListRoomsFuture {
+func (c *Client) ListRooms(ctx context.Context, body *ListRoomsRequest) *ListRoomsFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/rooms",
+		URL:    "http://service.device-registry/rooms",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListRoomsFuture{
 		done: done,
+		rsp:  &ListRoomsResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
-// MockDeviceRegistryClient can be used in tests
-type MockDeviceRegistryClient struct {
+// MockClient can be used in tests
+type MockClient struct {
 	dispatcher *taxi.MockClient
 }
 
 // Compile-time assertion that the mock client implements the interface
-var _ DeviceRegistryService = (*MockDeviceRegistryClient)(nil)
+var _ DeviceRegistryService = (*MockClient)(nil)
 
-// NewMockDeviceRegistryClient returns a new mock client
-func NewMockDeviceRegistryClient(ctx context.Context, t *testing.T) *MockDeviceRegistryClient {
+// NewMockClient returns a new mock client
+func NewMockClient(ctx context.Context, t *testing.T) *MockClient {
 	f := taxi.NewTestFixture(t)
 
-	return &MockDeviceRegistryClient{
+	return &MockClient{
 		dispatcher: &taxi.MockClient{Handler: f},
 	}
 }
 
 // GetDevice dispatches an RPC to the mock client
-func (c *MockDeviceRegistryClient) GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture {
+func (c *MockClient) GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/device",
+		URL:    "http://service.device-registry/device",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &GetDeviceFuture{
 		done: done,
+		rsp:  &GetDeviceResponse{},
 	}
 
 	go func() {
@@ -207,16 +212,17 @@ func (c *MockDeviceRegistryClient) GetDevice(ctx context.Context, body *GetDevic
 }
 
 // ListDevices dispatches an RPC to the mock client
-func (c *MockDeviceRegistryClient) ListDevices(ctx context.Context, body *ListDevicesRequest) *ListDevicesFuture {
+func (c *MockClient) ListDevices(ctx context.Context, body *ListDevicesRequest) *ListDevicesFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/devices",
+		URL:    "http://service.device-registry/devices",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListDevicesFuture{
 		done: done,
+		rsp:  &ListDevicesResponse{},
 	}
 
 	go func() {
@@ -228,16 +234,17 @@ func (c *MockDeviceRegistryClient) ListDevices(ctx context.Context, body *ListDe
 }
 
 // GetRoom dispatches an RPC to the mock client
-func (c *MockDeviceRegistryClient) GetRoom(ctx context.Context, body *GetRoomRequest) *GetRoomFuture {
+func (c *MockClient) GetRoom(ctx context.Context, body *GetRoomRequest) *GetRoomFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/room",
+		URL:    "http://service.device-registry/room",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &GetRoomFuture{
 		done: done,
+		rsp:  &GetRoomResponse{},
 	}
 
 	go func() {
@@ -249,16 +256,17 @@ func (c *MockDeviceRegistryClient) GetRoom(ctx context.Context, body *GetRoomReq
 }
 
 // ListRooms dispatches an RPC to the mock client
-func (c *MockDeviceRegistryClient) ListRooms(ctx context.Context, body *ListRoomsRequest) *ListRoomsFuture {
+func (c *MockClient) ListRooms(ctx context.Context, body *ListRoomsRequest) *ListRoomsFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.device-registry/rooms",
+		URL:    "http://service.device-registry/rooms",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListRoomsFuture{
 		done: done,
+		rsp:  &ListRoomsResponse{},
 	}
 
 	go func() {

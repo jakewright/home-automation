@@ -58,24 +58,24 @@ type {{ .ServiceName }}Service interface {
 	}
 {{- end }}
 
-// {{ .ServiceName }}Client makes requests to this service
-type {{ .ServiceName }}Client struct {
+// Client makes requests to this service
+type Client struct {
 	dispatcher taxi.Dispatcher
 }
 
 // Compile-time assertion that the client implements the interface
-var _ {{ .ServiceName }}Service = (*{{ .ServiceName }}Client)(nil)
+var _ {{ .ServiceName }}Service = (*Client)(nil)
 
-// New{{ .ServiceName }}Client returns a new client
-func New{{ .ServiceName }}Client(d taxi.Dispatcher) *{{ .ServiceName }}Client {
-	return &{{ .ServiceName }}Client{
-		dispatcher: d,
+// NewClient returns a new client
+func NewClient(dispatcher taxi.Dispatcher) *Client {
+	return &Client{
+		dispatcher: dispatcher,
 	}
 }
 
 {{- range $endpoint := .Endpoints }}
 	// {{ $endpoint.NameUpper }} dispatches an RPC to the service
-	func (c *{{ $.ServiceName }}Client) {{ $endpoint.NameUpper }}(ctx context.Context, body *{{ $endpoint.InputType }}) *{{ $endpoint.NameUpper }}Future {
+	func (c *Client) {{ $endpoint.NameUpper }}(ctx context.Context, body *{{ $endpoint.InputType }}) *{{ $endpoint.NameUpper }}Future {
 		taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 			Method: "{{ $endpoint.HTTPMethod }}",
 			URL: "{{ $endpoint.URL }}",
@@ -85,37 +85,38 @@ func New{{ .ServiceName }}Client(d taxi.Dispatcher) *{{ .ServiceName }}Client {
 		done := make(chan struct{})
 		ftr := &{{ $endpoint.NameUpper }}Future{
 			done: done,
+			rsp: &{{ $endpoint.OutputType }}{},
 		}
 
 		go func() {
 			defer close(done)
-			ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+			ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 		}()
 
 		return ftr
 	}
 {{- end }}
 
-// Mock{{ .ServiceName }}Client can be used in tests
-type Mock{{ .ServiceName }}Client struct {
+// MockClient can be used in tests
+type MockClient struct {
 	dispatcher *taxi.MockClient
 }
 
 // Compile-time assertion that the mock client implements the interface
-var _ {{ .ServiceName }}Service = (*Mock{{ .ServiceName }}Client)(nil)
+var _ {{ .ServiceName }}Service = (*MockClient)(nil)
 
-// NewMock{{ .ServiceName }}Client returns a new mock client
-func NewMock{{ .ServiceName }}Client(ctx context.Context, t *testing.T) *Mock{{ .ServiceName }}Client {
+// NewMockClient returns a new mock client
+func NewMockClient(ctx context.Context, t *testing.T) *MockClient {
 	f := taxi.NewTestFixture(t)
 
-	return &Mock{{ .ServiceName }}Client{
+	return &MockClient{
 		dispatcher: &taxi.MockClient{Handler: f},
 	}
 }
 
 {{- range $endpoint := .Endpoints }}
 	// {{ $endpoint.NameUpper }} dispatches an RPC to the mock client
-	func (c *Mock{{ $.ServiceName }}Client) {{ $endpoint.NameUpper }}(ctx context.Context, body *{{ $endpoint.InputType }}) *{{ $endpoint.NameUpper }}Future {
+	func (c *MockClient) {{ $endpoint.NameUpper }}(ctx context.Context, body *{{ $endpoint.InputType }}) *{{ $endpoint.NameUpper }}Future {
 		taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 			Method: "{{ $endpoint.HTTPMethod }}",
 			URL: "{{ $endpoint.URL }}",
@@ -125,6 +126,7 @@ func NewMock{{ .ServiceName }}Client(ctx context.Context, t *testing.T) *Mock{{ 
 		done := make(chan struct{})
 		ftr := &{{ $endpoint.NameUpper }}Future{
 			done: done,
+			rsp: &{{ $endpoint.OutputType }}{},
 		}
 
 		go func() {
@@ -196,7 +198,7 @@ func (g *clientGenerator) Data(im *imports.Manager) (interface{}, error) {
 			InputType:  inType.TypeName,
 			OutputType: outType.TypeName,
 			HTTPMethod: method,
-			URL:        path.Join(routerPath, rpcPath),
+			URL:        "http://" + path.Join(routerPath, rpcPath),
 		}
 	}
 

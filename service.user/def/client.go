@@ -41,91 +41,94 @@ func (f *ListUsersFuture) Wait() (*ListUsersResponse, error) {
 	return f.rsp, f.err
 }
 
-// UserClient makes requests to this service
-type UserClient struct {
+// Client makes requests to this service
+type Client struct {
 	dispatcher taxi.Dispatcher
 }
 
 // Compile-time assertion that the client implements the interface
-var _ UserService = (*UserClient)(nil)
+var _ UserService = (*Client)(nil)
 
-// NewUserClient returns a new client
-func NewUserClient(d taxi.Dispatcher) *UserClient {
-	return &UserClient{
-		dispatcher: d,
+// NewClient returns a new client
+func NewClient(dispatcher taxi.Dispatcher) *Client {
+	return &Client{
+		dispatcher: dispatcher,
 	}
 }
 
 // GetUser dispatches an RPC to the service
-func (c *UserClient) GetUser(ctx context.Context, body *GetUserRequest) *GetUserFuture {
+func (c *Client) GetUser(ctx context.Context, body *GetUserRequest) *GetUserFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.user/user",
+		URL:    "http://service.user/user",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &GetUserFuture{
 		done: done,
+		rsp:  &GetUserResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // ListUsers dispatches an RPC to the service
-func (c *UserClient) ListUsers(ctx context.Context, body *ListUsersRequest) *ListUsersFuture {
+func (c *Client) ListUsers(ctx context.Context, body *ListUsersRequest) *ListUsersFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.user/users",
+		URL:    "http://service.user/users",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListUsersFuture{
 		done: done,
+		rsp:  &ListUsersResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
-// MockUserClient can be used in tests
-type MockUserClient struct {
+// MockClient can be used in tests
+type MockClient struct {
 	dispatcher *taxi.MockClient
 }
 
 // Compile-time assertion that the mock client implements the interface
-var _ UserService = (*MockUserClient)(nil)
+var _ UserService = (*MockClient)(nil)
 
-// NewMockUserClient returns a new mock client
-func NewMockUserClient(ctx context.Context, t *testing.T) *MockUserClient {
+// NewMockClient returns a new mock client
+func NewMockClient(ctx context.Context, t *testing.T) *MockClient {
 	f := taxi.NewTestFixture(t)
 
-	return &MockUserClient{
+	return &MockClient{
 		dispatcher: &taxi.MockClient{Handler: f},
 	}
 }
 
 // GetUser dispatches an RPC to the mock client
-func (c *MockUserClient) GetUser(ctx context.Context, body *GetUserRequest) *GetUserFuture {
+func (c *MockClient) GetUser(ctx context.Context, body *GetUserRequest) *GetUserFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.user/user",
+		URL:    "http://service.user/user",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &GetUserFuture{
 		done: done,
+		rsp:  &GetUserResponse{},
 	}
 
 	go func() {
@@ -137,16 +140,17 @@ func (c *MockUserClient) GetUser(ctx context.Context, body *GetUserRequest) *Get
 }
 
 // ListUsers dispatches an RPC to the mock client
-func (c *MockUserClient) ListUsers(ctx context.Context, body *ListUsersRequest) *ListUsersFuture {
+func (c *MockClient) ListUsers(ctx context.Context, body *ListUsersRequest) *ListUsersFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.user/users",
+		URL:    "http://service.user/users",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListUsersFuture{
 		done: done,
+		rsp:  &ListUsersResponse{},
 	}
 
 	go func() {

@@ -83,154 +83,160 @@ func (f *SetSceneFuture) Wait() (*SetSceneResponse, error) {
 	return f.rsp, f.err
 }
 
-// SceneClient makes requests to this service
-type SceneClient struct {
+// Client makes requests to this service
+type Client struct {
 	dispatcher taxi.Dispatcher
 }
 
 // Compile-time assertion that the client implements the interface
-var _ SceneService = (*SceneClient)(nil)
+var _ SceneService = (*Client)(nil)
 
-// NewSceneClient returns a new client
-func NewSceneClient(d taxi.Dispatcher) *SceneClient {
-	return &SceneClient{
-		dispatcher: d,
+// NewClient returns a new client
+func NewClient(dispatcher taxi.Dispatcher) *Client {
+	return &Client{
+		dispatcher: dispatcher,
 	}
 }
 
 // CreateScene dispatches an RPC to the service
-func (c *SceneClient) CreateScene(ctx context.Context, body *CreateSceneRequest) *CreateSceneFuture {
+func (c *Client) CreateScene(ctx context.Context, body *CreateSceneRequest) *CreateSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "POST",
-		URL:    "service.scene/scenes",
+		URL:    "http://service.scene/scenes",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &CreateSceneFuture{
 		done: done,
+		rsp:  &CreateSceneResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // ReadScene dispatches an RPC to the service
-func (c *SceneClient) ReadScene(ctx context.Context, body *ReadSceneRequest) *ReadSceneFuture {
+func (c *Client) ReadScene(ctx context.Context, body *ReadSceneRequest) *ReadSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.scene/scene",
+		URL:    "http://service.scene/scene",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ReadSceneFuture{
 		done: done,
+		rsp:  &ReadSceneResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // ListScenes dispatches an RPC to the service
-func (c *SceneClient) ListScenes(ctx context.Context, body *ListScenesRequest) *ListScenesFuture {
+func (c *Client) ListScenes(ctx context.Context, body *ListScenesRequest) *ListScenesFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.scene/scenes",
+		URL:    "http://service.scene/scenes",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListScenesFuture{
 		done: done,
+		rsp:  &ListScenesResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // DeleteScene dispatches an RPC to the service
-func (c *SceneClient) DeleteScene(ctx context.Context, body *DeleteSceneRequest) *DeleteSceneFuture {
+func (c *Client) DeleteScene(ctx context.Context, body *DeleteSceneRequest) *DeleteSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "DELETE",
-		URL:    "service.scene/scene",
+		URL:    "http://service.scene/scene",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &DeleteSceneFuture{
 		done: done,
+		rsp:  &DeleteSceneResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
 // SetScene dispatches an RPC to the service
-func (c *SceneClient) SetScene(ctx context.Context, body *SetSceneRequest) *SetSceneFuture {
+func (c *Client) SetScene(ctx context.Context, body *SetSceneRequest) *SetSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "POST",
-		URL:    "service.scene/scene/set",
+		URL:    "http://service.scene/scene/set",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &SetSceneFuture{
 		done: done,
+		rsp:  &SetSceneResponse{},
 	}
 
 	go func() {
 		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
 	}()
 
 	return ftr
 }
 
-// MockSceneClient can be used in tests
-type MockSceneClient struct {
+// MockClient can be used in tests
+type MockClient struct {
 	dispatcher *taxi.MockClient
 }
 
 // Compile-time assertion that the mock client implements the interface
-var _ SceneService = (*MockSceneClient)(nil)
+var _ SceneService = (*MockClient)(nil)
 
-// NewMockSceneClient returns a new mock client
-func NewMockSceneClient(ctx context.Context, t *testing.T) *MockSceneClient {
+// NewMockClient returns a new mock client
+func NewMockClient(ctx context.Context, t *testing.T) *MockClient {
 	f := taxi.NewTestFixture(t)
 
-	return &MockSceneClient{
+	return &MockClient{
 		dispatcher: &taxi.MockClient{Handler: f},
 	}
 }
 
 // CreateScene dispatches an RPC to the mock client
-func (c *MockSceneClient) CreateScene(ctx context.Context, body *CreateSceneRequest) *CreateSceneFuture {
+func (c *MockClient) CreateScene(ctx context.Context, body *CreateSceneRequest) *CreateSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "POST",
-		URL:    "service.scene/scenes",
+		URL:    "http://service.scene/scenes",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &CreateSceneFuture{
 		done: done,
+		rsp:  &CreateSceneResponse{},
 	}
 
 	go func() {
@@ -242,16 +248,17 @@ func (c *MockSceneClient) CreateScene(ctx context.Context, body *CreateSceneRequ
 }
 
 // ReadScene dispatches an RPC to the mock client
-func (c *MockSceneClient) ReadScene(ctx context.Context, body *ReadSceneRequest) *ReadSceneFuture {
+func (c *MockClient) ReadScene(ctx context.Context, body *ReadSceneRequest) *ReadSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.scene/scene",
+		URL:    "http://service.scene/scene",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ReadSceneFuture{
 		done: done,
+		rsp:  &ReadSceneResponse{},
 	}
 
 	go func() {
@@ -263,16 +270,17 @@ func (c *MockSceneClient) ReadScene(ctx context.Context, body *ReadSceneRequest)
 }
 
 // ListScenes dispatches an RPC to the mock client
-func (c *MockSceneClient) ListScenes(ctx context.Context, body *ListScenesRequest) *ListScenesFuture {
+func (c *MockClient) ListScenes(ctx context.Context, body *ListScenesRequest) *ListScenesFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "service.scene/scenes",
+		URL:    "http://service.scene/scenes",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &ListScenesFuture{
 		done: done,
+		rsp:  &ListScenesResponse{},
 	}
 
 	go func() {
@@ -284,16 +292,17 @@ func (c *MockSceneClient) ListScenes(ctx context.Context, body *ListScenesReques
 }
 
 // DeleteScene dispatches an RPC to the mock client
-func (c *MockSceneClient) DeleteScene(ctx context.Context, body *DeleteSceneRequest) *DeleteSceneFuture {
+func (c *MockClient) DeleteScene(ctx context.Context, body *DeleteSceneRequest) *DeleteSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "DELETE",
-		URL:    "service.scene/scene",
+		URL:    "http://service.scene/scene",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &DeleteSceneFuture{
 		done: done,
+		rsp:  &DeleteSceneResponse{},
 	}
 
 	go func() {
@@ -305,16 +314,17 @@ func (c *MockSceneClient) DeleteScene(ctx context.Context, body *DeleteSceneRequ
 }
 
 // SetScene dispatches an RPC to the mock client
-func (c *MockSceneClient) SetScene(ctx context.Context, body *SetSceneRequest) *SetSceneFuture {
+func (c *MockClient) SetScene(ctx context.Context, body *SetSceneRequest) *SetSceneFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "POST",
-		URL:    "service.scene/scene/set",
+		URL:    "http://service.scene/scene/set",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
 	ftr := &SetSceneFuture{
 		done: done,
+		rsp:  &SetSceneResponse{},
 	}
 
 	go func() {
