@@ -12,9 +12,9 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/jakewright/home-automation/libraries/go/network"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/libraries/go/taxi"
 	"github.com/jakewright/home-automation/service.log/domain"
 	"github.com/jakewright/home-automation/service.log/repository"
 )
@@ -35,7 +35,7 @@ func (h *Handler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	query, metadata, err := decodeBody(r)
 	if err != nil {
 		slog.Errorf("Failed to decode body: %v", err)
-		network.WriteJSONResponse(w, err)
+		_ = taxi.WriteError(w, err)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *Handler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	events, err := h.LogRepository.Find(query)
 	if err != nil {
 		slog.Errorf("Failed to find events: %v", err, metadata)
-		network.WriteJSONResponse(w, err)
+		_ = taxi.WriteError(w, err)
 		return
 	}
 
@@ -90,7 +90,7 @@ func (h *Handler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles(path.Join(h.TemplateDirectory, "index.html"))
 	if err != nil {
 		slog.Errorf("Failed to parse template: %v", err)
-		network.WriteJSONResponse(w, err)
+		_ = taxi.WriteError(w, err)
 		return
 	}
 
@@ -98,11 +98,11 @@ func (h *Handler) HandleRead(w http.ResponseWriter, r *http.Request) {
 	err = t.Execute(&buf, rsp)
 	if err != nil {
 		slog.Errorf("Failed to execute template: %v", err)
-		network.WriteJSONResponse(w, err)
+		_ = taxi.WriteError(w, err)
 		return
 	}
 
-	network.WriteResponse(w, buf)
+	_, _ = buf.WriteTo(w)
 }
 
 var upgrader = websocket.Upgrader{
@@ -175,7 +175,7 @@ func (h *Handler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 func decodeBody(r *http.Request) (*repository.LogQuery, map[string]string, error) {
 	body := readRequest{}
-	if err := network.DecodeRequest(r, &body); err != nil {
+	if err := taxi.DecodeRequest(r, &body); err != nil {
 		return nil, nil, err
 	}
 

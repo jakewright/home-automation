@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/network"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/libraries/go/taxi"
 )
 
 type writeRequest struct {
@@ -19,13 +19,13 @@ type writeRequest struct {
 // HandleWrite writes a slog line for testing purposes
 func (h *Handler) HandleWrite(w http.ResponseWriter, r *http.Request) {
 	body := writeRequest{}
-	if err := network.DecodeRequest(r, &body); err != nil {
-		network.WriteJSONResponse(w, err)
+	if err := taxi.DecodeRequest(r, &body); err != nil {
+		_ = taxi.WriteError(w, err)
 		return
 	}
 
 	if slog.DefaultLogger == nil {
-		network.WriteJSONResponse(w, oops.InternalService("Default logger is nil"))
+		_ = taxi.WriteError(w, oops.InternalService("Default logger is nil"))
 		return
 	}
 
@@ -54,5 +54,5 @@ func (h *Handler) HandleWrite(w http.ResponseWriter, r *http.Request) {
 
 	slog.DefaultLogger.Log(event)
 
-	network.WriteJSONResponse(w, event)
+	_ = taxi.WriteSuccess(w, event)
 }
