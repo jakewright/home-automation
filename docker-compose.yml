@@ -125,6 +125,8 @@ services:
         service_name: service.dmx
     ports:
       - 7012:80
+    env_file:
+      - ./private/config/dev/service.dmx.env
 
   service.event-bus:
     build:
