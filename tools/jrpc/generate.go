@@ -10,7 +10,7 @@ import (
 	"golang.org/x/tools/imports"
 
 	"github.com/jakewright/home-automation/libraries/go/svcdef"
-	jrpcimports "github.com/jakewright/home-automation/tools/jrpc/imports"
+	jrpcimports "github.com/jakewright/home-automation/tools/libraries/imports"
 )
 
 var resolver *jrpcimports.Resolver

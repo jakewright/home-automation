@@ -5,7 +5,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/jakewright/home-automation/tools/jrpc/imports"
+	"github.com/jakewright/home-automation/tools/libraries/imports"
 )
 
 const packageDirExternal = "def"

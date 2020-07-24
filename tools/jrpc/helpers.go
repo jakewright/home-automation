@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/jakewright/home-automation/libraries/go/svcdef"
-	"github.com/jakewright/home-automation/tools/jrpc/imports"
+	"github.com/jakewright/home-automation/tools/libraries/imports"
 )
 
 var (
@@ -177,6 +177,7 @@ var typeMap = map[string]typeData{
 	"time":    {"Time", "time"},
 }
 
+// todo: is this pascal case?
 func snakeToCamelCase(s string) string {
 	var camel string
 	var upper bool
