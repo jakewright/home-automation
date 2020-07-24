@@ -1,30 +1,61 @@
 package domain
 
 import (
-	"bytes"
-	"encoding/json"
 	"image/color"
 
 	"github.com/jakewright/home-automation/libraries/go/device"
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/util"
+	"github.com/jakewright/home-automation/libraries/go/ptr"
 )
 
 // MegaParProfile is a light by ADJ
 type MegaParProfile struct {
-	abstractFixture
+	baseFixture
 
 	power      bool
-	color      color.RGBA
+	color      device.RGB
 	colorMacro byte
 	strobe     byte
 	program    byte
 	brightness byte
 }
 
-// DMXValues returns the DMX values for this fixture only
-func (f *MegaParProfile) DMXValues() []byte {
+var _ Fixture = (*MegaParProfile)(nil)
+
+// length returns the number of DMX values that this fixture occupies
+func (f *MegaParProfile) length() int { return 7 }
+
+// hydrate sets the internal state based on the given DMX values
+func (f *MegaParProfile) hydrate(values []byte) error {
+	if len(values) != f.length() {
+		return oops.InternalService(
+			"expected % values to hydrate MegaParProfile but received %d",
+			f.length(), len(values),
+		)
+	}
+
+	f.color = device.RGB{
+		RGBA: color.RGBA{
+			R: values[0],
+			G: values[1],
+			B: values[2],
+			A: 0xff,
+		},
+	}
+
+	f.colorMacro = values[3]
+	f.strobe = values[4]
+	f.program = values[5]
+	f.brightness = values[6]
+
+	f.power = f.brightness > 0
+
+	return nil
+}
+
+// dmxValues returns the DMX values for this fixture only
+func (f *MegaParProfile) dmxValues() []byte {
 	var b byte
 	if f.power {
 		b = f.brightness
@@ -34,66 +65,38 @@ func (f *MegaParProfile) DMXValues() []byte {
 }
 
 // SetProperties sets any properties that exist in the state map
-func (f *MegaParProfile) SetProperties(state map[string]interface{}) (bool, error) {
-	if err := device.ValidateState(state, f.ToDef()); err != nil {
-		return false, err
+func (f *MegaParProfile) SetProperties(m map[string]interface{}) error {
+	props := &MegaParProfileProperties{}
+	if err := props.unmarshal(m); err != nil {
+		return err
 	}
 
-	var properties struct {
-		Power      *bool  `json:"power"`
-		RGB        string `json:"rgb"`
-		Strobe     *byte  `json:"strobe"`
-		Brightness *byte  `json:"brightness"`
+	if props.Power != nil {
+		f.power = *props.Power
+	}
+	if props.Rgb != nil {
+		f.color = *props.Rgb
+	}
+	if props.Strobe != nil {
+		f.strobe = byte(*props.Strobe)
+	}
+	if props.Brightness != nil {
+		f.brightness = byte(*props.Brightness)
+		f.power = *props.Brightness > 0
 	}
 
-	// The state map is the result of unmarshaling the JSON request
-	// so all of the numbers end up being float64s. The easiest way
-	// to turn these into the *byte types we want is to marshal back
-	// to JSON and then unmarshal again. This deals with cases like
-	// the number being too big to fit into a byte (uint8).
-
-	b, err := json.Marshal(state)
-	if err != nil {
-		return false, oops.WithMessage(err, "failed to marshal state into JSON")
-	}
-
-	if err := json.Unmarshal(b, &properties); err != nil {
-		return false, oops.WithMessage(err, "failed to unmarshal JSON")
-	}
-
-	var c color.RGBA
-	if properties.RGB != "" {
-		var err error
-		if c, err = util.HexToColor(properties.RGB); err != nil {
-			return false, oops.WithMessage(err, "failed to parse hex value")
-		}
-	}
-
-	// Don't return any errors past this point otherwise the
-	// in-memory fixture will be in an inconsistent state.
-
-	oldState := f.DMXValues()
-
-	if properties.Power != nil {
-		f.power = *properties.Power
-	}
-	if properties.RGB != "" {
-		f.color = c
-	}
-	if properties.Strobe != nil {
-		f.strobe = *properties.Strobe
-	}
-	if properties.Brightness != nil {
-		f.brightness = *properties.Brightness
-		f.power = *properties.Brightness > 0
-	}
-
-	equal := bytes.Equal(oldState, f.DMXValues())
-	return !equal, nil
+	return nil
 }
 
-// ToDef returns a standard Device type for a MegaParProfile
-func (f *MegaParProfile) ToDef() *devicedef.Device {
+// ToDevice returns a standard Device type for a MegaParProfile
+func (f *MegaParProfile) ToDevice() *devicedef.Device {
+	state := &MegaParProfileProperties{
+		Brightness: ptr.Int64(int64(f.brightness)),
+		Power:      &f.power,
+		Rgb:        &f.color,
+		Strobe:     ptr.Int64(int64(f.strobe)),
+	}
+
 	return &devicedef.Device{
 		Id:             f.ID(),
 		Name:           f.Name,
@@ -102,24 +105,13 @@ func (f *MegaParProfile) ToDef() *devicedef.Device {
 		ControllerName: f.ControllerName,
 		Attributes:     f.Attributes,
 		StateProviders: nil,
-		State: map[string]*devicedef.Property{
-			"power":      device.BoolProperty(f.power),
-			"brightness": device.Uint8Property(f.brightness, 0, 255, device.InterpolationContinuous),
-			"rgb":        device.RGBProperty(f.color),
-			"strobe":     device.Uint8Property(f.strobe, 0, 255, device.InterpolationContinuous),
-		},
+		State:          state.describe(),
 	}
 }
 
-// Copy returns a copy of the fixture
+// Copy returns a copy of the fixture but with zero values for the state
 func (f *MegaParProfile) Copy() Fixture {
 	return &MegaParProfile{
-		abstractFixture: f.abstractFixture, // note this is not a deep copy
-		power:           f.power,
-		color:           f.color,
-		colorMacro:      f.colorMacro,
-		strobe:          f.strobe,
-		program:         f.program,
-		brightness:      f.brightness,
+		baseFixture: f.baseFixture,
 	}
 }

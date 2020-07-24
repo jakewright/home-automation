@@ -1,17 +1,18 @@
 package handler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/jakewright/home-automation/libraries/go/firehose"
-	"github.com/jakewright/home-automation/libraries/go/test"
+	"github.com/jakewright/home-automation/libraries/go/taxi"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
-	dmxproxydef "github.com/jakewright/home-automation/service.dmx-proxy/def"
 	dmxdef "github.com/jakewright/home-automation/service.dmx/def"
+	"github.com/jakewright/home-automation/service.dmx/dmx"
 	"github.com/jakewright/home-automation/service.dmx/domain"
-	"github.com/jakewright/home-automation/service.dmx/universe"
+	"github.com/jakewright/home-automation/service.dmx/repository"
 )
 
 func TestDMXHandler_Update(t *testing.T) {
@@ -19,17 +20,22 @@ func TestDMXHandler_Update(t *testing.T) {
 	firehose.DefaultClient = &firehose.MockClient{}
 
 	// Create a fixture
-	f, err := domain.NewFixtureFromDeviceHeader(&deviceregistrydef.DeviceHeader{
-		Id: "fixture 1",
+	f, err := domain.NewFixture(&deviceregistrydef.DeviceHeader{
+		Id:             "fixture 1",
+		Name:           "Fixture 1",
+		Type:           "dmx",
+		Kind:           "dmx",
+		ControllerName: "service.dmx",
 		Attributes: map[string]interface{}{
-			"fixture_type": domain.FixtureTypeMegaParProfile,
-			"offset":       float64(7), // force float64 to replicate what json.Unmarshal
+			"fixture_type": "mega_par_profile",
+			"universe":     float64(1),
+			"offset":       float64(0),
 		},
 	})
 	require.NoError(t, err)
 
 	// Set the fixture's initial state
-	_, err = f.SetProperties(map[string]interface{}{
+	err = f.SetProperties(map[string]interface{}{
 		"power":      false,
 		"rgb":        "#FF0000",
 		"strobe":     float64(0),
@@ -37,40 +43,39 @@ func TestDMXHandler_Update(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Create a universe and add the fixture
-	u := universe.New(1)
-	u.AddFixture(f)
+	// Create a repository with the fixture
+	repo := repository.New(f)
 
-	m, ctx := test.NewMock(t)
-	defer m.Stop()
-
-	expectedDMXValues := [512]byte{0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 50, 0, 100}
-	m.ExpectOne(&dmxproxydef.SetRequest{
-		Universe: 1,
-		Values:   expectedDMXValues[:],
-	}).RespondWith(&dmxproxydef.SetResponse{})
+	client := dmx.NewClient()
+	getSetter := &dmx.MockGetSetter{}
+	client.AddGetSetter(1, getSetter)
 
 	// Create the controller
 	c := &Controller{
-		Universe: u,
+		Repository: repo,
+		Client:     client,
 	}
 
-	rsp, err := c.UpdateDevice(&request{Context: ctx},
-		&dmxdef.UpdateDeviceRequest{
-			DeviceId: "fixture 1",
-			State: map[string]interface{}{
-				"brightness": float64(100),
-				"rgb":        "#00FF00",
-				"strobe":     float64(50),
-			},
-		})
+	d := &taxi.MockClient{Handler: NewRouter(c)}
+	dmx := dmxdef.NewClient(d)
+
+	rsp, err := dmx.UpdateDevice(context.Background(), &dmxdef.UpdateDeviceRequest{
+		DeviceId: "fixture 1",
+		State: map[string]interface{}{
+			"brightness": float64(100),
+			"rgb":        "#00FF00",
+			"strobe":     float64(50),
+		},
+	}).Wait()
+
 	require.NoError(t, err)
 
 	require.Equal(t, "fixture 1", rsp.Device.Id)
 	require.Equal(t, true, rsp.Device.State["power"].Value)
-	require.Equal(t, byte(100), rsp.Device.State["brightness"].Value)
-	require.Equal(t, "#00FF00", rsp.Device.State["rgb"].Value)
-	require.Equal(t, byte(50), rsp.Device.State["strobe"].Value)
+	require.EqualValues(t, 100, rsp.Device.State["brightness"].Value)
+	require.EqualValues(t, "#00FF00", rsp.Device.State["rgb"].Value)
+	require.EqualValues(t, 50, rsp.Device.State["strobe"].Value)
 
-	m.RunAssertions()
+	expectedValues := [512]byte{0, 255, 0, 0, 50, 0, 100}
+	require.Equal(t, expectedValues, getSetter.Values)
 }

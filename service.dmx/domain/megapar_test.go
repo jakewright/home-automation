@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/jakewright/home-automation/libraries/go/device"
 	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
 )
 
@@ -25,7 +26,6 @@ func TestMegaParProfile_SetProperties(t *testing.T) {
 		wantErr bool
 		before  fields
 		after   fields
-		changed bool
 	}{
 		{
 			name:  "empty state",
@@ -70,7 +70,6 @@ func TestMegaParProfile_SetProperties(t *testing.T) {
 				strobe:     100,
 				brightness: 50,
 			},
-			changed: true,
 		},
 		{
 			name: "brightness out of bounds",
@@ -85,26 +84,24 @@ func TestMegaParProfile_SetProperties(t *testing.T) {
 			t.Parallel()
 
 			f := &MegaParProfile{
-				abstractFixture: abstractFixture{
+				baseFixture: baseFixture{
 					DeviceHeader: &deviceregistrydef.DeviceHeader{},
 				},
 				power:      tt.before.power,
-				color:      tt.before.color,
+				color:      device.RGB{RGBA: tt.before.color},
 				strobe:     tt.before.strobe,
 				brightness: tt.before.brightness,
 			}
 
-			changed, err := f.SetProperties(tt.state)
+			err := f.SetProperties(tt.state)
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 			}
 
-			require.Equal(t, tt.changed, changed)
-
 			require.Equal(t, f.power, tt.after.power)
-			require.Equal(t, f.color, tt.after.color)
+			require.Equal(t, f.color.RGBA, tt.after.color)
 			require.Equal(t, f.strobe, tt.after.strobe)
 			require.Equal(t, f.brightness, tt.after.brightness)
 		})

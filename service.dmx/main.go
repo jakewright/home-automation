@@ -4,36 +4,70 @@ import (
 	"context"
 
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
+	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
+	"github.com/jakewright/home-automation/libraries/go/taxi"
+	deviceregistrydef "github.com/jakewright/home-automation/service.device-registry/def"
+	"github.com/jakewright/home-automation/service.dmx/dmx"
+	"github.com/jakewright/home-automation/service.dmx/domain"
 	"github.com/jakewright/home-automation/service.dmx/handler"
-	"github.com/jakewright/home-automation/service.dmx/universe"
+	"github.com/jakewright/home-automation/service.dmx/repository"
 )
 
 //go:generate jrpc dmx.def
 
+const serviceName = "service.dmx"
+
+type universeConfig struct {
+	UniverseNumber domain.UniverseNumber `envconfig:"UNIVERSE_NUMBER"`
+	OLAHost        string                `envconfig:"OLA_HOST"`
+	OLAPort        int                   `envconfig:"OLA_PORT"`
+}
+
+type config struct {
+	Universes []universeConfig `envconfig:"UNIVERSES"`
+}
+
 func main() {
-	conf := struct{ UniverseNumber uint8 }{}
+	conf := &config{}
 
 	svc := bootstrap.Init(&bootstrap.Opts{
-		ServiceName: "service.dmx",
-		Config:      &conf,
+		ServiceName: serviceName,
+		Config:      conf,
 		Firehose:    true,
 	})
 
-	u := universe.New(conf.UniverseNumber)
+	if err := run(svc, conf); err != nil {
+		slog.Panicf("Failed to run service: %v", err)
+	}
+}
 
-	l := universe.Loader{
-		ServiceName: "service.dmx",
-		Universe:    u,
+func run(svc *bootstrap.Service, conf *config) error {
+	client := dmx.NewClient()
+
+	for _, uc := range conf.Universes {
+		getSetter, err := dmx.NewOLAClient(uc.OLAHost, uc.OLAPort, uc.UniverseNumber)
+		if err != nil {
+			return oops.WithMessage(err, "failed to create OLA client")
+		}
+		client.AddGetSetter(uc.UniverseNumber, getSetter)
 	}
 
-	if err := l.FetchDevices(context.Background()); err != nil {
-		slog.Panicf("Failed to load devices: %v", err)
+	dispatcher := taxi.NewClient()
+	repo, err := repository.Init(
+		context.Background(),
+		serviceName,
+		deviceregistrydef.NewClient(dispatcher),
+	)
+	if err != nil {
+		return err
 	}
 
 	r := handler.NewRouter(&handler.Controller{
-		Universe: u,
+		Repository: repo,
+		Client:     client,
 	})
 
 	svc.Run(r)
+	return nil
 }

@@ -1,0 +1,22 @@
+{
+    "MegaParProfile": {
+        "properties": {
+            "power": {
+                "type": "bool"
+            },
+            "brightness": {
+                "type": "int",
+                "min": 0,
+                "max": 255
+            },
+            "rgb": {
+                "type": "rgb"
+            },
+            "strobe": {
+                "type": "int",
+                "min": 0,
+                "max": 255
+            }
+        }
+    }
+}
