@@ -74,3 +74,8 @@ func (r *Router) Stop(ctx context.Context) error {
 func (r *Router) RegisterHandler(method, path string, handler taxi.HandlerFunc) {
 	r.router.RegisterHandler(method, path, handler)
 }
+
+// ServeHTTP handles an http request. This is useful in tests.
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	r.router.ServeHTTP(w, req)
+}
