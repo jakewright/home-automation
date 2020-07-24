@@ -140,11 +140,6 @@ func WriteError(w http.ResponseWriter, err error) error {
 // decodeResponse unmarshals the response
 // to an RPC into the value point to by v
 func decodeResponse(rsp *http.Response, v interface{}) error {
-	errParams := map[string]string{
-		"method": rsp.Request.Method,
-		"url":    rsp.Request.URL.String(),
-	}
-
 	var wrapper struct {
 		Error string          `json:"error"`
 		Data  json.RawMessage `json:"data"`
@@ -157,12 +152,11 @@ func decodeResponse(rsp *http.Response, v interface{}) error {
 			"received %d %s from server but could not decode response",
 			rsp.StatusCode,
 			rsp.Status,
-			errParams,
 		)
 	}
 
 	if wrapper.Error != "" {
-		return oops.FromHTTPStatus(rsp.StatusCode, wrapper.Error, errParams)
+		return oops.FromHTTPStatus(rsp.StatusCode, wrapper.Error)
 	}
 
 	if v == nil {
@@ -170,7 +164,7 @@ func decodeResponse(rsp *http.Response, v interface{}) error {
 	}
 
 	if err := json.Unmarshal(wrapper.Data, v); err != nil {
-		return oops.WithMessage(err, "failed to decode data", errParams)
+		return oops.WithMessage(err, "failed to decode data")
 	}
 
 	return nil

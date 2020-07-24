@@ -1,5 +1,7 @@
 # Taxi 🚕
 
+![](https://media.giphy.com/media/SLr8qaoRH6Hmw/source.gif)
+
 Taxi is a lightweight, remote procedure call (RPC) framework for services written in Go. Requests are sent as JSON over HTTP, making it easy to interact with Taxi-based services. Taxi does not impose any particular URL scheme or request structure, and responses are fully-customisable, giving you full control over the design of your API.
 
 ## Installation

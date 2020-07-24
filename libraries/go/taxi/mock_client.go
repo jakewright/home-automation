@@ -13,6 +13,8 @@ type MockClient struct {
 	Handler http.Handler
 }
 
+var _ Dispatcher = (*MockClient)(nil)
+
 // Dispatch converts the RPC into an http request and gives it to the client's
 // handler to handle. It returns a Future which will resolve to the response
 // given by the handler.
