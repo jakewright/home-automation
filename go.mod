@@ -11,7 +11,7 @@ require (
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.1
-	github.com/jakewright/muxinator v1.0.0
+	github.com/jakewright/patch v0.0.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jinzhu/gorm v1.9.10
 	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381
@@ -19,7 +19,7 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
-	github.com/stretchr/testify v1.6.0
+	github.com/stretchr/testify v1.6.1
 	github.com/vrischmann/envconfig v1.2.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/mod v0.2.0
