@@ -36,9 +36,9 @@ func (c *Compose) ListAll() ([]string, error) {
 }
 
 // Run starts the service, building first if necessary.
-func (c *Compose) Run(service string, env []string) error {
+func (c *Compose) Run(service string) error {
 	args := []string{"up", "-d", "--renew-anon-volumes", "--remove-orphans", service}
-	if err := c.cmd(args...).SetPseudoTTY().Env(env).Run().Err; err != nil {
+	if err := c.cmd(args...).SetPseudoTTY().Run().Err; err != nil {
 		return fmt.Errorf("failed to cmd docker-compose up: %w", err)
 	}
 
