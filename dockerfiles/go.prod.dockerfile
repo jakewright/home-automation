@@ -21,4 +21,6 @@ ENV SERVICE ${service_name}
 EXPOSE 80
 WORKDIR /root/
 COPY --from=0 /go/bin/${service_name} .
-CMD ["./${SERVICE}"]
+
+# Use the shell form of CMD so that the environment variable gets executed
+CMD ./${SERVICE}
