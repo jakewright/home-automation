@@ -83,7 +83,7 @@ func (d *Database) applyMySQLSchema(serviceName, schema string) error {
 
 		op := output.Info("Waiting for database to startup")
 		time.Sleep(time.Second * 5)
-		op.Complete()
+		op.Success()
 	}
 
 	op := output.Info("Applying schema for %s", serviceName)
@@ -92,6 +92,6 @@ func (d *Database) applyMySQLSchema(serviceName, schema string) error {
 		return err
 	}
 
-	op.Complete()
+	op.Success()
 	return nil
 }

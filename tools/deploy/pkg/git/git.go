@@ -11,7 +11,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
-	"github.com/jakewright/home-automation/tools/deploy/pkg/utils"
+	"github.com/jakewright/home-automation/tools/libraries/cache"
 )
 
 // MirrorDirectory is the name of the directory inside
@@ -42,7 +42,7 @@ func Init(revision string) error {
 	}
 
 	mirror = &Repository{
-		Dir:    filepath.Join(utils.CacheDir(), MirrorDirectory),
+		Dir:    filepath.Join(cache.Dir(), MirrorDirectory),
 		Remote: config.Repository(),
 	}
 
@@ -51,14 +51,14 @@ func Init(revision string) error {
 		op.Failed()
 		return oops.WithMessage(err, "failed to clone repo")
 	}
-	op.Complete()
+	op.Success()
 
 	op = output.Info("Checking out %s", revision)
 	if err := mirror.checkout(revision); err != nil {
 		op.Failed()
 		return oops.WithMessage(err, "failed to checkout %q", revision)
 	}
-	op.Complete()
+	op.Success()
 
 	return nil
 }
@@ -74,8 +74,18 @@ func ShortHash(commit string) (string, error) {
 }
 
 // CurrentHash returns the hash of the current git commit
-func CurrentHash(short bool) (string, error) {
-	return getMirror().hash("HEAD", short)
+func CurrentHash() (long string, short string, err error) {
+	long, err = getMirror().hash("HEAD", false)
+	if err != nil {
+		return
+	}
+
+	short, err = getMirror().hash("HEAD", true)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 // Log returns commits for the path between the range given
@@ -123,7 +133,7 @@ func (r *Repository) clone() error {
 		return nil
 	}
 
-	if err := r.exec("clone", r.Remote, r.Dir); err != nil {
+	if err := r.exec("clone", r.Remote, r.Dir).Err; err != nil {
 		return oops.WithMessage(err, "failed to clone repository")
 	}
 

@@ -17,6 +17,7 @@ import (
 	"github.com/jakewright/home-automation/tools/deploy/pkg/git"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/utils"
+	"github.com/jakewright/home-automation/tools/libraries/cache"
 )
 
 // generateDeploymentName returns a unique name for this deployment. It ends in
@@ -27,7 +28,7 @@ func (d *Systemd) generateDeploymentName(revision string) (string, error) {
 		return "", oops.WithMessage(err, "failed to initialise git mirror")
 	}
 
-	shortHash, err := git.CurrentHash(true)
+	_, shortHash, err := git.CurrentHash()
 	if err != nil {
 		return "", oops.WithMessage(err, "failed to get short hash")
 	}
@@ -51,7 +52,7 @@ func (d *Systemd) generateDeploymentGlob() string {
 // workingDir creates and returns the full path to a temporary
 // working directory on the local filesystem.
 func (d *Systemd) workingDir(deploymentName string) (string, error) {
-	workingDir := filepath.Join(utils.CacheDir(), "deployments", deploymentName)
+	workingDir := filepath.Join(cache.Dir(), "deployments", deploymentName)
 
 	if err := os.MkdirAll(workingDir, os.ModePerm); err != nil {
 		return "", oops.WithMessage(err, "failed to create working directory")
@@ -66,42 +67,13 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 		return false, oops.WithMessage(err, "failed to get current revision")
 	}
 
-	if currentRevision != "" {
-		currentRevision, err = git.ShortHash(currentRevision)
-		if err != nil {
-			return false, oops.WithMessage(err, "failed to get short hash of current revision")
-		}
-	}
-
-	fmt.Println()
-	output.Info("Service  %s", aurora.Index(105, d.Service.Name))
-	output.Info("Target   %s %s", aurora.Index(105, d.Target.Name), aurora.Gray(16, d.Target.Host))
-	if currentRevision == "" {
-		output.Info("Revision %s %s", aurora.Index(105, release.ShortHash), aurora.Gray(16, "(not currently deployed)"))
-	} else {
-		output.Info("Revision %s", aurora.Sprintf(aurora.Index(105, "%s...%s"), currentRevision, release.ShortHash))
-	}
-
-	output.Info("") // blank line
-
-	commits, err := git.Log(currentRevision, release.ShortHash, "./"+d.Service.Name)
-	if err != nil {
-		return false, oops.WithMessage(err, "failed to get commit list")
-	}
-
-	if len(commits) == 0 {
-		output.Info(aurora.Sprintf(aurora.Index(178, "No commits in this range for %s"), d.Service.Name))
-	}
-
-	for _, commit := range commits {
-		output.Info("%s %s", aurora.Index(178, commit.ShortHash), commit.TitleLine)
-	}
-
-	if !output.Confirm(true, "Continue?") {
-		return false, nil
-	}
-
-	return true, nil
+	return utils.ConfirmDeployment(&utils.Deployment{
+		ServiceName:     d.Service.Name,
+		TargetName:      d.Target.Name,
+		TargetHost:      d.Target.Host,
+		CurrentRevision: currentRevision,
+		NewRevision:     release.Revision,
+	})
 }
 
 func (d *Systemd) updateUnitFile(client *ssh.Client, release *build.Release, deploymentName string) error {

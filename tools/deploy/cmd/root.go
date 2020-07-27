@@ -10,6 +10,7 @@ import (
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/deployer"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
+	"github.com/jakewright/home-automation/tools/libraries/cache"
 )
 
 var (
@@ -90,5 +91,9 @@ func Execute() {
 }
 
 func init() {
+	if err := cache.Init("deploy"); err != nil {
+		output.Fatal("Failed to initialise cache: %v", err)
+	}
+
 	rootCmd.PersistentFlags().Bool("revision", false, "Retrieve the currently deployed version of the service")
 }

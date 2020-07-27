@@ -22,20 +22,26 @@ var (
 
 // Operation represents something currently happening that can
 // be completed, failed or abandoned.
-type Operation struct{}
+type Operation struct {
+	completed bool
+}
 
 func newOp() *Operation {
 	// If an operation has been abandoned, we need a new line
 	if currentOp != nil {
-		fmt.Printf("\n")
+		currentOp.Success("...")
 	}
 	currentOp = &Operation{}
 	return currentOp
 }
 
-// Complete prints the result of running fmt.Sprintf on args and
+// Success prints the result of running fmt.Sprintf on args and
 // a new line. If args is empty then a default check mark is used.
-func (o *Operation) Complete(args ...interface{}) {
+func (o *Operation) Success(args ...interface{}) {
+	if o.completed || o != currentOp {
+		return
+	}
+
 	end := fmt.Sprintf(" %s", aurora.Green(checkMark))
 
 	switch len(args) {
@@ -47,18 +53,30 @@ func (o *Operation) Complete(args ...interface{}) {
 	}
 
 	fmt.Printf("%s\n", end)
+
+	o.completed = true
 	currentOp = nil
 }
 
 // Failed prints a heavy ballot X and a new line
 func (o *Operation) Failed() {
+	if o.completed || o != currentOp {
+		return
+	}
+
 	fmt.Printf(" %s\n", aurora.Red(heavyBallotX))
+	o.completed = true
 	currentOp = nil
 }
 
 // Abandon just prints a new line without a symbol
 func (o *Operation) Abandon() {
+	if o.completed || o != currentOp {
+		return
+	}
+
 	fmt.Printf("\n")
+	o.completed = true
 	currentOp = nil
 }
 

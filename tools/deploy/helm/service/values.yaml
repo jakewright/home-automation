@@ -1,0 +1,6 @@
+image:
+pullPolicy: IfNotPresent
+revision:
+replicas: 1
+containerPort: 80
+servicePort: 80

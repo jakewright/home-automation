@@ -27,5 +27,6 @@ require (
 	golang.org/x/tools v0.0.0-20200117220505-0cba7a3a9ee9
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	gopkg.in/yaml.v2 v2.2.4
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	gotest.tools v2.2.0+incompatible
 )

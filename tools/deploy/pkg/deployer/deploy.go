@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jakewright/home-automation/tools/deploy/pkg/config"
+	"github.com/jakewright/home-automation/tools/deploy/pkg/deployer/kubernetes"
 	"github.com/jakewright/home-automation/tools/deploy/pkg/deployer/systemd"
 )
 
@@ -18,6 +19,11 @@ func Choose(service *config.Service, target *config.Target) (Deployer, error) {
 	switch target.System {
 	case config.SysSystemd:
 		return &systemd.Systemd{
+			Service: service,
+			Target:  target,
+		}, nil
+	case config.SysKubernetes:
+		return &kubernetes.Kubernetes{
 			Service: service,
 			Target:  target,
 		}, nil

@@ -19,6 +19,8 @@ type GoBuilder struct {
 	Target  *config.Target
 }
 
+var _ LocalBuilder = (*GoBuilder)(nil)
+
 // Build build a go binary for the target architecture and puts it in workingDir
 func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	if err := git.Init(revision); err != nil {
@@ -31,7 +33,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to parse service's env files")
 	}
-	op.Complete()
+	op.Success()
 
 	op = output.Info("Compiling binary for %s", b.Target.Architecture)
 
@@ -54,16 +56,10 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 		return nil, oops.InternalService("unsupported architecture %q", b.Target.Architecture)
 	}
 
-	hash, err := git.CurrentHash(false)
+	hash, shortHash, err := git.CurrentHash()
 	if err != nil {
 		op.Failed()
-		return nil, oops.WithMessage(err, "failed to get hash")
-	}
-
-	shortHash, err := git.CurrentHash(true)
-	if err != nil {
-		op.Failed()
-		return nil, oops.WithMessage(err, "failed to get short hash")
+		return nil, oops.WithMessage(err, "failed to get current hash")
 	}
 
 	binName = fmt.Sprintf("%s-%s", binName, shortHash)
@@ -77,7 +73,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 		return nil, oops.WithMessage(err, "failed to compile")
 	}
 
-	op.Complete()
+	op.Success()
 
 	return &Release{
 		Cmd:       binName,

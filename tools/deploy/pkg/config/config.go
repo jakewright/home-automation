@@ -16,6 +16,7 @@ const (
 	LangGo         = "go"
 	LangJavaScript = "javascript"
 	SysDocker      = "docker"
+	SysKubernetes  = "kubernetes"
 	SysSystemd     = "systemd"
 	ArchARMv6      = "ARMv6"
 )
@@ -30,21 +31,37 @@ type config struct {
 
 // Target is the destination server for the deployment
 type Target struct {
-	Name         string `yaml:"-"`
-	Host         string `yaml:"host"`
+	// Common
+	Name   string `yaml:"-"`
+	Host   string `yaml:"host"`
+	System string `yaml:"system"`
+
+	// Systemd
 	Username     string `yaml:"username"`
 	Directory    string `yaml:"directory"`
-	System       string `yaml:"system"`
 	Architecture string `yaml:"architecture"`
+
+	// Kubernetes
+	KubeContext      string `yaml:"kube_context"`
+	Namespace        string `yaml:"namespace"`
+	DockerRegistry   string `yaml:"docker_registry"`
+	DockerRepository string `yaml:"docker_repository"`
+}
+
+// DockerConfig holds options related building the service using Docker
+type DockerConfig struct {
+	Dockerfile string            `yaml:"dockerfile"`
+	Args       map[string]string `yaml:"args"`
 }
 
 // Service is the microservice to be deployed
 type Service struct {
-	Name        string    `yaml:"-"`
-	TargetNames []string  `yaml:"targets"`
-	Targets     []*Target `yaml:"-"`
-	Language    string    `yaml:"language"`
-	EnvFiles    []string  `yaml:"env_files"`
+	Name        string        `yaml:"-"`
+	TargetNames []string      `yaml:"targets"`
+	Targets     []*Target     `yaml:"-"`
+	Language    string        `yaml:"language"`
+	EnvFiles    []string      `yaml:"env_files"`
+	Docker      *DockerConfig `yaml:"docker"`
 }
 
 // DashedName returns home-automation-s-foo for service.foo
@@ -67,7 +84,7 @@ func Init(filename string) (err error) {
 	op := output.Info("Reading config from %v", filename)
 	defer func() {
 		if err == nil {
-			op.Complete()
+			op.Success()
 		} else {
 			op.Failed()
 		}
@@ -86,7 +103,7 @@ func Init(filename string) (err error) {
 		target.Name = name
 
 		switch target.System {
-		case SysDocker, SysSystemd: // ok
+		case SysDocker, SysKubernetes, SysSystemd: // ok
 		default:
 			return oops.InternalService("Invalid system %q for target %q", target.System, name)
 		}

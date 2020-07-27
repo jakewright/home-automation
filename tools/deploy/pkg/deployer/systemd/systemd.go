@@ -29,7 +29,7 @@ func (d *Systemd) Revision() (string, error) {
 		return "", oops.WithMessage(err, "failed to create SSH client")
 	}
 	defer func() { _ = client.Close() }()
-	op.Complete()
+	op.Success()
 
 	cmd := fmt.Sprintf("sudo systemctl cat %s.service", d.Service.DashedName())
 
@@ -69,7 +69,7 @@ func (d *Systemd) Deploy(revision string) error {
 		return oops.WithMessage(err, "failed to create working directory")
 	}
 
-	builder, err := build.Choose(d.Service, d.Target)
+	builder, err := build.ChooseLocal(d.Service, d.Target)
 	if err != nil {
 		return oops.WithMessage(err, "failed to choose builder")
 	}
@@ -92,14 +92,14 @@ func (d *Systemd) Deploy(revision string) error {
 		return oops.WithMessage(err, "failed to create SSH client")
 	}
 	defer func() { _ = client.Close() }()
-	op.Complete()
+	op.Success()
 
 	op = output.Info("Copying files to %s", d.Target.Host)
 	if err := utils.SCP(workingDir, d.Target.Username, d.Target.Host, d.Target.Directory); err != nil {
 		op.Failed()
 		return oops.WithMessage(err, "failed to copy binary to target")
 	}
-	op.Complete()
+	op.Success()
 
 	op = output.Info("Updating unit file")
 
@@ -107,21 +107,21 @@ func (d *Systemd) Deploy(revision string) error {
 		op.Failed()
 		return oops.WithMessage(err, "failed to update unit file")
 	}
-	op.Complete()
+	op.Success()
 
 	op = output.Info("Restarting service")
 	if err := d.restartUnit(client); err != nil {
 		op.Failed()
 		return oops.WithMessage(err, "failed to enable service")
 	}
-	op.Complete()
+	op.Success()
 
 	op = output.Info("Cleaning up old files")
 	if err := d.cleanup(client, deploymentName, workingDir); err != nil {
 		op.Failed()
 		return oops.WithMessage(err, "failed to clean up old files")
 	}
-	op.Complete()
+	op.Success()
 
 	d.success(release)
 

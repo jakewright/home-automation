@@ -14,15 +14,15 @@ type Release struct {
 	ShortHash string
 }
 
-// Builder prepares a release
-type Builder interface {
+// LocalBuilder prepares a release
+type LocalBuilder interface {
 	Build(revision, workingDir string) (*Release, error)
 }
 
-// Choose returns a builder based on the service and target
-func Choose(service *config.Service, target *config.Target) (Builder, error) {
-	switch {
-	case service.Language == config.LangGo && target.System == config.SysSystemd:
+// ChooseLocal returns a builder based on the service and target
+func ChooseLocal(service *config.Service, target *config.Target) (LocalBuilder, error) {
+	switch service.Language {
+	case config.LangGo:
 		return &GoBuilder{
 			Service: service,
 			Target:  target,
