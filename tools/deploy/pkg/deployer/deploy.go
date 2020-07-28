@@ -16,7 +16,7 @@ type Deployer interface {
 
 // Choose returns an appropriate deployer for the service and target
 func Choose(service *config.Service, target *config.Target) (Deployer, error) {
-	switch target.System {
+	switch target.System() {
 	case config.SysSystemd:
 		return &systemd.Systemd{
 			Service: service,
@@ -29,5 +29,5 @@ func Choose(service *config.Service, target *config.Target) (Deployer, error) {
 		}, nil
 	}
 
-	return nil, fmt.Errorf("unsupported system %q", target.System)
+	return nil, fmt.Errorf("unsupported system %q", target.System())
 }

@@ -21,10 +21,20 @@ const (
 	constPortEnv           = "PORT"
 )
 
+// Target is the interface implemented by a Kubernetes target
+type Target interface {
+	Name() string
+	Host() string
+	KubeContext() string
+	Namespace() string
+	DockerRegistry() string
+	DockerRepository() string
+}
+
 // Kubernetes is a deployer for k8s
 type Kubernetes struct {
 	Service *config.Service
-	Target  *config.Target
+	Target  Target
 }
 
 // Revision returns the currently deployed revision according to the
@@ -33,7 +43,7 @@ func (k *Kubernetes) Revision() (string, error) {
 	op := output.Info("Fetching current revision")
 	result := exe.Command(
 		"helm", "get", "values", k.releaseName(),
-		"--namespace", k.Target.Namespace,
+		"--namespace", k.Target.Namespace(),
 		"--output", "json",
 	).Run()
 	if result.Err != nil {
@@ -94,8 +104,8 @@ func (k *Kubernetes) Deploy(revision string) error {
 		helmChartPath,
 		"--install",
 		"--wait",
-		"--kube-context", k.Target.KubeContext,
-		"--namespace", k.Target.Namespace,
+		"--kube-context", k.Target.KubeContext(),
+		"--namespace", k.Target.Namespace(),
 		"--set", "image=" + dockerBuild.Image,
 		"--set", "revision=" + dockerBuild.LongHash,
 	}
@@ -136,9 +146,9 @@ func (k *Kubernetes) confirm(db *build.DockerBuild) (bool, error) {
 	}
 
 	return utils.ConfirmDeployment(&utils.Deployment{
-		ServiceName:     k.Service.Name,
-		TargetName:      k.Target.Name,
-		TargetHost:      k.Target.Host,
+		ServiceName:     k.Service.Name(),
+		TargetName:      k.Target.Name(),
+		TargetHost:      k.Target.Host(),
 		CurrentRevision: currentRevision,
 		NewRevision:     db.LongHash,
 	})

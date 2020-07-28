@@ -29,10 +29,17 @@ type DockerBuild struct {
 	ShortHash string
 }
 
+// DockerDestination is the interface implemented by a Kubernetes target
+type DockerDestination interface {
+	DockerRegistry() string
+	DockerRepository() string
+}
+
 // DockerBuilder builds Docker images and pushes them to a registry
 type DockerBuilder struct {
 	Service *config.Service
-	Target  *config.Target
+	Target  DockerDestination
+	Verbose bool
 }
 
 // Build builds the docker image for the given revision and pushes the resulting
@@ -45,20 +52,20 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 		return nil, oops.WithMessage(err, "failed to initialise git mirror")
 	}
 
-	runtimeEnv, err := env.Parse(b.Service.EnvFiles...)
+	runtimeEnv, err := env.Parse(b.Service.EnvFiles()...)
 	if err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to parse service's env files")
 	}
 
 	// Make sure the service exists in the mirror
-	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name)
+	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name())
 	if _, err := os.Stat(filepath.Join(git.Dir(), pkgToBuild)); err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to stat service directory")
 	}
 
-	if err := validateDockerfile(b.Service.Docker); err != nil {
+	if err := validateDockerfile(b.Service.Docker()); err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to validate Dockerfile")
 	}
@@ -70,8 +77,8 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 	}
 
 	imageTag := fmt.Sprintf("%s/%s/%s:%s",
-		b.Target.DockerRegistry,
-		b.Target.DockerRepository,
+		b.Target.DockerRegistry(),
+		b.Target.DockerRepository(),
 		b.Service.DashedName(),
 		shortHash,
 	)
@@ -82,7 +89,7 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 	}
 
 	var buildArgs env.Environment
-	for name, value := range b.Service.Docker.Args {
+	for name, value := range b.Service.Docker().Args() {
 		buildArgs = append(buildArgs, &env.Variable{
 			Name:  name,
 			Value: value,
@@ -102,12 +109,18 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 
 	// Append the rest of the arguments
 	dockerArgs = append(dockerArgs,
-		"-f", b.Service.Docker.Dockerfile,
+		"-f", b.Service.Docker().Dockerfile(),
 		"-t", imageTag,
 		"--rm", "--pull", ".")
 
-	if err := exe.Command("docker", dockerArgs...).
-		Dir(git.Dir()).Run().Err; err != nil {
+	cmd := exe.Command("docker", dockerArgs...).
+		Dir(git.Dir())
+
+	if b.Verbose {
+		cmd = cmd.SetPseudoTTY()
+	}
+
+	if err := cmd.Run().Err; err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to build")
 	}
@@ -134,12 +147,12 @@ func validateDockerfile(conf *config.DockerConfig) error {
 		return oops.InternalService("missing docker config")
 	}
 
-	b, err := ioutil.ReadFile(conf.Dockerfile)
+	b, err := ioutil.ReadFile(conf.Dockerfile())
 	if err != nil {
 		return oops.WithMessage(err, "failed to read dockerfile")
 	}
 
-	return compareDockerfileArgs(string(b), conf.Args)
+	return compareDockerfileArgs(string(b), conf.Args())
 }
 
 // compareDockerfileArgs returns an error if there is an arg specified in the

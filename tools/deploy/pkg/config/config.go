@@ -2,71 +2,167 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"strings"
-
-	"gopkg.in/yaml.v2"
-
-	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/tools/deploy/pkg/output"
 )
 
 // Service constants
 const (
-	LangGo         = "go"
-	LangJavaScript = "javascript"
-	SysDocker      = "docker"
-	SysKubernetes  = "kubernetes"
-	SysSystemd     = "systemd"
-	ArchARMv6      = "ARMv6"
+	LangGo        = "go"
+	SysDocker     = "docker"
+	SysKubernetes = "kubernetes"
+	SysSystemd    = "systemd"
+	ArchARMv6     = "ARMv6"
 )
 
-var cfg config
+var cfg *Config
 
-type config struct {
-	Repository string              `yaml:"repository"`
-	Targets    map[string]*Target  `yaml:"targets"`
-	Services   map[string]*Service `yaml:"services"`
+// Config holds configuration for the deploy tool
+type Config struct {
+	Repository string
+	Targets    map[string]*Target
+	Services   map[string]*Service
+}
+
+// Get gets the current config, assuming Init() has already been called.
+func Get() *Config {
+	if cfg == nil {
+		panic("config.Init() not called")
+	}
+	return cfg
 }
 
 // Target is the destination server for the deployment
 type Target struct {
 	// Common
-	Name   string `yaml:"-"`
-	Host   string `yaml:"host"`
-	System string `yaml:"system"`
+	name   string
+	host   string
+	system string
 
 	// Systemd
-	Username     string `yaml:"username"`
-	Directory    string `yaml:"directory"`
-	Architecture string `yaml:"architecture"`
+	username     string
+	directory    string
+	architecture string
 
 	// Kubernetes
-	KubeContext      string `yaml:"kube_context"`
-	Namespace        string `yaml:"namespace"`
-	DockerRegistry   string `yaml:"docker_registry"`
-	DockerRepository string `yaml:"docker_repository"`
+	kubeContext      string
+	namespace        string
+	dockerRegistry   string
+	dockerRepository string
+}
+
+// Name returns the friendly name of the target
+func (t *Target) Name() string {
+	return t.name
+}
+
+// Host returns the hostname of the target
+func (t *Target) Host() string {
+	return t.host
+}
+
+// System returns the system used by the target
+func (t *Target) System() string {
+	return t.system
+}
+
+// Username returns the username to connect to the target
+func (t *Target) Username() string {
+	return t.username
+}
+
+// Directory returns the working directory to use on the target
+func (t *Target) Directory() string {
+	return t.directory
+}
+
+// Architecture returns the target's architecture
+func (t *Target) Architecture() string {
+	return t.architecture
+}
+
+// KubeContext returns the k8s context to use when interacting with the target
+func (t *Target) KubeContext() string {
+	return t.kubeContext
+}
+
+// Namespace returns the k8s namespace to use when interacting with the target
+func (t *Target) Namespace() string {
+	return t.namespace
+}
+
+// DockerRegistry returns the Docker registry that images should be pushed to
+// to be deployed to the target
+func (t *Target) DockerRegistry() string {
+	return t.dockerRegistry
+}
+
+// DockerRepository returns the name of the Docker repository that images should
+// be in to be deployed to the target. In the image 192.168.1.1/jakewright/s-foo,
+// jakewright is the repository.
+func (t *Target) DockerRepository() string {
+	return t.dockerRepository
 }
 
 // DockerConfig holds options related building the service using Docker
 type DockerConfig struct {
-	Dockerfile string            `yaml:"dockerfile"`
-	Args       map[string]string `yaml:"args"`
+	dockerfile string
+	args       map[string]string
+}
+
+// Dockerfile returns the path to the Dockerfile
+func (d *DockerConfig) Dockerfile() string {
+	return d.dockerfile
+}
+
+// Args returns a map of arguments for the Dockerfile
+func (d *DockerConfig) Args() map[string]string {
+	return d.args
 }
 
 // Service is the microservice to be deployed
 type Service struct {
-	Name        string        `yaml:"-"`
-	TargetNames []string      `yaml:"targets"`
-	Targets     []*Target     `yaml:"-"`
-	Language    string        `yaml:"language"`
-	EnvFiles    []string      `yaml:"env_files"`
-	Docker      *DockerConfig `yaml:"docker"`
+	name        string
+	targetNames []string
+	targets     []*Target
+	language    string
+	envFiles    []string
+	docker      *DockerConfig
+}
+
+// Name returns the name of the service
+func (s *Service) Name() string {
+	return s.name
+}
+
+// TargetNames returns the names of the service's targets
+func (s *Service) TargetNames() []string {
+	return s.targetNames
+}
+
+// Targets returns the service's targets
+func (s *Service) Targets() []*Target {
+	return s.targets
+}
+
+// Language returns the programming language of the service
+func (s *Service) Language() string {
+	return s.language
+}
+
+// EnvFiles returns the env files that should be supplied to the service
+// at runtime
+func (s *Service) EnvFiles() []string {
+	return s.envFiles
+}
+
+// Docker returns the docker configuration for the service
+func (s *Service) Docker() *DockerConfig {
+	return s.docker
 }
 
 // DashedName returns home-automation-s-foo for service.foo
 func (s *Service) DashedName() string {
-	str := strings.ReplaceAll(s.Name, ".", "-")
+	str := strings.ReplaceAll(s.Name(), ".", "-")
 	str = strings.Replace(str, "service", "s", 1)
 	// It's important for it to start with home-automation
 	// because it's used as the syslog identifier.
@@ -77,75 +173,4 @@ func (s *Service) DashedName() string {
 // a systemd unit file.
 func (s *Service) SyslogIdentifier() string {
 	return s.DashedName()
-}
-
-// Init reads and validates config
-func Init(filename string) (err error) {
-	op := output.Info("Reading config from %v", filename)
-	defer func() {
-		if err == nil {
-			op.Success()
-		} else {
-			op.Failed()
-		}
-	}()
-
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return oops.WithMessage(err, "failed to read config file")
-	}
-
-	if err := yaml.Unmarshal(b, &cfg); err != nil {
-		return oops.WithMessage(err, "failed to unmarshal config")
-	}
-
-	for name, target := range cfg.Targets {
-		target.Name = name
-
-		switch target.System {
-		case SysDocker, SysKubernetes, SysSystemd: // ok
-		default:
-			return oops.InternalService("Invalid system %q for target %q", target.System, name)
-		}
-
-		switch target.Architecture {
-		case "", ArchARMv6: // ok
-		default:
-			return oops.InternalService("Invalid architecture %q for target %q", target.Architecture, name)
-		}
-	}
-	for name, service := range cfg.Services {
-		service.Name = name
-
-		switch service.Language {
-		case LangGo, LangJavaScript: // ok
-		default:
-			return oops.InternalService("Invalid language '%s' for service '%s'", service.Language, name)
-		}
-
-		for _, targetName := range service.TargetNames {
-			target := findTarget(targetName)
-			if target == nil {
-				return oops.InternalService("Invalid target %q for service %q", targetName, name)
-			}
-
-			service.Targets = append(service.Targets, target)
-		}
-	}
-
-	return nil
-}
-
-func findTarget(name string) *Target {
-	return cfg.Targets[name]
-}
-
-// FindService returns a service by name or nil if it doesn't exist
-func FindService(name string) *Service {
-	return cfg.Services[name]
-}
-
-// Repository returns the repo specified in config
-func Repository() string {
-	return cfg.Repository
 }

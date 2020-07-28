@@ -16,7 +16,7 @@ import (
 // GoBuilder is a builder for golang
 type GoBuilder struct {
 	Service *config.Service
-	Target  *config.Target
+	Target  Machine
 }
 
 var _ LocalBuilder = (*GoBuilder)(nil)
@@ -28,17 +28,17 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	}
 
 	op := output.Info("Parsing service's config")
-	runtimeEnv, err := env.Parse(b.Service.EnvFiles...)
+	runtimeEnv, err := env.Parse(b.Service.EnvFiles()...)
 	if err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to parse service's env files")
 	}
 	op.Success()
 
-	op = output.Info("Compiling binary for %s", b.Target.Architecture)
+	op = output.Info("Compiling binary for %s", b.Target.Architecture())
 
 	// Make sure the service exists in the mirror
-	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name)
+	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name())
 	if _, err := os.Stat(filepath.Join(git.Dir(), pkgToBuild)); err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to stat service directory")
@@ -47,13 +47,13 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	binName := b.Service.DashedName()
 
 	buildEnv := os.Environ()
-	switch b.Target.Architecture {
+	switch b.Target.Architecture() {
 	case config.ArchARMv6:
 		buildEnv = append(buildEnv, "GOOS=linux", "GOARCH=arm", "GOARM=6")
 		binName += "-armv6"
 	default:
 		op.Failed()
-		return nil, oops.InternalService("unsupported architecture %q", b.Target.Architecture)
+		return nil, oops.InternalService("unsupported architecture %q", b.Target.Architecture())
 	}
 
 	hash, shortHash, err := git.CurrentHash()

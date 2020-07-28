@@ -22,22 +22,29 @@ var (
 		ValidArgs: []string{"service"},
 		Args:      cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			verbose, err := cmd.Flags().GetBool("verbose")
+			if err != nil {
+				output.Fatal("Failed to get verbose flag: %v", err)
+			}
+			output.Verbose = verbose
+
 			if err := config.Init(configPath); err != nil {
 				output.Fatal("Failed to load config: %v", err)
 			}
 
-			service := config.FindService(args[0])
+			service := config.Get().Services[args[0]]
 			if service == nil {
 				output.Fatal("Unknown service %q", args[0])
+				return
 			}
 
-			if len(service.Targets) == 0 {
+			if len(service.Targets()) == 0 {
 				output.Fatal("Service has no targets")
 			}
 
-			target := service.Targets[0]
+			target := service.Targets()[0]
 
-			if len(service.Targets) > 1 {
+			if len(service.Targets()) > 1 {
 				prompt := promptui.Select{
 					Label: "Select target",
 					Items: service.TargetNames,
@@ -46,7 +53,7 @@ var (
 				if i, _, err := prompt.Run(); err != nil {
 					output.Fatal("Prompt failed: %v", err)
 				} else {
-					target = service.Targets[i]
+					target = service.Targets()[i]
 				}
 			}
 
@@ -96,4 +103,5 @@ func init() {
 	}
 
 	rootCmd.PersistentFlags().Bool("revision", false, "Retrieve the currently deployed version of the service")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Display verbose output")
 }

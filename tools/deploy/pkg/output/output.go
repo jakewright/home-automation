@@ -29,7 +29,7 @@ type Operation struct {
 func newOp() *Operation {
 	// If an operation has been abandoned, we need a new line
 	if currentOp != nil {
-		currentOp.Success("...")
+		currentOp.Abandon()
 	}
 	currentOp = &Operation{}
 	return currentOp

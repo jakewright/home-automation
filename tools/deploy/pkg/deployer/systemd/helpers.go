@@ -38,7 +38,7 @@ func (d *Systemd) generateDeploymentName(revision string) (string, error) {
 		return "", oops.WithMessage(err, "failed to generate random string")
 	}
 
-	return fmt.Sprintf("%s-%s-%s-%s", d.Service.DashedName(), d.Target.Name, shortHash, random), nil
+	return fmt.Sprintf("%s-%s-%s-%s", d.Service.DashedName(), d.Target.Name(), shortHash, random), nil
 }
 
 // generateDeploymentGlob returns a glob that can be passed to rm
@@ -46,7 +46,7 @@ func (d *Systemd) generateDeploymentName(revision string) (string, error) {
 func (d *Systemd) generateDeploymentGlob() string {
 	// This should be the prefix of the working directory because the whole
 	// thing gets copied to the target and keeps the same name.
-	return fmt.Sprintf("%s-%s*", d.Service.DashedName(), d.Target.Name)
+	return fmt.Sprintf("%s-%s*", d.Service.DashedName(), d.Target.Name())
 }
 
 // workingDir creates and returns the full path to a temporary
@@ -68,9 +68,9 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 	}
 
 	return utils.ConfirmDeployment(&utils.Deployment{
-		ServiceName:     d.Service.Name,
-		TargetName:      d.Target.Name,
-		TargetHost:      d.Target.Host,
+		ServiceName:     d.Service.Name(),
+		TargetName:      d.Target.Name(),
+		TargetHost:      d.Target.Host(),
 		CurrentRevision: currentRevision,
 		NewRevision:     release.Revision,
 	})
@@ -125,7 +125,7 @@ WantedBy=multi-user.target
 		return nil, oops.WithMessage(err, "failed to parse template")
 	}
 
-	cmd := filepath.Join(d.Target.Directory, deploymentName, release.Cmd)
+	cmd := filepath.Join(d.Target.Directory(), deploymentName, release.Cmd)
 	env := make([]string, len(release.Env))
 	for i, e := range release.Env {
 		env[i] = e.AsSh()
@@ -135,9 +135,9 @@ WantedBy=multi-user.target
 		Description, SyslogIdentifier, WorkingDirectory, ExecStart, Revision string
 		Environment                                                          []string
 	}{
-		Description:      d.Service.Name,
+		Description:      d.Service.Name(),
 		SyslogIdentifier: d.Service.SyslogIdentifier(),
-		WorkingDirectory: d.Target.Directory,
+		WorkingDirectory: d.Target.Directory(),
 		Environment:      env,
 		ExecStart:        cmd,
 		Revision:         release.Revision,
@@ -167,7 +167,7 @@ func (d *Systemd) cleanup(client *ssh.Client, deploymentName, workingDir string)
 	// Delete all old deployment folders from the target
 	if err := exe.RemoteCommand(fmt.Sprintf(
 		"find %s -maxdepth 1 -name '%s' ! -name '%s' -type d -exec rm -r {} +",
-		d.Target.Directory,
+		d.Target.Directory(),
 		d.generateDeploymentGlob(),
 		deploymentName,
 	)).Run(client).Err; err != nil {

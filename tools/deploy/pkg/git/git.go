@@ -43,7 +43,7 @@ func Init(revision string) error {
 
 	mirror = &Repository{
 		Dir:    filepath.Join(cache.Dir(), MirrorDirectory),
-		Remote: config.Repository(),
+		Remote: config.Get().Repository,
 	}
 
 	op := output.Info("Cloning repo to %s", mirror.Dir)

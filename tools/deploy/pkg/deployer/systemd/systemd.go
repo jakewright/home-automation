@@ -14,16 +14,25 @@ import (
 	"github.com/jakewright/home-automation/tools/deploy/pkg/utils"
 )
 
+// Target is the interface implemented by a systemd target
+type Target interface {
+	Name() string
+	Host() string
+	Username() string
+	Directory() string
+	Architecture() string
+}
+
 // Systemd is a deployer for services running under systemd
 type Systemd struct {
 	Service *config.Service
-	Target  *config.Target
+	Target  Target
 }
 
 // Revision returns the currently deployed revision
 func (d *Systemd) Revision() (string, error) {
-	op := output.Info("Connecting to %s", d.Target.Host)
-	client, err := exe.SSHClient(d.Target.Username, d.Target.Host)
+	op := output.Info("Connecting to %s", d.Target.Host())
+	client, err := exe.SSHClient(d.Target.Username(), d.Target.Host())
 	if err != nil {
 		op.Failed()
 		return "", oops.WithMessage(err, "failed to create SSH client")
@@ -55,7 +64,7 @@ func (d *Systemd) Revision() (string, error) {
 
 // Deploy deploys the given revision of the service to the target
 func (d *Systemd) Deploy(revision string) error {
-	if !filepath.IsAbs(d.Target.Directory) {
+	if !filepath.IsAbs(d.Target.Directory()) {
 		return oops.InternalService("target directory is not absolute: %s", d.Target.Directory)
 	}
 
@@ -85,8 +94,8 @@ func (d *Systemd) Deploy(revision string) error {
 		return nil
 	}
 
-	op := output.Info("Connecting to %s", d.Target.Host)
-	client, err := exe.SSHClient(d.Target.Username, d.Target.Host)
+	op := output.Info("Connecting to %s", d.Target.Host())
+	client, err := exe.SSHClient(d.Target.Username(), d.Target.Host())
 	if err != nil {
 		op.Failed()
 		return oops.WithMessage(err, "failed to create SSH client")
@@ -94,8 +103,8 @@ func (d *Systemd) Deploy(revision string) error {
 	defer func() { _ = client.Close() }()
 	op.Success()
 
-	op = output.Info("Copying files to %s", d.Target.Host)
-	if err := utils.SCP(workingDir, d.Target.Username, d.Target.Host, d.Target.Directory); err != nil {
+	op = output.Info("Copying files to %s", d.Target.Host())
+	if err := utils.SCP(workingDir, d.Target.Username(), d.Target.Host(), d.Target.Directory()); err != nil {
 		op.Failed()
 		return oops.WithMessage(err, "failed to copy binary to target")
 	}
