@@ -98,6 +98,10 @@ func InfoLn(format string, a ...interface{}) {
 // Debug will output only if the Verbose flag is set.
 func Debug(format string, a ...interface{}) {
 	if Verbose {
+		if currentOp != nil {
+			newOp().Abandon() // Print a blank line
+		}
+
 		f := fmt.Sprintf(format, a...)
 		fmt.Printf("%s\n", aurora.Gray(12, f))
 	}

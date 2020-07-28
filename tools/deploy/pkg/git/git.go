@@ -133,7 +133,7 @@ func (r *Repository) clone() error {
 		return nil
 	}
 
-	if err := r.exec("clone", r.Remote, r.Dir).Err; err != nil {
+	if err := r.exec("clone", "--recurse-submodules", r.Remote, r.Dir).Err; err != nil {
 		return oops.WithMessage(err, "failed to clone repository")
 	}
 
@@ -141,11 +141,11 @@ func (r *Repository) clone() error {
 }
 
 func (r *Repository) checkout(revision string) error {
-	if err := r.exec("fetch", "--all", "--prune", "--prune-tags", "--force").Err; err != nil {
+	if err := r.exec("fetch", "--all", "--prune", "--prune-tags", "--recurse-submodules", "--force").Err; err != nil {
 		return oops.WithMessage(err, "failed to fetch from remote", revision)
 	}
 
-	if err := r.exec("checkout", revision).Err; err != nil {
+	if err := r.exec("checkout", "--recurse-submodules", revision).Err; err != nil {
 		return oops.WithMessage(err, "failed to checkout %q", revision)
 	}
 

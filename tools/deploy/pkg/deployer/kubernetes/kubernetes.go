@@ -102,8 +102,11 @@ func (k *Kubernetes) Deploy(revision string) error {
 		"upgrade",
 		k.releaseName(),
 		helmChartPath,
-		"--install",
-		"--wait",
+		"--install",        // If a release by this name doesn't already exist, run an install
+		"--wait",           // Wait until all resources are in a ready state
+		"--timeout", "30s", // Time to wait for any individual k8s operation
+		"--cleanup-on-fail", // Allow deletion of new resources created in this upgrade when upgrade fails
+		"--output", "json",
 		"--kube-context", k.Target.KubeContext(),
 		"--namespace", k.Target.Namespace(),
 		"--set", "image=" + dockerBuild.Image,
@@ -122,9 +125,17 @@ func (k *Kubernetes) Deploy(revision string) error {
 	}
 
 	op := output.Info("Deploying service")
-	if err := exe.Command(
+	cmd := exe.Command(
 		"helm", args...,
-	).Run().Err; err != nil {
+	)
+
+	output.Debug("helm %s", strings.Join(args, " "))
+
+	if output.Verbose {
+		cmd = cmd.SetPseudoTTY()
+	}
+
+	if err := cmd.Run().Err; err != nil {
 		op.Failed()
 		return oops.WithMessage(err, "failed to upgrade release")
 	}

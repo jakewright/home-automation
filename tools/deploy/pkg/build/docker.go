@@ -39,7 +39,6 @@ type DockerDestination interface {
 type DockerBuilder struct {
 	Service *config.Service
 	Target  DockerDestination
-	Verbose bool
 }
 
 // Build builds the docker image for the given revision and pushes the resulting
@@ -116,7 +115,7 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 	cmd := exe.Command("docker", dockerArgs...).
 		Dir(git.Dir())
 
-	if b.Verbose {
+	if output.Verbose {
 		cmd = cmd.SetPseudoTTY()
 	}
 
