@@ -6,5 +6,6 @@
 .vscode
 bin
 data
+dockerfiles
 docs
 log
