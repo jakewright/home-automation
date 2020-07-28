@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"sync"
-	"time"
 
 	"github.com/jinzhu/copier"
 
@@ -13,15 +12,25 @@ import (
 
 // RoomRepository provides access to the underlying storage layer
 type RoomRepository struct {
-	// ConfigFilename is the path to the room config file
-	ConfigFilename string
+	// configFilename is the path to the room config file
+	configFilename string
 
-	// ReloadInterval is the amount of time to wait before reading from disk again
-	ReloadInterval time.Duration
+	rooms []*deviceregistrydef.Room
+	lock  sync.RWMutex
+}
 
-	rooms    []*deviceregistrydef.Room
-	reloaded time.Time
-	lock     sync.RWMutex
+// NewRoomRepository returns a new room repository populated with rooms defined
+// in the JSON file at the given config filename path.
+func NewRoomRepository(configFilename string) (*RoomRepository, error) {
+	r := &RoomRepository{
+		configFilename: configFilename,
+	}
+
+	if err := r.reload(); err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
 
 // FindAll returns all rooms
@@ -69,12 +78,7 @@ func (r *RoomRepository) Find(id string) (*deviceregistrydef.Room, error) {
 }
 
 func (r *RoomRepository) reload() error {
-	// Skip if we've recently reloaded
-	if r.reloaded.Add(r.ReloadInterval).After(time.Now()) {
-		return nil
-	}
-
-	data, err := ioutil.ReadFile(r.ConfigFilename)
+	data, err := ioutil.ReadFile(r.configFilename)
 	if err != nil {
 		return err
 	}
@@ -90,7 +94,5 @@ func (r *RoomRepository) reload() error {
 	defer r.lock.Unlock()
 
 	r.rooms = cfg.Rooms
-
-	r.reloaded = time.Now()
 	return nil
 }

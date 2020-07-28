@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/service.device-registry/handler"
@@ -14,7 +12,6 @@ import (
 func main() {
 	conf := struct {
 		ConfigFilename string
-		ReloadInterval time.Duration
 	}{}
 
 	svc := bootstrap.Init(&bootstrap.Opts{
@@ -26,17 +23,14 @@ func main() {
 		slog.Panicf("configFilename is empty")
 	}
 
-	if conf.ReloadInterval == 0 {
-		slog.Panicf("reloadInterval is empty")
+	dr, err := repository.NewDeviceRepository(conf.ConfigFilename)
+	if err != nil {
+		slog.Panicf("failed to init device repository: %v", err)
 	}
 
-	dr := &repository.DeviceRepository{
-		ConfigFilename: conf.ConfigFilename,
-		ReloadInterval: conf.ReloadInterval,
-	}
-	rr := &repository.RoomRepository{
-		ConfigFilename: conf.ConfigFilename,
-		ReloadInterval: conf.ReloadInterval,
+	rr, err := repository.NewRoomRepository(conf.ConfigFilename)
+	if err != nil {
+		slog.Panicf("failed to init room repository: %v", err)
 	}
 
 	r := handler.NewRouter(&handler.Controller{

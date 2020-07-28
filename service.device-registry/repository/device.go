@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"sync"
-	"time"
 
 	"github.com/jinzhu/copier"
 
@@ -13,22 +12,29 @@ import (
 
 // DeviceRepository provides access to the underlying storage layer
 type DeviceRepository struct {
-	// ConfigFilename is the path to the device config file
-	ConfigFilename string
+	// configFilename is the path to the device config file
+	configFilename string
 
-	// ReloadInterval is the amount of time to wait before reading from disk again
-	ReloadInterval time.Duration
+	devices []*deviceregistrydef.DeviceHeader
+	lock    sync.RWMutex
+}
 
-	devices  []*deviceregistrydef.DeviceHeader
-	reloaded time.Time
-	lock     sync.RWMutex
+// NewDeviceRepository returns a new device repository populated with devices
+// defined in the JSON file at the given config filename path.
+func NewDeviceRepository(configFilename string) (*DeviceRepository, error) {
+	r := &DeviceRepository{
+		configFilename: configFilename,
+	}
+
+	if err := r.reload(); err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
 
 // FindAll returns all devices
 func (r *DeviceRepository) FindAll() ([]*deviceregistrydef.DeviceHeader, error) {
-	if err := r.reload(); err != nil {
-		return nil, err
-	}
 
 	r.lock.RLock()
 	defer r.lock.RUnlock()
@@ -120,12 +126,7 @@ func (r *DeviceRepository) FindByRoom(roomID string) ([]*deviceregistrydef.Devic
 
 // reload reads the config and applies changes
 func (r *DeviceRepository) reload() error {
-	// Skip if we've recently reloaded
-	if r.reloaded.Add(r.ReloadInterval).After(time.Now()) {
-		return nil
-	}
-
-	data, err := ioutil.ReadFile(r.ConfigFilename)
+	data, err := ioutil.ReadFile(r.configFilename)
 	if err != nil {
 		return err
 	}
@@ -141,7 +142,5 @@ func (r *DeviceRepository) reload() error {
 	defer r.lock.Unlock()
 
 	r.devices = cfg.Devices
-
-	r.reloaded = time.Now()
 	return nil
 }
