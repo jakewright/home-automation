@@ -145,7 +145,7 @@ func (k *Kubernetes) Deploy(revision string) error {
 	return nil
 }
 
-// releaseName returns home-automation-s-foo for service.foo
+// releaseName returns home-automation-foo for foo
 func (k *Kubernetes) releaseName() string {
 	return k.Service.DashedName()
 }

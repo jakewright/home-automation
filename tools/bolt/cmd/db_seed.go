@@ -12,7 +12,7 @@ import (
 
 var (
 	dbSeedCmd = &cobra.Command{
-		Use:   "seed [service.foo] [service.bar]",
+		Use:   "seed [foo] [bar]",
 		Short: "seed a service's database tables",
 		Long:  "Insert seed data to one or more services' database tables. If run without arguments, all service are seeded.",
 		Run: func(cmd *cobra.Command, args []string) {

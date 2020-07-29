@@ -10,7 +10,7 @@ import (
 
 var (
 	stopCmd = &cobra.Command{
-		Use:   "stop [service.foo] [service.bar]...",
+		Use:   "stop [foo] [bar]...",
 		Short: "stop a service",
 		Run: func(cmd *cobra.Command, args []string) {
 			c, err := compose.New()

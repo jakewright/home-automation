@@ -1,5 +1,5 @@
 service Scene {
-    path = "service.scene"
+    path = "scene"
 
     rpc CreateScene(CreateSceneRequest) CreateSceneResponse {
         method = "POST"

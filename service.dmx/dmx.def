@@ -1,7 +1,7 @@
 import device "../libraries/go/device/device.def"
 
 service DMX {
-    path = "service.dmx"
+    path = "dmx"
 
     rpc GetDevice(GetDeviceRequest) GetDeviceResponse {
         method = "GET"

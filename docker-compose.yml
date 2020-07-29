@@ -56,7 +56,7 @@ services:
     ports:
       - 6379:6379
 
-  service.api-gateway:
+  api-gateway:
     image: jakewright/drawbridge
     volumes:
       - ./service.api-gateway/config.dev.yaml:/config/config.yaml
@@ -106,29 +106,29 @@ services:
     environment:
       NODE_ENV: development
 
-  service.device-registry:
+  device-registry:
     extends:
       service: go-service
     build:
       args:
-        service_name: service.device-registry
+        service_name: device-registry
     ports:
       - 7001:80
     env_file:
-      - ./private/config/dev/service.device-registry.env
+      - ./private/config/dev/device-registry.env
 
-  service.dmx:
+  dmx:
     extends:
       service: go-service
     build:
       args:
-        service_name: service.dmx
+        service_name: dmx
     ports:
       - 7012:80
     env_file:
-      - ./private/config/dev/service.dmx.env
+      - private/config/dev/dmx.env
 
-  service.event-bus:
+  event-bus:
     build:
       dockerfile: ./service.event-bus/dev.dockerfile
       context: .
@@ -143,41 +143,41 @@ services:
     environment:
       NODE_ENV: development
 
-  service.log:
+  log:
     extends:
       service: go-service
     build:
       args:
-        service_name: service.log
+        service_name: log
     volumes:
       - ./log/:/var/log:ro
     ports:
       - 7020:80
 
-  service.ping:
+  ping:
     extends:
       service: go-service
     build:
       args:
-        service_name: service.ping
+        service_name: ping
     ports:
       - 7011:80
 
-  service.scene:
+  scene:
     extends:
       service: go-service
     build:
         args:
-          service_name: service.scene
+          service_name: scene
     ports:
       - 7010:80
 
-  service.user:
+  user:
     extends:
       service: go-service
     build:
       args:
-        service_name: service.user
+        service_name: user
     ports:
       - 7013:80
 

@@ -10,7 +10,7 @@ import (
 
 var (
 	logsCmd = &cobra.Command{
-		Use:   "logs [service.foo] [service.bar]",
+		Use:   "logs [foo] [bar]",
 		Short: "show logs for a set of services (default: all services)",
 		Run: func(cmd *cobra.Command, args []string) {
 			services := service.Expand(args)

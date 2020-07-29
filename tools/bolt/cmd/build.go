@@ -10,7 +10,7 @@ import (
 
 var (
 	buildCmd = &cobra.Command{
-		Use:   "build [service.foo] [service.bar]...",
+		Use:   "build [foo] [bar]...",
 		Short: "build a service",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"strings"
 )
 
 // Service constants
@@ -160,13 +159,11 @@ func (s *Service) Docker() *DockerConfig {
 	return s.docker
 }
 
-// DashedName returns home-automation-s-foo for service.foo
+// DashedName returns home-automation-foo for foo
 func (s *Service) DashedName() string {
-	str := strings.ReplaceAll(s.Name(), ".", "-")
-	str = strings.Replace(str, "service", "s", 1)
 	// It's important for it to start with home-automation
 	// because it's used as the syslog identifier.
-	return fmt.Sprintf("home-automation-%s", str)
+	return fmt.Sprintf("home-automation-%s", s.Name())
 }
 
 // SyslogIdentifier returns the value that can be used in

@@ -10,7 +10,7 @@ import (
 
 var (
 	restartCmd = &cobra.Command{
-		Use:   "restart [service.foo] [service.bar]",
+		Use:   "restart [foo] [bar]",
 		Short: "restart a service",
 		Run: func(cmd *cobra.Command, args []string) {
 			build, err := cmd.Flags().GetBool("build")

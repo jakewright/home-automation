@@ -30,7 +30,7 @@ func Test_compareDockerfileArgs(t *testing.T) {
 		{
 			name:              "Got both args",
 			dockerfileContent: egDockerfileArgs,
-			givenArgs:         map[string]string{"work_dir": "/", "service_name": "service.foo"},
+			givenArgs:         map[string]string{"work_dir": "/", "service_name": "foo"},
 			wantErr:           false,
 		},
 	}

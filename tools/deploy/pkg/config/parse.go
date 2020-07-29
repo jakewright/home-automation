@@ -97,6 +97,10 @@ func Init(filename string) (err error) {
 	services := make(map[string]*Service)
 
 	for name, s := range raw.Services {
+		if !validDNSLabel(name) {
+			return oops.InternalService("Invalid service name %q", name)
+		}
+
 		switch s.Language {
 		case LangGo: // ok
 		default:
@@ -134,4 +138,30 @@ func Init(filename string) (err error) {
 	}
 
 	return nil
+}
+
+// validDNSLabel returns whether the given string conforms to the DNS label
+// standard as defined in RFC 1123. This means the name must:
+//   - contain at most 63 characters
+//   - contain only lowercase alphanumeric characters or '-'
+//   - start with an alphanumeric character
+//   - end with an alphanumeric character
+func validDNSLabel(s string) bool {
+	if len(s) > 63 {
+		return false
+	}
+
+	for i, r := range s {
+		if i == 0 || i == len(s)-1 {
+			if (r < 'a' || r > 'z') && (r < '0' || r > '9') {
+				return false
+			}
+		} else {
+			if (r < 'a' || r > 'z') && (r < '0' || r > '9') && (r != '-') {
+				return false
+			}
+		}
+	}
+
+	return true
 }

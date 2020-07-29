@@ -10,7 +10,7 @@ import (
 
 var (
 	runCmd = &cobra.Command{
-		Use:   "run [service.foo] [service.bar]...",
+		Use:   "run [foo] [bar]...",
 		Short: "run a service",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

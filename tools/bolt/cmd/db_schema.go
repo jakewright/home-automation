@@ -12,7 +12,7 @@ import (
 
 var (
 	dbSchemaCmd = &cobra.Command{
-		Use:   "schema [service.foo] [service.bar]",
+		Use:   "schema [foo] [bar]",
 		Short: "apply a service's schema",
 		Long:  "Apply one or more services' schemas. If run without arguments, all service schemas are applied.",
 		Run: func(cmd *cobra.Command, args []string) {
