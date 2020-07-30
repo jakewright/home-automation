@@ -31,4 +31,4 @@ COPY LICENCE ./private/assets/${service_name}/dev/* /assets/
 # option then forwards them to the go binary. The -directories option doesn't
 # work with the directories the other way around. It might be because of the dot
 # in the service name.
-CMD ["sh", "-c", "compile-daemon -build=\"go install ./${SERVICE}\" -command=/go/bin/${SERVICE} -directories=libraries/go,${SERVICE} -log-prefix=false -log-prefix=false -graceful-kill=true -graceful-timeout=10"]
+CMD ["sh", "-c", "compile-daemon -build=\"go install ./services/${SERVICE}\" -command=/go/bin/${SERVICE} -directories=libraries/go,services/${SERVICE} -log-prefix=false -log-prefix=false -graceful-kill=true -graceful-timeout=10"]

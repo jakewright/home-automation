@@ -47,7 +47,7 @@ var (
 			if len(service.Targets()) > 1 {
 				prompt := promptui.Select{
 					Label: "Select target",
-					Items: service.TargetNames,
+					Items: service.TargetNames(),
 				}
 
 				if i, _, err := prompt.Run(); err != nil {

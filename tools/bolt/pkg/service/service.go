@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jakewright/home-automation/tools/bolt/pkg/compose"
 	"github.com/jakewright/home-automation/tools/bolt/pkg/config"
@@ -25,6 +26,11 @@ func expandService(s string) []string {
 			return services
 		}
 	}
+
+	// To allow the user to specify the directory of the service instead of
+	// just the service name, strip the potential prefixes off the string.
+	s = strings.TrimPrefix(s, "service/")
+	s = strings.TrimPrefix(s, "./service/")
 
 	return []string{s}
 }

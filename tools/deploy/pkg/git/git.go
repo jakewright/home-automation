@@ -142,7 +142,7 @@ func (r *Repository) clone() error {
 
 func (r *Repository) checkout(revision string) error {
 	if err := r.exec("fetch", "--all", "--prune", "--prune-tags", "--recurse-submodules", "--force").Err; err != nil {
-		return oops.WithMessage(err, "failed to fetch from remote", revision)
+		return oops.WithMessage(err, "failed to fetch revision %s from remote", revision)
 	}
 
 	if err := r.exec("checkout", "--recurse-submodules", revision).Err; err != nil {

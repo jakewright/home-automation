@@ -28,8 +28,8 @@ There are various tools that can be installed to aid development.
   - Library code shared between all services
 - `private/`
   - A git submodule containing mostly private configuration
-- `service.x`
-  - A backend microservice
+- `services/`
+  - The services that make up the system
 - `tools/`
   - Useful tools for working with the system
 - `web.x`

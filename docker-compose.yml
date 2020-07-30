@@ -130,7 +130,7 @@ services:
 
   event-bus:
     build:
-      dockerfile: ./service.event-bus/dev.dockerfile
+      dockerfile: services/event-bus/dev.dockerfile
       context: .
     image: home-automation-service-event-bus
     volumes:

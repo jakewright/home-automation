@@ -9,7 +9,7 @@ COPY . .
 RUN go mod download
 
 ARG service_name
-RUN CGO_ENABLED=0 GOOS=linux go install ./${service_name}
+RUN CGO_ENABLED=0 GOOS=linux go install ./services/${service_name}
 
 FROM alpine:latest
 
