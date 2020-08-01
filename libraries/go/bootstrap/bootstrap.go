@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -99,27 +100,31 @@ func initService(opts *Opts) (*Service, error) {
 
 func initLock(opts *Opts, svc *Service) error {
 	conf := struct {
-		MultiInstance bool          `envconfig:"MULTI_INSTANCE"`
-		LockTimeout   time.Duration `envconfig:"LOCK_TIMEOUT"`
-		LockTTL       time.Duration `envconfig:"LOCK_TTL"`
+		LockMode    string        `envconfig:"LOCK_MODE"`
+		LockTimeout time.Duration `envconfig:"optional,LOCK_TIMEOUT"`
+		LockTTL     time.Duration `envconfig:"optional,LOCK_TTL"`
 	}{}
 	config.Load(&conf)
 
-	if !conf.MultiInstance {
+	switch strings.ToLower(conf.LockMode) {
+	case "local":
 		distsync.DefaultLocksmith = distsync.NewLocalLocksmith()
-		return nil
-	}
 
-	redisClient, err := initRedis(svc)
-	if err != nil {
-		return err
-	}
+	case "shared":
+		redisClient, err := initRedis(svc)
+		if err != nil {
+			return err
+		}
 
-	distsync.DefaultLocksmith = &distsync.RedisLocksmith{
-		ServiceName: opts.ServiceName,
-		Client:      redisClient,
-		Timeout:     conf.LockTimeout,
-		Expiration:  conf.LockTTL,
+		distsync.DefaultLocksmith = &distsync.RedisLocksmith{
+			ServiceName: opts.ServiceName,
+			Client:      redisClient,
+			Timeout:     conf.LockTimeout,
+			Expiration:  conf.LockTTL,
+		}
+
+	default:
+		return oops.InternalService("unknown lock mode %q", conf.LockMode)
 	}
 
 	return nil
