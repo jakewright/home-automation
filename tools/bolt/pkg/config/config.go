@@ -11,8 +11,6 @@ type Config struct {
 	Database              Database            `json:"database"`
 	ProjectName           string              `json:"projectName"`
 	DockerComposeFilePath string              `json:"dockerComposeFilePath"`
-	GoVersion             string              `json:"goVersion"`
-	GoDockerfileTemplate  string              `json:"goDockerfileTemplate"`
 	Groups                map[string][]string `json:"groups"`
 }
 
