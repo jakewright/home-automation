@@ -1,4 +1,4 @@
-package dsync
+package distsync
 
 import (
 	"context"

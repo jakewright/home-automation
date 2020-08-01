@@ -4,7 +4,7 @@ import (
 	"context"
 
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
-	"github.com/jakewright/home-automation/libraries/go/dsync"
+	"github.com/jakewright/home-automation/libraries/go/distsync"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	dmxdef "github.com/jakewright/home-automation/services/dmx/def"
 	"github.com/jakewright/home-automation/services/dmx/dmx"
@@ -24,7 +24,7 @@ func (c *Controller) GetDevice(ctx context.Context, body *dmxdef.GetDeviceReques
 		"device_id": body.DeviceId,
 	}
 
-	lock, err := dsync.Lock(ctx, "device", body.DeviceId)
+	lock, err := distsync.Lock(ctx, "device", body.DeviceId)
 	if err != nil {
 		return nil, oops.WithMetadata(err, errParams)
 	}
@@ -57,7 +57,7 @@ func (c *Controller) UpdateDevice(ctx context.Context, body *dmxdef.UpdateDevice
 		"device_id": body.DeviceId,
 	}
 
-	lock, err := dsync.Lock(ctx, "device", body.DeviceId)
+	lock, err := distsync.Lock(ctx, "device", body.DeviceId)
 	if err != nil {
 		return nil, oops.WithMetadata(err, errParams)
 	}

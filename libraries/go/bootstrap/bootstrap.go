@@ -15,7 +15,7 @@ import (
 
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/database"
-	"github.com/jakewright/home-automation/libraries/go/dsync"
+	"github.com/jakewright/home-automation/libraries/go/distsync"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
@@ -75,14 +75,14 @@ func initService(opts *Opts) (*Service, error) {
 		config.Load(opts.Config)
 	}
 
-	// Connect to Redis
+	// Set up firehose
 	if opts.Firehose {
 		if err := initFirehose(service); err != nil {
 			return nil, err
 		}
 	}
 
-	// Connect to MySQL
+	// Set up database
 	if opts.Database {
 		if err := initDatabase(opts, service); err != nil {
 			return nil, err
@@ -90,40 +90,43 @@ func initService(opts *Opts) (*Service, error) {
 	}
 
 	// Set up locking
-	dsync.DefaultLocksmith = dsync.NewLocalLocksmith()
+	if err := initLock(opts, service); err != nil {
+		return nil, err
+	}
 
 	return service, nil
 }
 
-func initFirehose(svc *Service) error {
+func initLock(opts *Opts, svc *Service) error {
 	conf := struct {
-		RedisHost string
-		RedisPort int
+		MultiInstance bool          `envconfig:"MULTI_INSTANCE"`
+		LockTimeout   time.Duration `envconfig:"LOCK_TIMEOUT"`
+		LockTTL       time.Duration `envconfig:"LOCK_TTL"`
 	}{}
 	config.Load(&conf)
 
-	addr := fmt.Sprintf("%s:%d", conf.RedisHost, conf.RedisPort)
-	slog.Infof("Connecting to Redis at address %s", addr)
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:            addr,
-		Password:        "",
-		DB:              0,
-		MaxRetries:      5,
-		MinRetryBackoff: time.Second,
-		MaxRetryBackoff: time.Second * 5,
-	})
+	if !conf.MultiInstance {
+		distsync.DefaultLocksmith = distsync.NewLocalLocksmith()
+		return nil
+	}
 
-	svc.deferred = append(svc.deferred, func() error {
-		err := redisClient.Close()
-		if err != nil {
-			slog.Errorf("Failed to close Redis connection: %v", err)
-		} else {
-			slog.Debugf("Closed Redis connection")
-		}
+	redisClient, err := initRedis(svc)
+	if err != nil {
 		return err
-	})
+	}
 
-	_, err := redisClient.Ping().Result()
+	distsync.DefaultLocksmith = &distsync.RedisLocksmith{
+		ServiceName: opts.ServiceName,
+		Client:      redisClient,
+		Timeout:     conf.LockTimeout,
+		Expiration:  conf.LockTTL,
+	}
+
+	return nil
+}
+
+func initFirehose(svc *Service) error {
+	redisClient, err := initRedis(svc)
 	if err != nil {
 		return err
 	}
@@ -174,7 +177,8 @@ func initDatabase(opts *Opts, svc *Service) error {
 		conf.MySQLPassword,
 		conf.MySQLHost,
 		conf.MySQLDatabaseName,
-		conf.MySQLCharset)
+		conf.MySQLCharset,
+	)
 
 	db, err := gorm.Open("mysql", addr)
 	if err != nil {
@@ -196,6 +200,46 @@ func initDatabase(opts *Opts, svc *Service) error {
 
 	database.DefaultDB = db
 	return nil
+}
+
+var redisClient *redis.Client
+
+func initRedis(svc *Service) (*redis.Client, error) {
+	if redisClient == nil {
+		conf := struct {
+			RedisHost string
+			RedisPort int
+		}{}
+		config.Load(&conf)
+
+		addr := fmt.Sprintf("%s:%d", conf.RedisHost, conf.RedisPort)
+		slog.Infof("Connecting to Redis at address %s", addr)
+		redisClient = redis.NewClient(&redis.Options{
+			Addr:            addr,
+			Password:        "",
+			DB:              0,
+			MaxRetries:      5,
+			MinRetryBackoff: time.Second,
+			MaxRetryBackoff: time.Second * 5,
+		})
+
+		svc.deferred = append(svc.deferred, func() error {
+			err := redisClient.Close()
+			if err != nil {
+				slog.Errorf("Failed to close Redis connection: %v", err)
+			} else {
+				slog.Debugf("Closed Redis connection")
+			}
+			return err
+		})
+
+		_, err := redisClient.Ping().Result()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return redisClient, nil
 }
 
 // Run takes a number of processes and concurrently runs them all. It will stop if all processes

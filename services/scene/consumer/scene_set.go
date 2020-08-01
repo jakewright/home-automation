@@ -8,7 +8,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/jakewright/home-automation/libraries/go/database"
-	"github.com/jakewright/home-automation/libraries/go/dsync"
+	"github.com/jakewright/home-automation/libraries/go/distsync"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
@@ -32,7 +32,7 @@ var HandleSetSceneEvent scenedef.SetSceneEventHandler = func(body *scenedef.SetS
 		return firehose.Discard(err)
 	}
 
-	lock, err := dsync.Lock(nil, "scene", body.SceneId)
+	lock, err := distsync.Lock(nil, "scene", body.SceneId)
 	if err != nil {
 		return firehose.Fail(oops.WithMetadata(err, metadata))
 	}

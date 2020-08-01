@@ -1,23 +1,26 @@
-package dsync
+package distsync
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 )
 
-// This package is a lie. It doesn't implement distributed locking at all.
-// Distributed locking will be implemented if and when there are multiple
-// instances of any services running.
-
-const defaultTimeout = time.Second * 10
+const (
+	defaultTimeout    = time.Second * 10
+	defaultExpiration = time.Second * 60
+)
 
 // Locker is a lock on a resource that can be locked and unlocked
 type Locker interface {
-	Lock() error
+	Lock(ctx context.Context) error
+
+	// Unlock releases the lock. Implementations of this can fail to unlock for
+	// various reasons, so arguably this function should return an error. In
+	// practice though, there's nothing useful you can do with the error and
+	// the lock will expire at some point anyway.
 	Unlock()
 }
 
@@ -48,29 +51,5 @@ func Lock(ctx context.Context, resource string, args ...interface{}) (Locker, er
 		return nil, err
 	}
 
-	c := make(chan error)
-
-	go func() {
-		err := locker.Lock()
-
-		select {
-		case c <- err:
-			// This is the normal case
-		default:
-			// There is no receiver which means the function
-			// has already returned because the timeout was
-			// reached. We don't need this lock anymore.
-			locker.Unlock()
-		}
-	}()
-
-	select {
-	case err := <-c:
-		if err != nil {
-			return nil, oops.WithMessage(err, "failed to acquire lock")
-		}
-		return locker, nil
-	case <-ctx.Done():
-		return nil, oops.WithMessage(ctx.Err(), "failed to acquire lock in time")
-	}
+	return locker, locker.Lock(ctx)
 }

@@ -1,6 +1,7 @@
-package dsync
+package distsync
 
 import (
+	"context"
 	"sync"
 
 	"github.com/jakewright/home-automation/libraries/go/oops"
@@ -30,14 +31,37 @@ type mutexWrapper struct {
 	mu *sync.Mutex
 }
 
-func (mw *mutexWrapper) Lock() error {
+// Lock acquires the lock
+func (mw *mutexWrapper) Lock(ctx context.Context) error {
 	if mw == nil {
 		return oops.InternalService("tried to lock a nil locker")
 	}
-	mw.mu.Lock()
-	return nil
+
+	c := make(chan struct{})
+
+	go func() {
+		mw.mu.Lock()
+
+		select {
+		case c <- struct{}{}:
+			// This is the normal case
+		default:
+			// There is no receiver which means the function
+			// has already returned because the timeout was
+			// reached. We don't need this lock anymore.
+			mw.Unlock()
+		}
+	}()
+
+	select {
+	case <-c:
+		return nil // Lock acquired
+	case <-ctx.Done():
+		return oops.WithMessage(ctx.Err(), "failed to acquire lock in time")
+	}
 }
 
+// Unlock releases the lock
 func (mw *mutexWrapper) Unlock() {
 	if mw == nil {
 		return // probably ok ¯\_(ツ)_/¯
