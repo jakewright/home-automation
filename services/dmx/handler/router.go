@@ -5,19 +5,20 @@ package handler
 import (
 	context "context"
 
+	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	router "github.com/jakewright/home-automation/libraries/go/router"
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 	def "github.com/jakewright/home-automation/services/dmx/def"
 )
 
-type service interface {
+type handler interface {
 	GetDevice(ctx context.Context, body *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
 	UpdateDevice(ctx context.Context, body *def.UpdateDeviceRequest) (*def.UpdateDeviceResponse, error)
 }
 
-// NewRouter creates a new router for this service
-func NewRouter(s service) *router.Router {
-	r := router.New()
+// NewRouter creates a new router for the service
+func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
+	r := router.New(svc)
 
 	r.RegisterHandler("GET", "/device", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.GetDeviceRequest{}
@@ -29,7 +30,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.GetDevice(ctx, body)
+		return h.GetDevice(ctx, body)
 	})
 
 	r.RegisterHandler("PATCH", "/device", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -42,7 +43,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.UpdateDevice(ctx, body)
+		return h.UpdateDevice(ctx, body)
 	})
 
 	return r

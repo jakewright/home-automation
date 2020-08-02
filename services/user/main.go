@@ -13,6 +13,6 @@ func main() {
 		Database:    true,
 	})
 
-	r := handler.NewRouter(&handler.Controller{})
+	r := handler.NewRouter(svc, &handler.Controller{})
 	svc.Run(r)
 }

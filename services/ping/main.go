@@ -12,6 +12,6 @@ func main() {
 
 	// The router has a default ping handler defined
 	// in: libraries/go/router/middleware.go
-	r := router.New()
+	r := router.New(svc)
 	svc.Run(r)
 }

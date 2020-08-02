@@ -63,7 +63,7 @@ func run(svc *bootstrap.Service, conf *config) error {
 		return err
 	}
 
-	r := handler.NewRouter(&handler.Controller{
+	r := handler.NewRouter(svc, &handler.Controller{
 		Repository: repo,
 		Client:     client,
 	})

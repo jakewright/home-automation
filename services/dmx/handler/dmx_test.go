@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/taxi"
 	deviceregistrydef "github.com/jakewright/home-automation/services/device-registry/def"
@@ -56,7 +57,7 @@ func TestDMXHandler_Update(t *testing.T) {
 		Client:     client,
 	}
 
-	d := &taxi.MockClient{Handler: NewRouter(c)}
+	d := &taxi.MockClient{Handler: NewRouter(&bootstrap.Service{}, c)}
 	dmx := dmxdef.NewClient(d)
 
 	rsp, err := dmx.UpdateDevice(context.Background(), &dmxdef.UpdateDeviceRequest{

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync/atomic"
 
+	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/libraries/go/taxi"
@@ -20,7 +21,7 @@ type Router struct {
 }
 
 // New returns a new router initialised with default middleware
-func New() *Router {
+func New(svc *bootstrap.Service) *Router {
 	var conf struct {
 		Port int `envconfig:"default=80"`
 	}
@@ -30,6 +31,9 @@ func New() *Router {
 	router := taxi.NewRouter().WithLogger(slog.Errorf)
 	router.UseMiddleware(panicRecovery, revision)
 	router.RegisterHandlerFunc(http.MethodGet, "/ping", pingHandler)
+	router.RegisterRawHandler(http.MethodGet, "/healthz", &healthHandler{
+		svc: svc,
+	})
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.Port),

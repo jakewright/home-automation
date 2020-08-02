@@ -5,21 +5,22 @@ package handler
 import (
 	context "context"
 
+	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	router "github.com/jakewright/home-automation/libraries/go/router"
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 	def "github.com/jakewright/home-automation/services/device-registry/def"
 )
 
-type service interface {
+type handler interface {
 	GetDevice(ctx context.Context, body *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
 	ListDevices(ctx context.Context, body *def.ListDevicesRequest) (*def.ListDevicesResponse, error)
 	GetRoom(ctx context.Context, body *def.GetRoomRequest) (*def.GetRoomResponse, error)
 	ListRooms(ctx context.Context, body *def.ListRoomsRequest) (*def.ListRoomsResponse, error)
 }
 
-// NewRouter creates a new router for this service
-func NewRouter(s service) *router.Router {
-	r := router.New()
+// NewRouter creates a new router for the service
+func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
+	r := router.New(svc)
 
 	r.RegisterHandler("GET", "/device", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.GetDeviceRequest{}
@@ -31,7 +32,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.GetDevice(ctx, body)
+		return h.GetDevice(ctx, body)
 	})
 
 	r.RegisterHandler("GET", "/devices", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -44,7 +45,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.ListDevices(ctx, body)
+		return h.ListDevices(ctx, body)
 	})
 
 	r.RegisterHandler("GET", "/room", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -57,7 +58,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.GetRoom(ctx, body)
+		return h.GetRoom(ctx, body)
 	})
 
 	r.RegisterHandler("GET", "/rooms", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -70,7 +71,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.ListRooms(ctx, body)
+		return h.ListRooms(ctx, body)
 	})
 
 	return r

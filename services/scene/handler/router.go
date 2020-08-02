@@ -5,12 +5,13 @@ package handler
 import (
 	context "context"
 
+	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	router "github.com/jakewright/home-automation/libraries/go/router"
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 	def "github.com/jakewright/home-automation/services/scene/def"
 )
 
-type service interface {
+type handler interface {
 	CreateScene(ctx context.Context, body *def.CreateSceneRequest) (*def.CreateSceneResponse, error)
 	ReadScene(ctx context.Context, body *def.ReadSceneRequest) (*def.ReadSceneResponse, error)
 	ListScenes(ctx context.Context, body *def.ListScenesRequest) (*def.ListScenesResponse, error)
@@ -18,9 +19,9 @@ type service interface {
 	SetScene(ctx context.Context, body *def.SetSceneRequest) (*def.SetSceneResponse, error)
 }
 
-// NewRouter creates a new router for this service
-func NewRouter(s service) *router.Router {
-	r := router.New()
+// NewRouter creates a new router for the service
+func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
+	r := router.New(svc)
 
 	r.RegisterHandler("POST", "/scenes", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.CreateSceneRequest{}
@@ -32,7 +33,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.CreateScene(ctx, body)
+		return h.CreateScene(ctx, body)
 	})
 
 	r.RegisterHandler("GET", "/scene", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -45,7 +46,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.ReadScene(ctx, body)
+		return h.ReadScene(ctx, body)
 	})
 
 	r.RegisterHandler("GET", "/scenes", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -58,7 +59,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.ListScenes(ctx, body)
+		return h.ListScenes(ctx, body)
 	})
 
 	r.RegisterHandler("DELETE", "/scene", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -71,7 +72,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.DeleteScene(ctx, body)
+		return h.DeleteScene(ctx, body)
 	})
 
 	r.RegisterHandler("POST", "/scene/set", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -84,7 +85,7 @@ func NewRouter(s service) *router.Router {
 			return nil, err
 		}
 
-		return s.SetScene(ctx, body)
+		return h.SetScene(ctx, body)
 	})
 
 	return r

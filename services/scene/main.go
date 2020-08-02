@@ -18,7 +18,7 @@ func main() {
 
 	firehose.Subscribe(consumer.HandleSetSceneEvent)
 
-	r := handler.NewRouter(&handler.Controller{})
+	r := handler.NewRouter(svc, &handler.Controller{})
 
 	svc.Run(r)
 }

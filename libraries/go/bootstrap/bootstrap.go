@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -37,10 +38,15 @@ type Process interface {
 	Stop(context.Context) error
 }
 
+// HealthCheck is a function that returns an error if the service is unhealthy
+type HealthCheck func(ctx context.Context) error
+
 // Service represents a collection of processes
 type Service struct {
-	processes []Process
-	deferred  []func() error
+	name         string
+	processes    []Process
+	deferred     []func() error
+	healthChecks map[string]HealthCheck
 }
 
 // Opts defines basic initialisation options for a service
@@ -69,7 +75,9 @@ func Init(opts *Opts) *Service {
 }
 
 func initService(opts *Opts) (*Service, error) {
-	service := &Service{}
+	service := &Service{
+		name: opts.ServiceName,
+	}
 
 	// Load config if requested
 	if opts.Config != nil {
@@ -247,6 +255,33 @@ func initRedis(svc *Service) (*redis.Client, error) {
 	return redisClient, nil
 }
 
+// Name returns the name of the service
+func (s *Service) Name() string {
+	return s.name
+}
+
+// RegisterHealthCheck registers a new health check for the service
+func (s *Service) RegisterHealthCheck(name string, check HealthCheck) {
+	if s.healthChecks == nil {
+		s.healthChecks = make(map[string]HealthCheck, 1)
+	}
+
+	if _, set := s.healthChecks[name]; set {
+		panic(oops.InternalService("health check with name %q already registered", name))
+	}
+
+	s.healthChecks[name] = check
+}
+
+// Healthy runs all of the service's health checks, returning a map of results.
+func (s *Service) Healthy(ctx context.Context) map[string]error {
+	results := make(map[string]error, len(s.healthChecks))
+	for name, check := range s.healthChecks {
+		results[name] = safeRunHealthCheck(ctx, check)
+	}
+	return results
+}
+
 // Run takes a number of processes and concurrently runs them all. It will stop if all processes
 // terminate or if a signal (SIGINT or SIGTERM) is received.
 func (s *Service) Run(processes ...Process) {
@@ -323,4 +358,20 @@ func (s *Service) Run(processes ...Process) {
 	// Wait for processes to terminate
 	wg.Wait()
 	slog.Infof("All processes stopped")
+}
+
+// safeRunHealthCheck runs the given HealthCheck but recovers any panics.
+// In the case of a panic, up to 1 MB of stack trace is returned in the error.
+func safeRunHealthCheck(ctx context.Context, check HealthCheck) (err error) {
+	defer func() {
+		if v := recover(); v != nil {
+			buf := make([]byte, 1<<20) // 1 MB
+			n := runtime.Stack(buf, false)
+			buf = buf[:n]
+			err = fmt.Errorf("panic: %v\n\n%s", v, buf)
+		}
+	}()
+
+	err = check(ctx)
+	return
 }

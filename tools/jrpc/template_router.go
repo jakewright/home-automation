@@ -36,15 +36,15 @@ package {{ .PackageName }}
 	)
 {{ end }}
 
-type service interface {
+type handler interface {
 	{{- range .Endpoints }}
 		{{ .NameUpper }}(ctx context.Context, body *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
-// NewRouter creates a new router for this service
-func NewRouter(s service) *router.Router {
-	r := router.New()
+// NewRouter creates a new router for the service
+func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
+	r := router.New(svc)
 
 	{{ range .Endpoints -}}
 		r.RegisterHandler("{{ .HTTPMethod }}", "{{ .Path }}", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
@@ -57,7 +57,7 @@ func NewRouter(s service) *router.Router {
 				return nil, err
 			}
 
-			return s.{{ .NameUpper }}(ctx, body)
+			return h.{{ .NameUpper }}(ctx, body)
 		})
 
 	{{ end -}}
