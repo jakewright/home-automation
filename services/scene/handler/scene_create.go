@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 
-	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	scenedef "github.com/jakewright/home-automation/services/scene/def"
 	"github.com/jakewright/home-automation/services/scene/domain"
@@ -35,7 +34,7 @@ func (c *Controller) CreateScene(ctx context.Context, body *scenedef.CreateScene
 		Actions: actions,
 	}
 
-	if err := database.Create(scene); err != nil {
+	if err := c.Database.Create(scene); err != nil {
 		return nil, err
 	}
 

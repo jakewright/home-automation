@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	"github.com/jakewright/home-automation/libraries/go/router"
 )
 
 func main() {
@@ -12,6 +11,5 @@ func main() {
 
 	// The router has a default ping handler defined
 	// in: libraries/go/router/middleware.go
-	r := router.New(svc)
-	svc.Run(r)
+	svc.Run()
 }

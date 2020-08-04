@@ -17,9 +17,19 @@ var defaultConfig = &Config{
 	Backoff:    time.Second * 3,
 }
 
+// Publisher is the interface that wraps the publish method
+type Publisher interface {
+	// Publish emits an event to the firehose on the
+	// specified channel. All consumers currently
+	// listening on that channel (i.e. have subscribed
+	// to this event) will receive the message.
+	// The message is marshaled to JSON.
+	Publish(channel string, message interface{}) error
+}
+
 // Client is the interface that wraps the Publish and Subscribe methods
 type Client interface {
-	Publish(string, interface{}) error
+	Publisher
 	Subscribe(string, RawHandlerFunc)
 	config() *Config
 }

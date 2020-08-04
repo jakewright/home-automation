@@ -5,11 +5,14 @@ package handler
 import (
 	context "context"
 
-	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	router "github.com/jakewright/home-automation/libraries/go/router"
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 	def "github.com/jakewright/home-automation/services/scene/def"
 )
+
+// taxiRouter is an interface implemented by taxi.Router
+type taxiRouter interface {
+	HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error))
+}
 
 type handler interface {
 	CreateScene(ctx context.Context, body *def.CreateSceneRequest) (*def.CreateSceneResponse, error)
@@ -19,11 +22,9 @@ type handler interface {
 	SetScene(ctx context.Context, body *def.SetSceneRequest) (*def.SetSceneResponse, error)
 }
 
-// NewRouter creates a new router for the service
-func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
-	r := router.New(svc)
-
-	r.RegisterHandler("POST", "/scenes", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+// RegisterRoutes adds the service's routes to the router
+func RegisterRoutes(r taxiRouter, h handler) {
+	r.HandleFunc("POST", "/scenes", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.CreateSceneRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -36,7 +37,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.CreateScene(ctx, body)
 	})
 
-	r.RegisterHandler("GET", "/scene", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("GET", "/scene", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.ReadSceneRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -49,7 +50,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.ReadScene(ctx, body)
 	})
 
-	r.RegisterHandler("GET", "/scenes", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("GET", "/scenes", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.ListScenesRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -62,7 +63,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.ListScenes(ctx, body)
 	})
 
-	r.RegisterHandler("DELETE", "/scene", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("DELETE", "/scene", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.DeleteSceneRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -75,7 +76,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.DeleteScene(ctx, body)
 	})
 
-	r.RegisterHandler("POST", "/scene/set", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("POST", "/scene/set", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.SetSceneRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -88,5 +89,4 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.SetScene(ctx, body)
 	})
 
-	return r
 }

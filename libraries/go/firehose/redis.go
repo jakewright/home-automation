@@ -82,8 +82,32 @@ func (c *RedisClient) Subscribe(channel string, handler RawHandlerFunc) {
 	c.handlers[channel] = handler
 }
 
-// Start subscribes to the channels and listens for messages
-func (c *RedisClient) Start() error {
+// Start subscribes to the channels and listens for messages.
+// The pubsub client is closed when the context is cancelled.
+// Note that the underlying Redis client is *not* closed by
+// this function. That should be handled by whatever passed
+// in the Redis client to the New function in the first place.
+func (c *RedisClient) Start(ctx context.Context) error {
+	ch := make(chan error)
+
+	go func() {
+		ch <- c.listen()
+	}()
+
+	select {
+	case err := <-ch:
+		return err
+	case <-ctx.Done():
+		if err := c.close(); err != nil {
+			return err
+		}
+	}
+
+	return <-ch
+}
+
+// listen subscribes to the channels and listens for messages
+func (c *RedisClient) listen() error {
 	c.pubsub = c.client.Subscribe()
 
 	// Subscribe to channels
@@ -184,11 +208,11 @@ func (c *RedisClient) Start() error {
 	return nil
 }
 
-// Stop closes the pubsub channel so that the consumer
+// close closes the pubsub channel so that the consumer
 // stops receiving new messages. Start() will end once
 // all in-flight handlers return.
-func (c *RedisClient) Stop(_ context.Context) error {
-	// This is used to stop the Start() function
+func (c *RedisClient) close() error {
+	// This is used to stop the listen() function
 	// if it's stuck waiting for subscription confirmations
 	atomic.StoreInt32(c.shutdownInvoked, 1)
 

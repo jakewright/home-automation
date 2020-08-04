@@ -5,11 +5,14 @@ package handler
 import (
 	context "context"
 
-	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	router "github.com/jakewright/home-automation/libraries/go/router"
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 	def "github.com/jakewright/home-automation/services/device-registry/def"
 )
+
+// taxiRouter is an interface implemented by taxi.Router
+type taxiRouter interface {
+	HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error))
+}
 
 type handler interface {
 	GetDevice(ctx context.Context, body *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
@@ -18,11 +21,9 @@ type handler interface {
 	ListRooms(ctx context.Context, body *def.ListRoomsRequest) (*def.ListRoomsResponse, error)
 }
 
-// NewRouter creates a new router for the service
-func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
-	r := router.New(svc)
-
-	r.RegisterHandler("GET", "/device", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+// RegisterRoutes adds the service's routes to the router
+func RegisterRoutes(r taxiRouter, h handler) {
+	r.HandleFunc("GET", "/device", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.GetDeviceRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -35,7 +36,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.GetDevice(ctx, body)
 	})
 
-	r.RegisterHandler("GET", "/devices", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("GET", "/devices", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.ListDevicesRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -48,7 +49,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.ListDevices(ctx, body)
 	})
 
-	r.RegisterHandler("GET", "/room", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("GET", "/room", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.GetRoomRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -61,7 +62,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.GetRoom(ctx, body)
 	})
 
-	r.RegisterHandler("GET", "/rooms", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("GET", "/rooms", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.ListRoomsRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -74,5 +75,4 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.ListRooms(ctx, body)
 	})
 
-	return r
 }

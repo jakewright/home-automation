@@ -2,14 +2,8 @@ package bootstrap
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"os/signal"
-	"regexp"
-	"runtime"
 	"strings"
-	"sync"
-	"syscall"
 	"time"
 
 	"github.com/go-redis/redis/v7"
@@ -19,34 +13,31 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/distsync"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
+	"github.com/jakewright/home-automation/libraries/go/healthz"
 	"github.com/jakewright/home-automation/libraries/go/oops"
+	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-
-	// Register MySQL driver
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/jakewright/home-automation/libraries/go/taxi"
 )
 
-// Process is a long-running task that provides service functionality
-type Process interface {
-	// GetName returns a friendly name for the process for use in logs
-	GetName() string
-
-	// Start kicks off the task and only returns when the task has finished
-	Start() error
-
-	// Stop will try to gracefully end the task and should be safe to run regardless of whether the process is currently running
-	Stop(context.Context) error
-}
-
-// HealthCheck is a function that returns an error if the service is unhealthy
-type HealthCheck func(ctx context.Context) error
+// Revision is the service's revision and should be
+// set at build time to the current git commit hash.
+var Revision string
 
 // Service represents a collection of processes
 type Service struct {
-	name         string
-	processes    []Process
-	deferred     []func() error
-	healthChecks map[string]HealthCheck
+	name     string
+	hostname string
+	revision string
+	router   *router.Router
+	runner   *runner
+
+	// Long-lived connections shared across the whole application.
+	// Do not access these variables directly. Use the getX()
+	// functions which will initialise them if necessary.
+	mysqlCon       *gorm.DB
+	redisClient    *redis.Client
+	firehoseClient *firehose.RedisClient
 }
 
 // Opts defines basic initialisation options for a service
@@ -57,12 +48,6 @@ type Opts struct {
 
 	// ServiceName is the name of the service e.g. service.foo
 	ServiceName string
-
-	// Firehose indicates whether a connection to Redis should be made
-	Firehose bool
-
-	// Database indicates whether a connection to MySQL should be made
-	Database bool
 }
 
 // Init performs standard service startup tasks and returns a Service
@@ -74,9 +59,79 @@ func Init(opts *Opts) *Service {
 	return svc
 }
 
+// Hostname returns the hostname as reported by the
+// operating system's kernel.
+func (s *Service) Hostname() string {
+	return s.hostname
+}
+
+// Revision returns the current revision of the code.
+func (s *Service) Revision() string {
+	return s.revision
+}
+
+// Health returns a map representing the result of all of
+// the health checks that have been registered.
+func (s *Service) Health(ctx context.Context) map[string]error {
+	return healthz.Status(ctx)
+}
+
+// Database is a helper function that returns a cached database.
+// The first time it is called, a new connection to the database
+// is established. Closing the connection when the program ends
+// is handled automatically.
+func (s *Service) Database() database.Database {
+	db, err := s.getMySQL()
+	if err != nil {
+		panic(err)
+	}
+
+	return database.NewGorm(db)
+}
+
+// FirehosePublisher is a helper function that returns a cached
+// firehose client. The first time it is called, a new firehose
+// client is set up.
+func (s *Service) FirehosePublisher() firehose.Publisher {
+	client, err := s.getFirehoseClient()
+	if err != nil {
+		panic(err)
+	}
+
+	return client
+}
+
+// HandleFunc registers a new taxi-style handler with the
+// application's router for the specified method and path.
+func (s *Service) HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error)) {
+	s.router.HandleFunc(method, path, handler)
+}
+
+// Run starts all processes that have already been registered
+// with the service, plus any extra ones passed in as arguments.
+// This function blocks until either all processes return, or
+// an interrupt signal is received, at which point all processes
+// are signalled to end. If any processes do not, at this point,
+// return, then Run() may hang indefinitely.
+func (s *Service) Run(processes ...Process) {
+	for _, process := range processes {
+		s.runner.addProcess(process)
+	}
+
+	s.runner.Run()
+}
+
 func initService(opts *Opts) (*Service, error) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
 	service := &Service{
-		name: opts.ServiceName,
+		name:     opts.ServiceName,
+		hostname: hostname,
+		revision: Revision,
+		runner:   &runner{},
 	}
 
 	// Load config if requested
@@ -84,24 +139,13 @@ func initService(opts *Opts) (*Service, error) {
 		config.Load(opts.Config)
 	}
 
-	// Set up firehose
-	if opts.Firehose {
-		if err := initFirehose(service); err != nil {
-			return nil, err
-		}
-	}
-
-	// Set up database
-	if opts.Database {
-		if err := initDatabase(opts, service); err != nil {
-			return nil, err
-		}
-	}
-
 	// Set up locking
 	if err := initLock(opts, service); err != nil {
 		return nil, err
 	}
+
+	// Set up router
+	initRouter(service)
 
 	return service, nil
 }
@@ -119,7 +163,7 @@ func initLock(opts *Opts, svc *Service) error {
 		distsync.DefaultLocksmith = distsync.NewLocalLocksmith()
 
 	case "shared":
-		redisClient, err := initRedis(svc)
+		redisClient, err := svc.getRedisClient()
 		if err != nil {
 			return err
 		}
@@ -138,240 +182,21 @@ func initLock(opts *Opts, svc *Service) error {
 	return nil
 }
 
-func initFirehose(svc *Service) error {
-	redisClient, err := initRedis(svc)
-	if err != nil {
-		return err
-	}
-
-	firehoseClient := firehose.NewRedisClient(redisClient)
-	svc.processes = append(svc.processes, firehoseClient)
-
-	firehose.DefaultClient = firehoseClient
-
-	return nil
+func initRouter(svc *Service) {
+	svc.router = router.New(svc)
+	svc.runner.addProcess(svc.router)
 }
 
-func initDatabase(opts *Opts, svc *Service) error {
-	conf := struct {
-		MySQLHost         string `envconfig:"MYSQL_HOST"`
-		MySQLUsername     string `envconfig:"MYSQL_USERNAME"`
-		MySQLPassword     string `envconfig:"MYSQL_PASSWORD"`
-		MySQLDatabaseName string `envconfig:"default=home_automation"`
-		MySQLCharset      string `envconfig:"default=utf8mb4"`
-	}{}
-	config.Load(&conf)
-
-	// Replace hyphens and dots in the service name with underscores
-	re, err := regexp.Compile(`[-.]`)
-	if err != nil {
-		return err
-	}
-	prefix := re.ReplaceAllString(opts.ServiceName, "_")
-
-	// Remove any remaining non alphanumeric characters
-	re, err = regexp.Compile(`[^a-zA-Z0-9_]+`)
-	if err != nil {
-		return err
-	}
-	prefix = re.ReplaceAllString(prefix, "")
-
-	// Set a default table prefix
-	gorm.DefaultTableNameHandler = func(_ *gorm.DB, defaultTableName string) string {
-		return prefix + "_" + defaultTableName
-	}
-
-	if conf.MySQLHost == "" || conf.MySQLUsername == "" || conf.MySQLPassword == "" {
-		return oops.InternalService("MySQL host, username and password not set in config")
-	}
-
-	addr := fmt.Sprintf("%s:%s@(%s)/%s?charset=%s&parseTime=True&loc=Local",
-		conf.MySQLUsername,
-		conf.MySQLPassword,
-		conf.MySQLHost,
-		conf.MySQLDatabaseName,
-		conf.MySQLCharset,
-	)
-
-	db, err := gorm.Open("mysql", addr)
-	if err != nil {
-		return err
-	}
-
-	// Always load associations
-	db.InstantSet("gorm:auto_preload", true)
-
-	svc.deferred = append(svc.deferred, func() error {
-		err := db.Close()
-		if err != nil {
-			slog.Errorf("Failed to close MySQL connection: %v", err)
-		} else {
-			slog.Debugf("Closed MySQL connection")
-		}
-		return err
-	})
-
-	database.DefaultDB = db
-	return nil
-}
-
-var redisClient *redis.Client
-
-func initRedis(svc *Service) (*redis.Client, error) {
-	if redisClient == nil {
-		conf := struct {
-			RedisHost string
-			RedisPort int
-		}{}
-		config.Load(&conf)
-
-		addr := fmt.Sprintf("%s:%d", conf.RedisHost, conf.RedisPort)
-		slog.Infof("Connecting to Redis at address %s", addr)
-		redisClient = redis.NewClient(&redis.Options{
-			Addr:            addr,
-			Password:        "",
-			DB:              0,
-			MaxRetries:      5,
-			MinRetryBackoff: time.Second,
-			MaxRetryBackoff: time.Second * 5,
-		})
-
-		svc.deferred = append(svc.deferred, func() error {
-			err := redisClient.Close()
-			if err != nil {
-				slog.Errorf("Failed to close Redis connection: %v", err)
-			} else {
-				slog.Debugf("Closed Redis connection")
-			}
-			return err
-		})
-
-		_, err := redisClient.Ping().Result()
+func (s *Service) getFirehoseClient() (*firehose.RedisClient, error) {
+	if s.firehoseClient == nil {
+		redisClient, err := s.getRedisClient()
 		if err != nil {
 			return nil, err
 		}
+
+		s.firehoseClient = firehose.NewRedisClient(redisClient)
+		s.runner.addProcess(s.firehoseClient)
 	}
 
-	return redisClient, nil
-}
-
-// Name returns the name of the service
-func (s *Service) Name() string {
-	return s.name
-}
-
-// RegisterHealthCheck registers a new health check for the service
-func (s *Service) RegisterHealthCheck(name string, check HealthCheck) {
-	if s.healthChecks == nil {
-		s.healthChecks = make(map[string]HealthCheck, 1)
-	}
-
-	if _, set := s.healthChecks[name]; set {
-		panic(oops.InternalService("health check with name %q already registered", name))
-	}
-
-	s.healthChecks[name] = check
-}
-
-// Healthy runs all of the service's health checks, returning a map of results.
-func (s *Service) Healthy(ctx context.Context) map[string]error {
-	results := make(map[string]error, len(s.healthChecks))
-	for name, check := range s.healthChecks {
-		results[name] = safeRunHealthCheck(ctx, check)
-	}
-	return results
-}
-
-// Run takes a number of processes and concurrently runs them all. It will stop if all processes
-// terminate or if a signal (SIGINT or SIGTERM) is received.
-func (s *Service) Run(processes ...Process) {
-	// os.Exit should be the last thing to happen
-	var code int
-	defer os.Exit(code)
-
-	// Close all of the resources after processes have shut down
-	for _, deferred := range s.deferred {
-		defer func(d func() error) {
-			if err := d(); err != nil {
-				code = 1
-			}
-		}(deferred)
-	}
-
-	s.processes = append(s.processes, processes...)
-
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-
-	wg := sync.WaitGroup{}
-
-	// Start all of the processes in goroutines
-	for _, process := range s.processes {
-		process := process
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := process.Start(); err != nil {
-				slog.Errorf("Process %s stopped with error: %v", process.GetName(), err)
-				code = 1
-			} else {
-				slog.Debugf("Process %s stopped", process.GetName())
-			}
-		}()
-	}
-
-	// Close the done channel when all processes return
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	// Wait for all processes to return or for a signal
-	select {
-	case <-done:
-		slog.Warnf("All processes stopped prematurely")
-		return
-	case s := <-sig:
-		slog.Infof("Received %v signal", s)
-	}
-
-	// A short timeout because Docker will kill us after 10 seconds anyway
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Simultaneously stop all processes
-	for _, process := range s.processes {
-		process := process
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := process.Stop(ctx); err != nil {
-				slog.Errorf("Failed to stop %s gracefully: %v", process.GetName(), err)
-				code = 1
-			}
-		}()
-	}
-
-	// Wait for processes to terminate
-	wg.Wait()
-	slog.Infof("All processes stopped")
-}
-
-// safeRunHealthCheck runs the given HealthCheck but recovers any panics.
-// In the case of a panic, up to 1 MB of stack trace is returned in the error.
-func safeRunHealthCheck(ctx context.Context, check HealthCheck) (err error) {
-	defer func() {
-		if v := recover(); v != nil {
-			buf := make([]byte, 1<<20) // 1 MB
-			n := runtime.Stack(buf, false)
-			buf = buf[:n]
-			err = fmt.Errorf("panic: %v\n\n%s", v, buf)
-		}
-	}()
-
-	err = check(ctx)
-	return
+	return s.firehoseClient, nil
 }

@@ -5,22 +5,23 @@ package handler
 import (
 	context "context"
 
-	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	router "github.com/jakewright/home-automation/libraries/go/router"
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 	def "github.com/jakewright/home-automation/services/user/def"
 )
+
+// taxiRouter is an interface implemented by taxi.Router
+type taxiRouter interface {
+	HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error))
+}
 
 type handler interface {
 	GetUser(ctx context.Context, body *def.GetUserRequest) (*def.GetUserResponse, error)
 	ListUsers(ctx context.Context, body *def.ListUsersRequest) (*def.ListUsersResponse, error)
 }
 
-// NewRouter creates a new router for the service
-func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
-	r := router.New(svc)
-
-	r.RegisterHandler("GET", "/user", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+// RegisterRoutes adds the service's routes to the router
+func RegisterRoutes(r taxiRouter, h handler) {
+	r.HandleFunc("GET", "/user", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.GetUserRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -33,7 +34,7 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.GetUser(ctx, body)
 	})
 
-	r.RegisterHandler("GET", "/users", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+	r.HandleFunc("GET", "/users", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 		body := &def.ListUsersRequest{}
 		if err := decode(body); err != nil {
 			return nil, err
@@ -46,5 +47,4 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		return h.ListUsers(ctx, body)
 	})
 
-	return r
 }

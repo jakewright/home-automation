@@ -4,35 +4,44 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync/atomic"
 
-	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/libraries/go/taxi"
 )
 
-// Router sets up a Taxi server
+// Router handles HTTP requests to the service
 type Router struct {
-	port            int
-	router          *taxi.Router
-	server          *http.Server
-	shutdownInvoked *int32
+	port   int
+	router *taxi.Router
+	server *http.Server
+}
+
+// Service represents the entire application and is used by
+// the router to set up various standard endpoints that all
+// services are given, such as /ping and /healthz.
+type Service interface {
+	Hostname() string
+	Revision() string
+	HealthProvider
 }
 
 // New returns a new router initialised with default middleware
-func New(svc *bootstrap.Service) *Router {
+func New(svc Service) *Router {
 	var conf struct {
 		Port int `envconfig:"default=80"`
 	}
-
 	config.Load(&conf)
 
+	// Create the router
 	router := taxi.NewRouter().WithLogger(slog.Errorf)
-	router.UseMiddleware(panicRecovery, revision)
-	router.RegisterHandlerFunc(http.MethodGet, "/ping", pingHandler)
-	router.RegisterRawHandler(http.MethodGet, "/healthz", &healthHandler{
-		svc: svc,
+	router.UseMiddleware(panicRecovery, revision(svc.Revision()))
+	router.HandleFunc(http.MethodGet, "/ping", PingHandler)
+
+	router.HandleRaw(http.MethodGet, "/healthz", &HealthHandler{
+		Hostname: svc.Hostname(),
+		Revision: svc.Revision(),
+		Provider: svc,
 	})
 
 	server := &http.Server{
@@ -41,10 +50,9 @@ func New(svc *bootstrap.Service) *Router {
 	}
 
 	r := &Router{
-		port:            conf.Port,
-		router:          router,
-		server:          server,
-		shutdownInvoked: new(int32),
+		port:   conf.Port,
+		router: router,
+		server: server,
 	}
 
 	return r
@@ -56,30 +64,41 @@ func (r *Router) GetName() string {
 }
 
 // Start will listen for TCP connections on the port defined in config
-func (r *Router) Start() error {
+func (r *Router) Start(ctx context.Context) error {
 	slog.Infof("Listening on port %d", r.port)
-	err := r.server.ListenAndServe()
+
+	ch := make(chan error)
+
+	go func() {
+		ch <- r.server.ListenAndServe()
+	}()
+
+	select {
+	case err := <-ch:
+		return err
+	case <-ctx.Done():
+		if err := r.server.Shutdown(context.Background()); err != nil {
+			return err
+		}
+	}
+
+	err := <-ch
 
 	// This error will always be returned after Shutdown is called so swallow it here
-	if atomic.LoadInt32(r.shutdownInvoked) > 0 && err == http.ErrServerClosed {
+	if err == http.ErrServerClosed {
 		return nil
 	}
 
 	return err
 }
 
-// Stop will gracefully shutdown the server
-func (r *Router) Stop(ctx context.Context) error {
-	atomic.StoreInt32(r.shutdownInvoked, 1)
-	return r.server.Shutdown(ctx)
+// HandleFunc adds a route to the router
+func (r *Router) HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error)) {
+	r.router.HandleFunc(method, path, handler)
 }
 
-// RegisterHandler adds a route to the router
-func (r *Router) RegisterHandler(method, path string, handler taxi.HandlerFunc) {
-	r.router.RegisterHandler(method, path, handler)
-}
-
+// TODO: delete this
 // ServeHTTP handles an http request. This is useful in tests.
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	r.router.ServeHTTP(w, req)
-}
+// func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+// 	r.router.ServeHTTP(w, req)
+// }

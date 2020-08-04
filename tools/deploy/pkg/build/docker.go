@@ -58,8 +58,7 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 	}
 
 	// Make sure the service exists in the mirror
-	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name())
-	if _, err := os.Stat(filepath.Join(git.Dir(), pkgToBuild)); err != nil {
+	if _, err := os.Stat(filepath.Join(git.Dir(), b.Service.Path())); err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to stat service directory")
 	}

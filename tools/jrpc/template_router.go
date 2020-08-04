@@ -36,18 +36,21 @@ package {{ .PackageName }}
 	)
 {{ end }}
 
+// taxiRouter is an interface implemented by taxi.Router
+type taxiRouter interface {
+	HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error))
+}
+
 type handler interface {
 	{{- range .Endpoints }}
 		{{ .NameUpper }}(ctx context.Context, body *{{ .InputType }}) (*{{ .OutputType }}, error)
 	{{- end }}
 }
 
-// NewRouter creates a new router for the service
-func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
-	r := router.New(svc)
-
+// RegisterRoutes adds the service's routes to the router
+func RegisterRoutes(r taxiRouter, h handler) {
 	{{ range .Endpoints -}}
-		r.RegisterHandler("{{ .HTTPMethod }}", "{{ .Path }}", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+		r.HandleFunc("{{ .HTTPMethod }}", "{{ .Path }}", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 			body := &{{ .InputType }}{}
 			if err := decode(body); err != nil {
 				return nil, err
@@ -61,8 +64,6 @@ func NewRouter(svc *bootstrap.Service, h handler) *router.Router {
 		})
 
 	{{ end -}}
-
-	return r
 }
 
 `
@@ -90,7 +91,6 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 	}
 
 	im.Add("context")
-	im.Add("github.com/jakewright/home-automation/libraries/go/router")
 	im.Add("github.com/jakewright/home-automation/libraries/go/taxi")
 
 	// Make sure the service name is a suitable go struct name

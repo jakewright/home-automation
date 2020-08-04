@@ -13,6 +13,7 @@ import (
 // Deployment describes a service deployment
 type Deployment struct {
 	ServiceName string
+	ServicePath string
 	TargetName  string
 	TargetHost  string
 
@@ -49,7 +50,7 @@ func ConfirmDeployment(d *Deployment) (bool, error) {
 	}
 	fmt.Println() // blank line
 
-	commits, err := git.Log(d.CurrentRevision, d.NewRevision, "./"+d.ServiceName)
+	commits, err := git.Log(d.CurrentRevision, d.NewRevision, "./"+d.ServicePath)
 	if err != nil {
 		return false, oops.WithMessage(err, "failed to get commit list")
 	}

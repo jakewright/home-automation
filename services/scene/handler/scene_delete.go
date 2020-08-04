@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 
-	"github.com/jakewright/home-automation/libraries/go/database"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	scenedef "github.com/jakewright/home-automation/services/scene/def"
@@ -17,7 +16,7 @@ func (c *Controller) DeleteScene(ctx context.Context, body *scenedef.DeleteScene
 	}
 
 	// Delete the scene
-	if err := database.Delete(&domain.Scene{}, body.SceneId); err != nil {
+	if err := c.Database.Delete(&domain.Scene{}, body.SceneId); err != nil {
 		return nil, err
 	}
 

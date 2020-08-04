@@ -7,6 +7,7 @@ require (
 	github.com/danielchatfield/go-randutils v0.0.0-20161222111725-43a1b7eba548
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-redis/redis/v7 v7.2.0
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/gorilla/mux v1.7.4
@@ -14,6 +15,7 @@ require (
 	github.com/jakewright/patch v0.0.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jinzhu/gorm v1.9.10
+	github.com/julienschmidt/httprouter v1.2.0
 	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381
 	github.com/manifoldco/promptui v0.7.0
 	github.com/mitchellh/mapstructure v1.1.2

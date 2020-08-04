@@ -158,6 +158,7 @@ func (k *Kubernetes) confirm(db *build.DockerBuild) (bool, error) {
 
 	return utils.ConfirmDeployment(&utils.Deployment{
 		ServiceName:     k.Service.Name(),
+		ServicePath:     k.Service.Path(),
 		TargetName:      k.Target.Name(),
 		TargetHost:      k.Target.Host(),
 		CurrentRevision: currentRevision,

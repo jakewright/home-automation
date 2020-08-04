@@ -12,13 +12,13 @@ import (
 func main() {
 	svc := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.scene",
-		Firehose:    true,
-		Database:    true,
 	})
 
 	firehose.Subscribe(consumer.HandleSetSceneEvent)
 
-	r := handler.NewRouter(svc, &handler.Controller{})
+	handler.RegisterRoutes(svc, &handler.Controller{
+		Database: svc.Database(),
+	})
 
-	svc.Run(r)
+	svc.Run()
 }

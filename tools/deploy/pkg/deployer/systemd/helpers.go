@@ -69,6 +69,7 @@ func (d *Systemd) confirm(release *build.Release) (bool, error) {
 
 	return utils.ConfirmDeployment(&utils.Deployment{
 		ServiceName:     d.Service.Name(),
+		ServicePath:     d.Service.Path(),
 		TargetName:      d.Target.Name(),
 		TargetHost:      d.Target.Host(),
 		CurrentRevision: currentRevision,

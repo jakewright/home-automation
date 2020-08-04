@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 )
 
 // Decoder is a function that decodes a request body into the given interface
@@ -23,16 +23,20 @@ func (f HandlerFunc) ServeRPC(ctx context.Context, decode Decoder) (interface{},
 	return f(ctx, decode)
 }
 
+// Middleware is a function that takes a handler and returns a new handler
+type Middleware func(http.Handler) http.Handler
+
 // Router registers routes and handlers to handle RPCs over HTTP.
 type Router struct {
-	router  *mux.Router
-	logFunc func(format string, v ...interface{})
+	router     *httprouter.Router
+	middleware []Middleware
+	logFunc    func(format string, v ...interface{})
 }
 
 // NewRouter returns an initialised Router
 func NewRouter() *Router {
 	return &Router{
-		router: mux.NewRouter(),
+		router: httprouter.New(),
 	}
 }
 
@@ -43,9 +47,9 @@ func (r *Router) WithLogger(f func(format string, v ...interface{})) *Router {
 	return r
 }
 
-// RegisterHandler registers a new route
-func (r *Router) RegisterHandler(method, path string, handler Handler) {
-	r.RegisterRawHandler(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+// Handle registers a new route
+func (r *Router) Handle(method, path string, handler Handler) {
+	r.HandleRaw(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		decoder := func(v interface{}) error {
 			return DecodeRequest(req, v)
 		}
@@ -65,28 +69,32 @@ func (r *Router) RegisterHandler(method, path string, handler Handler) {
 	}))
 }
 
-// RegisterHandlerFunc registers a new route
-func (r *Router) RegisterHandlerFunc(method, path string, handler func(context.Context, Decoder) (interface{}, error)) {
-	r.RegisterHandler(method, path, HandlerFunc(handler))
+// HandleFunc registers a new route
+func (r *Router) HandleFunc(method, path string, handler func(context.Context, Decoder) (interface{}, error)) {
+	r.Handle(method, path, HandlerFunc(handler))
 }
 
-// RegisterRawHandler registers a new route with a standard http.Handler
-func (r *Router) RegisterRawHandler(method, path string, handler http.Handler) {
-	r.router.Handle(path, handler).Methods(method)
+// HandleRaw registers a new route with a standard http.Handler
+func (r *Router) HandleRaw(method, path string, handler http.Handler) {
+	r.router.Handler(method, path, handler)
 }
 
-// UseMiddleware adds a stack of middleware to the router
-func (r *Router) UseMiddleware(mw ...func(http.Handler) http.Handler) {
-	mws := make([]mux.MiddlewareFunc, len(mw))
-	for i, mw := range mw {
-		mws[i] = mw
+// UseMiddleware adds the given middleware to the router. The middleware
+// functions are executed in the order given.
+func (r *Router) UseMiddleware(mw ...Middleware) {
+	for _, m := range mw {
+		r.middleware = append(r.middleware, m)
 	}
-	r.router.Use(mws...)
 }
 
 // ServeHTTP dispatches requests to the appropriate handler
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	r.router.ServeHTTP(w, req)
+	// Wrap the handler in the middleware functions
+	var handler http.Handler = r.router
+	for i := len(r.middleware) - 1; i >= 0; i-- {
+		handler = r.middleware[i](handler)
+	}
+	handler.ServeHTTP(w, req)
 }
 
 func (r *Router) log(format string, v ...interface{}) {

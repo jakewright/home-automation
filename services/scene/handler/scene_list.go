@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 
-	"github.com/jakewright/home-automation/libraries/go/database"
 	scenedef "github.com/jakewright/home-automation/services/scene/def"
 	"github.com/jakewright/home-automation/services/scene/domain"
 )
@@ -16,7 +15,7 @@ func (c *Controller) ListScenes(ctx context.Context, body *scenedef.ListScenesRe
 	}
 
 	var scenes []*domain.Scene
-	if err := database.Find(&scenes, where); err != nil {
+	if err := c.Database.Find(&scenes, where); err != nil {
 		return nil, err
 	}
 

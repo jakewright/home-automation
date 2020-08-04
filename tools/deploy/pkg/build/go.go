@@ -38,7 +38,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	op = output.Info("Compiling binary for %s", b.Target.Architecture())
 
 	// Make sure the service exists in the mirror
-	pkgToBuild := fmt.Sprintf("./%s", b.Service.Name())
+	pkgToBuild := b.Service.Path()
 	if _, err := os.Stat(filepath.Join(git.Dir(), pkgToBuild)); err != nil {
 		op.Failed()
 		return nil, oops.WithMessage(err, "failed to stat service directory")

@@ -133,6 +133,11 @@ func (s *Service) Name() string {
 	return s.name
 }
 
+// Path returns the path of the service
+func (s *Service) Path() string {
+	return "services/" + s.name
+}
+
 // TargetNames returns the names of the service's targets
 func (s *Service) TargetNames() []string {
 	return s.targetNames
