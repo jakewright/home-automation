@@ -66,6 +66,15 @@ func RegisterRoutes(r taxiRouter, h handler) {
 	{{ end -}}
 }
 
+// newHandler returns a handler that serves requests for
+// this service. This is not exported as it is only used by
+// tests. A service's main() function should create its own
+// router (typically via bootstrap) and then use RegisterRoutes().
+func newHandler(h handler) http.Handler {
+	r := taxi.NewRouter()
+	RegisterRoutes(r, h)
+	return r
+}
 `
 
 type routerGenerator struct {
@@ -91,6 +100,7 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 	}
 
 	im.Add("context")
+	im.Add("net/http")
 	im.Add("github.com/jakewright/home-automation/libraries/go/taxi")
 
 	// Make sure the service name is a suitable go struct name

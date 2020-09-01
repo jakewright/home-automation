@@ -4,6 +4,7 @@ package handler
 
 import (
 	context "context"
+	http "net/http"
 
 	taxi "github.com/jakewright/home-automation/libraries/go/taxi"
 	def "github.com/jakewright/home-automation/services/user/def"
@@ -47,4 +48,14 @@ func RegisterRoutes(r taxiRouter, h handler) {
 		return h.ListUsers(ctx, body)
 	})
 
+}
+
+// newHandler returns a handler that serves requests for
+// this service. This is not exported as it is only used by
+// tests. A service's main() function should create its own
+// router (typically via bootstrap) and then use RegisterRoutes().
+func newHandler(h handler) http.Handler {
+	r := taxi.NewRouter()
+	RegisterRoutes(r, h)
+	return r
 }

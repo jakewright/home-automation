@@ -56,8 +56,7 @@ func TestDMXHandler_Update(t *testing.T) {
 		Client:     client,
 	}
 
-	r := taxi.NewRouter()
-	RegisterRoutes(r, c)
+	r := newHandler(c)
 	d := &taxi.MockClient{Handler: r}
 	dmx := dmxdef.NewClient(d)
 
