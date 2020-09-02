@@ -33,10 +33,10 @@ func main() {
 		slog.Panicf("failed to init room repository: %v", err)
 	}
 
-	r := handler.NewRouter(svc, &handler.Controller{
+	handler.RegisterRoutes(svc, &handler.Controller{
 		DeviceRepository: dr,
 		RoomRepository:   rr,
 	})
 
-	svc.Run(r)
+	svc.Run()
 }
