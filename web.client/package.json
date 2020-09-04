@@ -24,7 +24,7 @@
     "@vue/cli-plugin-babel": "^3.0.4",
     "@vue/cli-service": "^3.0.4",
     "vue-template-compiler": "^2.5.17",
-    "node-sass": "^4.9.0",
+    "node-sass": "^4.13.1",
     "sass-loader": "^7.0.1"
   },
   "babel": {
