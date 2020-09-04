@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/jakewright/home-automation/libraries/go/oops"
@@ -35,11 +34,6 @@ func DecodeRequest(r *http.Request, v interface{}) error {
 	})
 	if err != nil {
 		return oops.Wrap(err, oops.ErrInternalService, "failed to create decoder")
-	}
-
-	// Unmarshal route parameters
-	if err := decoder.Decode(mux.Vars(r)); err != nil {
-		return oops.Wrap(err, oops.ErrInternalService, "failed to decode route parameters")
 	}
 
 	// Query parameters come out as a map[string][]string so we loop through them all

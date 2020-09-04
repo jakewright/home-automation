@@ -10,7 +10,6 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.3.0 // indirect
-	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.1
 	github.com/jakewright/patch v0.0.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
