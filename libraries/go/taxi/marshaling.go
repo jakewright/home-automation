@@ -114,7 +114,9 @@ func WriteSuccess(w http.ResponseWriter, v interface{}) error {
 // otherwise a status code of 500 is set.
 func WriteError(w http.ResponseWriter, err error) error {
 	status := http.StatusInternalServerError
-	payload := struct{ Error string }{Error: err.Error()}
+	payload := struct {
+		Error string `json:"error"`
+	}{Error: err.Error()}
 
 	if oerr, ok := err.(*oops.Error); ok {
 		status = oerr.HTTPStatus()
