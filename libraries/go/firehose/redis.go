@@ -15,12 +15,14 @@ import (
 
 // RedisClient wraps a redis.Client and exposes a Publish method
 type RedisClient struct {
+	MaxRetries int
+	Backoff    time.Duration
+
 	client *redis.Client
 	pubsub *redis.PubSub
-	cfg    *Config
 
-	handlers  map[string]RawHandlerFunc
-	phandlers map[string]RawHandlerFunc
+	handlers  map[string]func(*Event)
+	phandlers map[string]func(*Event)
 
 	shutdownInvoked *int32
 	mux             sync.RWMutex
@@ -29,26 +31,15 @@ type RedisClient struct {
 // NewRedisClient returns a RedisClient
 func NewRedisClient(client *redis.Client) *RedisClient {
 	return &RedisClient{
+		MaxRetries: 3,
+		Backoff:    time.Second * 3,
+
 		client:          client,
-		handlers:        make(map[string]RawHandlerFunc),
-		phandlers:       make(map[string]RawHandlerFunc),
+		handlers:        make(map[string]func(*Event)),
+		phandlers:       make(map[string]func(*Event)),
 		shutdownInvoked: new(int32),
 		mux:             sync.RWMutex{},
 	}
-}
-
-// WithConfig sets the client's config
-func (c *RedisClient) WithConfig(cfg *Config) *RedisClient {
-	c.cfg = cfg
-	return c
-}
-
-func (c *RedisClient) config() *Config {
-	if c.cfg == nil {
-		return defaultConfig
-	}
-
-	return c.cfg
 }
 
 // GetName returns a friendly name for the process
@@ -71,7 +62,7 @@ func (c *RedisClient) Publish(channel string, message interface{}) error {
 
 // Subscribe registers a handler for the given channel. Note that the subscription
 // is not made with the Redis client until Start() is called.
-func (c *RedisClient) Subscribe(channel string, handler RawHandlerFunc) {
+func (c *RedisClient) Subscribe(channel string, handler Handler) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
@@ -79,7 +70,48 @@ func (c *RedisClient) Subscribe(channel string, handler RawHandlerFunc) {
 		slog.Panicf("Multiple handlers subscribed to the same channel")
 	}
 
-	c.handlers[channel] = handler
+	wrappedHandler := func(e *Event) {
+		params := map[string]string{
+			"channel": e.Channel,
+			"pattern": e.Pattern,
+		}
+
+		// Count the number of attempts
+		e.attempts++
+		var res Result
+
+		for ; e.attempts <= c.MaxRetries; e.attempts++ {
+			// Dispatch to the handler
+			res = handler.HandleEvent(e)
+
+			// If reached the maximum number of retries
+			if e.attempts == c.MaxRetries {
+				// This break means e.attempts is
+				// not incremented beyond MaxRetries
+				break
+			}
+
+			action := "discarding"
+			if res.retry {
+				action = "retrying"
+			}
+
+			if res.err != nil {
+				slog.Errorf("Failed to handle event [attempt %d, %s...]: %v", e.attempts, action, res.err, params)
+			}
+
+			if !res.retry {
+				return
+			}
+
+			// Back off before trying again
+			time.Sleep(c.Backoff)
+		}
+
+		slog.Errorf("Failed to handle event [attempt %d, final]: %v", e.attempts, res.err, params)
+	}
+
+	c.handlers[channel] = wrappedHandler
 }
 
 // Start subscribes to the channels and listens for messages.

@@ -31,12 +31,12 @@ import (
 
 {{ range .Events }}
 	// Publish publishes the event to the Firehose
-	func (m *{{ .TypeName }}) Publish() error {
+	func (m *{{ .TypeName }}) Publish(p firehose.Publisher) error {
 		if err := m.Validate(); err != nil {
 			return err
 		}
 
-		return firehose.Publish("{{ .EventName }}", m)
+		return p.Publish("{{ .EventName }}", m)
 	}
 
 	// {{ .TypeName }}Handler implements the necessary functions to be a Firehose handler

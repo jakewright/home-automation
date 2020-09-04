@@ -10,12 +10,12 @@ import (
 )
 
 // Publish publishes the event to the Firehose
-func (m *SetSceneEvent) Publish() error {
+func (m *SetSceneEvent) Publish(p firehose.Publisher) error {
 	if err := m.Validate(); err != nil {
 		return err
 	}
 
-	return firehose.Publish("set-scene", m)
+	return p.Publish("set-scene", m)
 }
 
 // SetSceneEventHandler implements the necessary functions to be a Firehose handler

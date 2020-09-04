@@ -10,11 +10,6 @@ func (m MockClient) Publish(string, interface{}) error {
 }
 
 // Subscribe is not implemented
-func (m MockClient) Subscribe(string, RawHandlerFunc) {
-	panic("implement me")
-}
-
-// config is not implemented
-func (m MockClient) config() *Config {
+func (m MockClient) Subscribe(string, Handler) {
 	panic("implement me")
 }

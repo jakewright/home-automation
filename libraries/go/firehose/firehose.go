@@ -1,120 +1,35 @@
 package firehose
 
-import (
-	"time"
-
-	"github.com/jakewright/home-automation/libraries/go/slog"
-)
-
-// Config defines how an event should be handled
-type Config struct {
-	MaxRetries int
-	Backoff    time.Duration
+// Handler processes messages received on a channel that
+// has been subscribed to. HandleEvent should return a result
+// that tells the client whether the handling was successful
+// or not. The side-effects of returning non-successful
+// results depend on the Subscriber implementation.
+type Handler interface {
+	HandleEvent(*Event) Result
 }
 
-var defaultConfig = &Config{
-	MaxRetries: 3,
-	Backoff:    time.Second * 3,
+// HandlerFunc is an adapter that allows ordinary
+// functions to be used as event handlers. If f
+// is a function with the appropriate signature,
+// HandlerFunc(f) is a Handler that calls f.
+type HandlerFunc func(*Event) Result
+
+// HandleEvent calls f(e)
+func (f HandlerFunc) HandleEvent(e *Event) Result {
+	return f(e)
 }
 
 // Publisher is the interface that wraps the publish method
 type Publisher interface {
-	// Publish emits an event to the firehose on the
-	// specified channel. All consumers currently
-	// listening on that channel (i.e. have subscribed
-	// to this event) will receive the message.
-	// The message is marshaled to JSON.
+	// Publish emits an event to the firehose
 	Publish(channel string, message interface{}) error
 }
 
-// Client is the interface that wraps the Publish and Subscribe methods
-type Client interface {
-	Publisher
-	Subscribe(string, RawHandlerFunc)
-	config() *Config
+// Subscriber is the interface that wraps the subscribe method
+type Subscriber interface {
+	Subscribe(channel string, handler Handler)
 }
-
-// DefaultClient is a global instance of Client
-var DefaultClient Client
-
-func mustGetDefaultClient() Client {
-	if DefaultClient == nil {
-		panic("Firehose used before default client set. Have you passed the Firehose option to bootstrap.Init()?")
-	}
-
-	return DefaultClient
-}
-
-// Publish sends the given message on the given channel using the default publisher
-func Publish(channel string, message interface{}) error {
-	return mustGetDefaultClient().Publish(channel, message)
-}
-
-// Subscribe subscribes the handler its event
-func Subscribe(handler Handler) {
-	SubscribeChannel(handler.EventName(), handler.HandleEvent)
-}
-
-// SubscribeChannel offers syntactic sugar over the DefaultSubscriber's
-// Subscribe function. Namely, it takes a HandlerFunc
-func SubscribeChannel(channel string, handler HandlerFunc) {
-	c := mustGetDefaultClient()
-
-	wrappedHandler := func(e *Event) {
-		params := map[string]string{
-			"channel": e.Channel,
-			"pattern": e.Pattern,
-		}
-
-		// Count the number of attempts
-		e.attempts++
-		var res Result
-
-		for ; e.attempts <= c.config().MaxRetries; e.attempts++ {
-			// Dispatch to the handler
-			res = handler(e)
-
-			// If reached the maximum number of retries
-			if e.attempts == c.config().MaxRetries {
-				// This break means e.attempts is
-				// not incremented beyond MaxRetries
-				break
-			}
-
-			action := "discarding"
-			if res.retry {
-				action = "retrying"
-			}
-
-			if res.err != nil {
-				slog.Errorf("Failed to handle event [attempt %d, %s...]: %v", e.attempts, action, res.err, params)
-			}
-
-			if !res.retry {
-				return
-			}
-
-			// Back off before trying again
-			time.Sleep(c.config().Backoff)
-		}
-
-		slog.Errorf("Failed to handle event [attempt %d, final]: %v", e.attempts, res.err, params)
-	}
-
-	c.Subscribe(channel, wrappedHandler)
-}
-
-// Handler wraps HandlerFunc
-type Handler interface {
-	EventName() string
-	HandleEvent(*Event) Result
-}
-
-// HandlerFunc is used by the syntactic sugar SubscribeFunc() func
-type HandlerFunc func(*Event) Result
-
-// RawHandlerFunc is what a Subscriber dispatches messages to
-type RawHandlerFunc func(*Event)
 
 // Event represents a message received from the Firehose
 type Event struct {

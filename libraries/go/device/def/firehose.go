@@ -10,12 +10,12 @@ import (
 )
 
 // Publish publishes the event to the Firehose
-func (m *DeviceStateChangedEvent) Publish() error {
+func (m *DeviceStateChangedEvent) Publish(p firehose.Publisher) error {
 	if err := m.Validate(); err != nil {
 		return err
 	}
 
-	return firehose.Publish("device-state-changed", m)
+	return p.Publish("device-state-changed", m)
 }
 
 // DeviceStateChangedEventHandler implements the necessary functions to be a Firehose handler

@@ -5,6 +5,7 @@ import (
 
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/distsync"
+	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	dmxdef "github.com/jakewright/home-automation/services/dmx/def"
 	"github.com/jakewright/home-automation/services/dmx/dmx"
@@ -16,6 +17,7 @@ import (
 type Controller struct {
 	Repository *repository.FixtureRepository
 	Client     *dmx.Client
+	Publisher  firehose.Publisher
 }
 
 // GetDevice returns the current state of a fixture
@@ -89,7 +91,7 @@ func (c *Controller) UpdateDevice(ctx context.Context, body *dmxdef.UpdateDevice
 
 	if err := (&devicedef.DeviceStateChangedEvent{
 		Device: f.ToDevice(),
-	}).Publish(); err != nil {
+	}).Publish(c.Publisher); err != nil {
 		return nil, oops.WithMessage(err, "failed to publish state changed event", errParams)
 	}
 

@@ -16,9 +16,6 @@ import (
 )
 
 func TestDMXHandler_Update(t *testing.T) {
-	// Setup the Firehose mock
-	firehose.DefaultClient = &firehose.MockClient{}
-
 	// Create a fixture
 	f, err := domain.NewFixture(&deviceregistrydef.DeviceHeader{
 		Id:             "fixture 1",
@@ -54,6 +51,7 @@ func TestDMXHandler_Update(t *testing.T) {
 	c := &Controller{
 		Repository: repo,
 		Client:     client,
+		Publisher:  &firehose.MockClient{},
 	}
 
 	r := newHandler(c)
