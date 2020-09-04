@@ -6,7 +6,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		println("usage: devicegen file.def")
+		println("usage: devicegen file.json")
 		os.Exit(1)
 	}
 

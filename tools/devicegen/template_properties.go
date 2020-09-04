@@ -22,8 +22,9 @@ type deviceData struct {
 }
 
 type propertyData struct {
-	NameSnake  string
-	NamePascal string
+	NameSnake  string // snake_case
+	NameCamel  string // camelCase
+	NamePascal string // PascalCase
 	Type       string
 	GoType     string
 	Min        *float64
@@ -130,10 +131,19 @@ package {{ .PackageName }}
 	}
 
 	func (p *{{ $device.Name }}Properties) describe() map[string]*def.Property {
+		// Dereference all of the pointers. This makes it easier
+		// to assert the values are as expected in tests.
+		{{- range $p := $device.Properties }}
+			var {{ $p.NameCamel }} {{ $p.GoType }}
+			if p.{{ $p.NamePascal }} != nil {
+				{{ $p.NameCamel }} = *p.{{ $p.NamePascal }}
+			}
+		{{ end }}
+
 		return map[string]*def.Property{
 			{{- range $p := $device.Properties }}
 				"{{ $p.NameSnake }}": {
-					Value: p.{{ $p.NamePascal }},
+					Value: {{ $p.NameCamel }},
 					Type: "{{ $p.Type }}",
 					{{- if $p.Min }} 
 						Min: ptr.Float64({{ $p.Min }}),
@@ -233,7 +243,8 @@ func parseProperty(name string, p property) (*propertyData, error) {
 func parseIntProperty(name string, p property) (*propertyData, error) {
 	d := &propertyData{
 		NameSnake:  name,
-		NamePascal: snakeToPascalCase(name),
+		NameCamel:  snakeToCamelCase(name),
+		NamePascal: camelToPascalCase(name),
 		Type:       "int",
 		GoType:     "int64",
 	}
@@ -256,7 +267,8 @@ func parseIntProperty(name string, p property) (*propertyData, error) {
 func parseBoolProperty(name string, p property) (*propertyData, error) {
 	d := &propertyData{
 		NameSnake:  name,
-		NamePascal: snakeToPascalCase(name),
+		NameCamel:  snakeToCamelCase(name),
+		NamePascal: camelToPascalCase(name),
 		Type:       "bool",
 		GoType:     "bool",
 	}
@@ -279,7 +291,8 @@ func parseBoolProperty(name string, p property) (*propertyData, error) {
 func parseStringProperty(name string, p property) (*propertyData, error) {
 	d := &propertyData{
 		NameSnake:  name,
-		NamePascal: snakeToPascalCase(name),
+		NameCamel:  snakeToCamelCase(name),
+		NamePascal: camelToPascalCase(name),
 		Type:       "string",
 		GoType:     "string",
 	}
@@ -302,7 +315,8 @@ func parseStringProperty(name string, p property) (*propertyData, error) {
 func parseRGBProperty(name string, p property) (*propertyData, error) {
 	d := &propertyData{
 		NameSnake:  name,
-		NamePascal: snakeToPascalCase(name),
+		NameCamel:  snakeToCamelCase(name),
+		NamePascal: camelToPascalCase(name),
 		Type:       "rgb",
 		GoType:     "device.RGB",
 	}
@@ -326,15 +340,15 @@ func isSnake(s string) bool {
 	return s == strings.ToLower(s)
 }
 
-func snakeToPascalCase(s string) string {
+func snakeToCamelCase(s string) string {
 	var camel string
 	var upper bool
 
-	for i, c := range s {
+	for _, c := range s {
 		switch {
 		case c == '_':
 			upper = true
-		case i == 0, upper:
+		case upper:
 			camel += strings.ToUpper(string(c))
 			upper = false
 		default:
@@ -343,4 +357,8 @@ func snakeToPascalCase(s string) string {
 	}
 
 	return camel
+}
+
+func camelToPascalCase(s string) string {
+	return strings.ToUpper(s[0:1]) + s[1:]
 }

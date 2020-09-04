@@ -8,6 +8,8 @@ import (
 	deviceregistrydef "github.com/jakewright/home-automation/services/device-registry/def"
 )
 
+//go:generate devicegen fixtures.json
+
 // Fixture types
 const (
 	FixtureTypeMegaParProfile = "mega_par_profile"

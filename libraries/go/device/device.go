@@ -25,6 +25,19 @@ type RGB struct {
 	color.RGBA
 }
 
+// MustParseHex converts a hex value (e.g. #FF0000) to
+// an RGB struct. It panics if the hex value is not valid.
+func MustParseHex(s string) RGB {
+	c, err := util.HexToColor(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return RGB{
+		RGBA: c,
+	}
+}
+
 // UnmarshalText reads a hex value (e.g. #FF0000)
 func (R *RGB) UnmarshalText(text []byte) error {
 	c, err := util.HexToColor(string(text))

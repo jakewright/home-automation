@@ -91,23 +91,45 @@ func (p *MegaParProfileProperties) unmarshal(m map[string]interface{}) error {
 }
 
 func (p *MegaParProfileProperties) describe() map[string]*def.Property {
+	// Dereference all of the pointers. This makes it easier
+	// to assert the values are as expected in tests.
+	var brightness int64
+	if p.Brightness != nil {
+		brightness = *p.Brightness
+	}
+
+	var power bool
+	if p.Power != nil {
+		power = *p.Power
+	}
+
+	var rgb device.RGB
+	if p.Rgb != nil {
+		rgb = *p.Rgb
+	}
+
+	var strobe int64
+	if p.Strobe != nil {
+		strobe = *p.Strobe
+	}
+
 	return map[string]*def.Property{
 		"brightness": {
-			Value: p.Brightness,
+			Value: brightness,
 			Type:  "int",
 			Min:   ptr.Float64(0),
 			Max:   ptr.Float64(255),
 		},
 		"power": {
-			Value: p.Power,
+			Value: power,
 			Type:  "bool",
 		},
 		"rgb": {
-			Value: p.Rgb,
+			Value: rgb,
 			Type:  "rgb",
 		},
 		"strobe": {
-			Value: p.Strobe,
+			Value: strobe,
 			Type:  "int",
 			Min:   ptr.Float64(0),
 			Max:   ptr.Float64(255),
