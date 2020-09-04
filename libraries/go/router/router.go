@@ -92,13 +92,12 @@ func (r *Router) Start(ctx context.Context) error {
 	return err
 }
 
-// HandleFunc adds a route to the router
+// HandleFunc adds a route to the router with a taxi handler func
 func (r *Router) HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error)) {
 	r.router.HandleFunc(method, path, handler)
 }
 
-// TODO: delete this
-// ServeHTTP handles an http request. This is useful in tests.
-// func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-// 	r.router.ServeHTTP(w, req)
-// }
+// HandleRaw adds a route to the router with an http.Handler
+func (r *Router) HandleRaw(method, path string, handler http.Handler) {
+	r.router.HandleRaw(method, path, handler)
+}

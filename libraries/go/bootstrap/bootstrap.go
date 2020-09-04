@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -105,6 +106,12 @@ func (s *Service) FirehosePublisher() firehose.Publisher {
 // application's router for the specified method and path.
 func (s *Service) HandleFunc(method, path string, handler func(context.Context, taxi.Decoder) (interface{}, error)) {
 	s.router.HandleFunc(method, path, handler)
+}
+
+// HandleRaw registers a new http.Handler with the application's
+// router for the specifed method and path.
+func (s *Service) HandleRaw(method, path string, handler http.Handler) {
+	s.router.HandleRaw(method, path, handler)
 }
 
 // Run starts all processes that have already been registered
