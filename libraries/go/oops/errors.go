@@ -283,17 +283,25 @@ func mergeMetadata(current, new map[string]string) map[string]string {
 // in between each element. Empty strings are ignored.
 func join(sep string, parts ...string) string {
 	var str string
-	for i, p := range parts {
+	var written bool
+
+	for _, p := range parts {
 		if p == "" {
 			continue
 		}
 
-		if i > 0 {
+		// Only print a separator if we've already written
+		// something to avoid the case where the first n
+		// parts being empty strings results in the returned
+		// string beginning with the separator.
+		if written {
 			str += sep
 		}
 
 		str += p
+		written = true
 	}
+
 	return str
 }
 
