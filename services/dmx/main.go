@@ -34,7 +34,6 @@ func main() {
 	svc := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: serviceName,
 		Config:      conf,
-		Firehose:    true,
 	})
 
 	if err := run(svc, conf); err != nil {
@@ -63,11 +62,11 @@ func run(svc *bootstrap.Service, conf *config) error {
 		return err
 	}
 
-	r := handler.NewRouter(svc, &handler.Controller{
+	handler.RegisterRoutes(svc, &handler.Controller{
 		Repository: repo,
 		Client:     client,
 	})
 
-	svc.Run(r)
+	svc.Run()
 	return nil
 }
