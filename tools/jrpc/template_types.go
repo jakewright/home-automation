@@ -5,6 +5,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/jakewright/home-automation/libraries/go/ptr"
 	"github.com/jakewright/home-automation/tools/libraries/imports"
 )
 
@@ -22,7 +23,11 @@ type typesDataField struct {
 	IsMessageType bool
 	Repeated      bool
 	Pointer       bool
-	Required      bool
+
+	// Field options
+	Required bool
+	Min      *float64
+	Max      *float64
 }
 
 type typesData struct {
@@ -99,6 +104,18 @@ package {{ .PackageName }}
 					return oops.BadRequest("field '{{ $field.JSONName }}' is required")
 				}
 			{{ end -}}
+
+			{{ if $field.Min -}}
+				if m.{{ $field.GoName }} < {{ $field.Min }} {
+					return oops.BadRequest("field '{{ $field.JSONName }}' should be ≥ {{ $field.Min }}")
+				}
+			{{ end -}}
+
+			{{ if $field.Max -}}
+				if m.{{ $field.GoName }} > {{ $field.Max }} {
+					return oops.BadRequest("field '{{ $field.JSONName }}' should be ≤ {{ $field.Max }}")
+				}
+			{{ end -}}
 		{{ end -}}
 
 		return nil
@@ -151,9 +168,47 @@ func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 				return nil, fmt.Errorf("failed to resolve type of field %q in message %q: %w", f.Name, m.Name, err)
 			}
 
+			/* Parse the field options */
+
 			var required bool
 			if v, ok := f.Options["required"].(bool); ok {
 				required = v
+			}
+
+			var min *float64
+			if v, ok := f.Options["min"]; ok {
+				switch t := v.(type) {
+				case float64:
+					if !typ.isFloat() {
+						return nil, fmt.Errorf("cannot set float min on non-float field")
+					}
+					min = &t
+				case int64:
+					if !typ.isInt() && !typ.isFloat() {
+						return nil, fmt.Errorf("cannot set min on non-numeric field")
+					}
+					min = ptr.Float64(float64(t))
+				default:
+					return nil, fmt.Errorf("value of min option has invalid type")
+				}
+			}
+
+			var max *float64
+			if v, ok := f.Options["max"]; ok {
+				switch t := v.(type) {
+				case float64:
+					if !typ.isFloat() {
+						return nil, fmt.Errorf("cannot set float max on non-float field")
+					}
+					max = &t
+				case int64:
+					if !typ.isInt() && !typ.isFloat() {
+						return nil, fmt.Errorf("cannot set max on non-numeric field")
+					}
+					max = ptr.Float64(float64(t))
+				default:
+					return nil, fmt.Errorf("value of max option has invalid type")
+				}
 			}
 
 			fields[i] = &typesDataField{
@@ -164,6 +219,8 @@ func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 				Repeated:      typ.Repeated,
 				Pointer:       typ.Pointer,
 				Required:      required,
+				Min:           min,
+				Max:           max,
 			}
 		}
 

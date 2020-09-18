@@ -18,3 +18,11 @@ JRPC generates code from .def files to assist with JSON-based RPCs.
 | `time`      | `time.Time`   |
 | `any`       | `interface{}` |
 | `map[x]y`   | `map[x]y`     |
+
+### Field options
+
+**`required`** If set, the _zero value_ is not allowed. For pointer (`*`) fields, they must be set. For non-pointer fields, they must not be zero.
+
+**`min`** Can be used on numeric fields to enforce a minimum allowed value.
+
+**`max`** Can be used on numeric fields to enforce a maximum allowed value.

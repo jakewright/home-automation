@@ -64,6 +64,26 @@ type typeInfo struct {
 	Pointer       bool
 }
 
+// isInt returns whether the type is one of the built-in int types
+func (ti *typeInfo) isInt() bool {
+	switch ti.TypeName {
+	case "int32", "int64", "uint8", "uint32", "uint64":
+		return true
+	}
+
+	return false
+}
+
+// isFloat returns whether the type is one of the built-in float types
+func (ti *typeInfo) isFloat() bool {
+	switch ti.TypeName {
+	case "float32", "float64":
+		return true
+	}
+
+	return false
+}
+
 // resolveTypeName will turn a fully-qualified type name into the go type and,
 // if necessary, a path that needs to be imported.
 func resolveTypeName(t *svcdef.Type, f *svcdef.File, im *imports.Manager) (*typeInfo, error) {
