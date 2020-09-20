@@ -169,10 +169,13 @@ type Field struct {
 
 // Type is a representation of a type
 type Type struct {
-	// Name is the simple name of the type
+	// Name is the simple name of the type e.g. "map",
+	// Note that in the case of repeated types e.g. "[]int"
+	// the Name is just "int" and Repeated is set to true.
 	Name string
 
 	// Original is the original type string from the def file
+	// e.g. "map[string]string", "[]string"
 	Original string
 
 	// Qualified is the fully-qualified type name.
