@@ -12,6 +12,11 @@ service DMX {
         method = "PATCH"
         path = "/device"
     }
+
+    rpc UpdateMegaParProfile(UpdateMegaParProfileRequest) UpdateMegaParProfileResponse {
+        method = "PATCH"
+        path = "/mega-par-profile"
+    }
 }
 
 message GetDeviceRequest {
@@ -29,4 +34,15 @@ message UpdateDeviceRequest {
 
 message UpdateDeviceResponse {
     device.Device device
+}
+
+message UpdateMegaParProfileRequest {
+    *string device_id (required)
+    *bool power
+    *uint32 brightness (min=0, max=255)
+    *rgb rgb
+}
+
+message UpdateMegaParProfileResponse {
+
 }

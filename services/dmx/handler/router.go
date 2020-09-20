@@ -17,6 +17,7 @@ type taxiRouter interface {
 type handler interface {
 	GetDevice(ctx context.Context, body *def.GetDeviceRequest) (*def.GetDeviceResponse, error)
 	UpdateDevice(ctx context.Context, body *def.UpdateDeviceRequest) (*def.UpdateDeviceResponse, error)
+	UpdateMegaParProfile(ctx context.Context, body *def.UpdateMegaParProfileRequest) (*def.UpdateMegaParProfileResponse, error)
 }
 
 // RegisterRoutes adds the service's routes to the router
@@ -45,6 +46,19 @@ func RegisterRoutes(r taxiRouter, h handler) {
 		}
 
 		return h.UpdateDevice(ctx, body)
+	})
+
+	r.HandleFunc("PATCH", "/mega-par-profile", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
+		body := &def.UpdateMegaParProfileRequest{}
+		if err := decode(body); err != nil {
+			return nil, err
+		}
+
+		if err := body.Validate(); err != nil {
+			return nil, err
+		}
+
+		return h.UpdateMegaParProfile(ctx, body)
 	})
 
 }

@@ -5,35 +5,57 @@ package dmxdef
 import (
 	def "github.com/jakewright/home-automation/libraries/go/device/def"
 	oops "github.com/jakewright/home-automation/libraries/go/oops"
+	util "github.com/jakewright/home-automation/libraries/go/util"
 )
 
 // GetDeviceRequest is defined in the .def file
 type GetDeviceRequest struct {
-	DeviceId string `json:"device_id"`
+	DeviceId *string `json:"device_id,omitempty"`
 }
 
-// GetDeviceResponse is defined in the .def file
-type GetDeviceResponse struct {
-	Device *def.Device `json:"device"`
+// GetDeviceId returns the de-referenced value of DeviceId.
+// The second return value states whether the field was set.
+func (m *GetDeviceRequest) GetDeviceId() (val string, set bool) {
+	if m.DeviceId == nil {
+		return
+	}
+
+	return *m.DeviceId, true
 }
 
-// UpdateDeviceRequest is defined in the .def file
-type UpdateDeviceRequest struct {
-	DeviceId string                 `json:"device_id"`
-	State    map[string]interface{} `json:"state"`
-}
-
-// UpdateDeviceResponse is defined in the .def file
-type UpdateDeviceResponse struct {
-	Device *def.Device `json:"device"`
+// SetDeviceId sets the value of DeviceId
+func (m *GetDeviceRequest) SetDeviceId(v string) *GetDeviceRequest {
+	m.DeviceId = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *GetDeviceRequest) Validate() error {
-	if m.DeviceId == "" {
+	if m.DeviceId == nil {
 		return oops.BadRequest("field 'device_id' is required")
 	}
 	return nil
+}
+
+// GetDeviceResponse is defined in the .def file
+type GetDeviceResponse struct {
+	Device *def.Device `json:"device,omitempty"`
+}
+
+// GetDevice returns the de-referenced value of Device.
+// The second return value states whether the field was set.
+func (m *GetDeviceResponse) GetDevice() (val def.Device, set bool) {
+	if m.Device == nil {
+		return
+	}
+
+	return *m.Device, true
+}
+
+// SetDevice sets the value of Device
+func (m *GetDeviceResponse) SetDevice(v def.Device) *GetDeviceResponse {
+	m.Device = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -45,12 +67,71 @@ func (m *GetDeviceResponse) Validate() error {
 	return nil
 }
 
+// UpdateDeviceRequest is defined in the .def file
+type UpdateDeviceRequest struct {
+	DeviceId *string                 `json:"device_id,omitempty"`
+	State    *map[string]interface{} `json:"state,omitempty"`
+}
+
+// GetDeviceId returns the de-referenced value of DeviceId.
+// The second return value states whether the field was set.
+func (m *UpdateDeviceRequest) GetDeviceId() (val string, set bool) {
+	if m.DeviceId == nil {
+		return
+	}
+
+	return *m.DeviceId, true
+}
+
+// SetDeviceId sets the value of DeviceId
+func (m *UpdateDeviceRequest) SetDeviceId(v string) *UpdateDeviceRequest {
+	m.DeviceId = &v
+	return m
+}
+
+// GetState returns the de-referenced value of State.
+// The second return value states whether the field was set.
+func (m *UpdateDeviceRequest) GetState() (val map[string]interface{}, set bool) {
+	if m.State == nil {
+		return
+	}
+
+	return *m.State, true
+}
+
+// SetState sets the value of State
+func (m *UpdateDeviceRequest) SetState(v map[string]interface{}) *UpdateDeviceRequest {
+	m.State = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *UpdateDeviceRequest) Validate() error {
-	if m.DeviceId == "" {
+	if m.DeviceId == nil {
 		return oops.BadRequest("field 'device_id' is required")
 	}
 	return nil
+}
+
+// UpdateDeviceResponse is defined in the .def file
+type UpdateDeviceResponse struct {
+	Device *def.Device `json:"device,omitempty"`
+}
+
+// GetDevice returns the de-referenced value of Device.
+// The second return value states whether the field was set.
+func (m *UpdateDeviceResponse) GetDevice() (val def.Device, set bool) {
+	if m.Device == nil {
+		return
+	}
+
+	return *m.Device, true
+}
+
+// SetDevice sets the value of Device
+func (m *UpdateDeviceResponse) SetDevice(v def.Device) *UpdateDeviceResponse {
+	m.Device = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -59,5 +140,100 @@ func (m *UpdateDeviceResponse) Validate() error {
 		return err
 	}
 
+	return nil
+}
+
+// UpdateMegaParProfileRequest is defined in the .def file
+type UpdateMegaParProfileRequest struct {
+	DeviceId   *string   `json:"device_id,omitempty"`
+	Power      *bool     `json:"power,omitempty"`
+	Brightness *uint32   `json:"brightness,omitempty"`
+	Rgb        *util.RGB `json:"rgb,omitempty"`
+}
+
+// GetDeviceId returns the de-referenced value of DeviceId.
+// The second return value states whether the field was set.
+func (m *UpdateMegaParProfileRequest) GetDeviceId() (val string, set bool) {
+	if m.DeviceId == nil {
+		return
+	}
+
+	return *m.DeviceId, true
+}
+
+// SetDeviceId sets the value of DeviceId
+func (m *UpdateMegaParProfileRequest) SetDeviceId(v string) *UpdateMegaParProfileRequest {
+	m.DeviceId = &v
+	return m
+}
+
+// GetPower returns the de-referenced value of Power.
+// The second return value states whether the field was set.
+func (m *UpdateMegaParProfileRequest) GetPower() (val bool, set bool) {
+	if m.Power == nil {
+		return
+	}
+
+	return *m.Power, true
+}
+
+// SetPower sets the value of Power
+func (m *UpdateMegaParProfileRequest) SetPower(v bool) *UpdateMegaParProfileRequest {
+	m.Power = &v
+	return m
+}
+
+// GetBrightness returns the de-referenced value of Brightness.
+// The second return value states whether the field was set.
+func (m *UpdateMegaParProfileRequest) GetBrightness() (val uint32, set bool) {
+	if m.Brightness == nil {
+		return
+	}
+
+	return *m.Brightness, true
+}
+
+// SetBrightness sets the value of Brightness
+func (m *UpdateMegaParProfileRequest) SetBrightness(v uint32) *UpdateMegaParProfileRequest {
+	m.Brightness = &v
+	return m
+}
+
+// GetRgb returns the de-referenced value of Rgb.
+// The second return value states whether the field was set.
+func (m *UpdateMegaParProfileRequest) GetRgb() (val util.RGB, set bool) {
+	if m.Rgb == nil {
+		return
+	}
+
+	return *m.Rgb, true
+}
+
+// SetRgb sets the value of Rgb
+func (m *UpdateMegaParProfileRequest) SetRgb(v util.RGB) *UpdateMegaParProfileRequest {
+	m.Rgb = &v
+	return m
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *UpdateMegaParProfileRequest) Validate() error {
+	if m.DeviceId == nil {
+		return oops.BadRequest("field 'device_id' is required")
+	}
+	if m.Brightness != nil && *m.Brightness < 0 {
+		return oops.BadRequest("field 'brightness' should be ≥ 0")
+	}
+	if m.Brightness != nil && *m.Brightness > 255 {
+		return oops.BadRequest("field 'brightness' should be ≤ 255")
+	}
+	return nil
+}
+
+// UpdateMegaParProfileResponse is defined in the .def file
+type UpdateMegaParProfileResponse struct {
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *UpdateMegaParProfileResponse) Validate() error {
 	return nil
 }

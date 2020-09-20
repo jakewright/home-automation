@@ -13,6 +13,7 @@ import (
 type DMXService interface {
 	GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture
 	UpdateDevice(ctx context.Context, body *UpdateDeviceRequest) *UpdateDeviceFuture
+	UpdateMegaParProfile(ctx context.Context, body *UpdateMegaParProfileRequest) *UpdateMegaParProfileFuture
 }
 
 // GetDeviceFuture represents an in-flight GetDevice request
@@ -37,6 +38,19 @@ type UpdateDeviceFuture struct {
 
 // Wait blocks until the response is ready
 func (f *UpdateDeviceFuture) Wait() (*UpdateDeviceResponse, error) {
+	<-f.done
+	return f.rsp, f.err
+}
+
+// UpdateMegaParProfileFuture represents an in-flight UpdateMegaParProfile request
+type UpdateMegaParProfileFuture struct {
+	done <-chan struct{}
+	rsp  *UpdateMegaParProfileResponse
+	err  error
+}
+
+// Wait blocks until the response is ready
+func (f *UpdateMegaParProfileFuture) Wait() (*UpdateMegaParProfileResponse, error) {
 	<-f.done
 	return f.rsp, f.err
 }
@@ -100,6 +114,28 @@ func (c *Client) UpdateDevice(ctx context.Context, body *UpdateDeviceRequest) *U
 	return ftr
 }
 
+// UpdateMegaParProfile dispatches an RPC to the service
+func (c *Client) UpdateMegaParProfile(ctx context.Context, body *UpdateMegaParProfileRequest) *UpdateMegaParProfileFuture {
+	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
+		Method: "PATCH",
+		URL:    "http://dmx/mega-par-profile",
+		Body:   body,
+	})
+
+	done := make(chan struct{})
+	ftr := &UpdateMegaParProfileFuture{
+		done: done,
+		rsp:  &UpdateMegaParProfileResponse{},
+	}
+
+	go func() {
+		defer close(done)
+		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
+	}()
+
+	return ftr
+}
+
 // MockClient can be used in tests
 type MockClient struct {
 	dispatcher *taxi.MockClient
@@ -151,6 +187,28 @@ func (c *MockClient) UpdateDevice(ctx context.Context, body *UpdateDeviceRequest
 	ftr := &UpdateDeviceFuture{
 		done: done,
 		rsp:  &UpdateDeviceResponse{},
+	}
+
+	go func() {
+		defer close(done)
+		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
+	}()
+
+	return ftr
+}
+
+// UpdateMegaParProfile dispatches an RPC to the mock client
+func (c *MockClient) UpdateMegaParProfile(ctx context.Context, body *UpdateMegaParProfileRequest) *UpdateMegaParProfileFuture {
+	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
+		Method: "PATCH",
+		URL:    "http://dmx/mega-par-profile",
+		Body:   body,
+	})
+
+	done := make(chan struct{})
+	ftr := &UpdateMegaParProfileFuture{
+		done: done,
+		rsp:  &UpdateMegaParProfileResponse{},
 	}
 
 	go func() {

@@ -10,106 +10,312 @@ import (
 
 // Scene is defined in the .def file
 type Scene struct {
-	Id        uint32    `json:"id"`
-	Name      string    `json:"name"`
-	OwnerId   uint32    `json:"owner_id"`
-	Actions   []*Action `json:"actions"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Id        *uint32    `json:"id,omitempty"`
+	Name      *string    `json:"name,omitempty"`
+	OwnerId   *uint32    `json:"owner_id,omitempty"`
+	Actions   *[]Action  `json:"actions,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-// Action is defined in the .def file
-type Action struct {
-	Stage          int32     `json:"stage"`
-	Sequence       int32     `json:"sequence"`
-	Func           string    `json:"func"`
-	ControllerName string    `json:"controller_name"`
-	DeviceId       string    `json:"device_id"`
-	Command        string    `json:"command"`
-	Property       string    `json:"property"`
-	PropertyValue  string    `json:"property_value"`
-	PropertyType   string    `json:"property_type"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+// GetId returns the de-referenced value of Id.
+// The second return value states whether the field was set.
+func (m *Scene) GetId() (val uint32, set bool) {
+	if m.Id == nil {
+		return
+	}
+
+	return *m.Id, true
 }
 
-// CreateSceneRequest is defined in the .def file
-type CreateSceneRequest struct {
-	Name    string                       `json:"name"`
-	OwnerId uint32                       `json:"owner_id"`
-	Actions []*CreateSceneRequest_Action `json:"actions"`
+// SetId sets the value of Id
+func (m *Scene) SetId(v uint32) *Scene {
+	m.Id = &v
+	return m
 }
 
-// CreateSceneRequest_Action is defined in the .def file
-type CreateSceneRequest_Action struct {
-	Stage          int32  `json:"stage"`
-	Sequence       int32  `json:"sequence"`
-	Func           string `json:"func"`
-	ControllerName string `json:"controller_name"`
-	DeviceId       string `json:"device_id"`
-	Command        string `json:"command"`
-	Property       string `json:"property"`
-	PropertyValue  string `json:"property_value"`
-	PropertyType   string `json:"property_type"`
+// GetName returns the de-referenced value of Name.
+// The second return value states whether the field was set.
+func (m *Scene) GetName() (val string, set bool) {
+	if m.Name == nil {
+		return
+	}
+
+	return *m.Name, true
 }
 
-// CreateSceneResponse is defined in the .def file
-type CreateSceneResponse struct {
-	Scene *Scene `json:"scene"`
+// SetName sets the value of Name
+func (m *Scene) SetName(v string) *Scene {
+	m.Name = &v
+	return m
 }
 
-// ReadSceneRequest is defined in the .def file
-type ReadSceneRequest struct {
-	SceneId uint32 `json:"scene_id"`
+// GetOwnerId returns the de-referenced value of OwnerId.
+// The second return value states whether the field was set.
+func (m *Scene) GetOwnerId() (val uint32, set bool) {
+	if m.OwnerId == nil {
+		return
+	}
+
+	return *m.OwnerId, true
 }
 
-// ReadSceneResponse is defined in the .def file
-type ReadSceneResponse struct {
-	Scene *Scene `json:"scene"`
+// SetOwnerId sets the value of OwnerId
+func (m *Scene) SetOwnerId(v uint32) *Scene {
+	m.OwnerId = &v
+	return m
 }
 
-// ListScenesRequest is defined in the .def file
-type ListScenesRequest struct {
-	OwnerId uint32 `json:"owner_id"`
+// GetActions returns the de-referenced value of Actions.
+// The second return value states whether the field was set.
+func (m *Scene) GetActions() (val []Action, set bool) {
+	if m.Actions == nil {
+		return
+	}
+
+	return *m.Actions, true
 }
 
-// ListScenesResponse is defined in the .def file
-type ListScenesResponse struct {
-	Scenes []*Scene `json:"scenes"`
+// SetActions sets the value of Actions
+func (m *Scene) SetActions(v []Action) *Scene {
+	m.Actions = &v
+	return m
 }
 
-// DeleteSceneRequest is defined in the .def file
-type DeleteSceneRequest struct {
-	SceneId int32 `json:"scene_id"`
+// GetCreatedAt returns the de-referenced value of CreatedAt.
+// The second return value states whether the field was set.
+func (m *Scene) GetCreatedAt() (val time.Time, set bool) {
+	if m.CreatedAt == nil {
+		return
+	}
+
+	return *m.CreatedAt, true
 }
 
-// DeleteSceneResponse is defined in the .def file
-type DeleteSceneResponse struct {
+// SetCreatedAt sets the value of CreatedAt
+func (m *Scene) SetCreatedAt(v time.Time) *Scene {
+	m.CreatedAt = &v
+	return m
 }
 
-// SetSceneRequest is defined in the .def file
-type SetSceneRequest struct {
-	SceneId uint32 `json:"scene_id"`
+// GetUpdatedAt returns the de-referenced value of UpdatedAt.
+// The second return value states whether the field was set.
+func (m *Scene) GetUpdatedAt() (val time.Time, set bool) {
+	if m.UpdatedAt == nil {
+		return
+	}
+
+	return *m.UpdatedAt, true
 }
 
-// SetSceneResponse is defined in the .def file
-type SetSceneResponse struct {
-}
-
-// SetSceneEvent is defined in the .def file
-type SetSceneEvent struct {
-	SceneId uint32 `json:"scene_id"`
+// SetUpdatedAt sets the value of UpdatedAt
+func (m *Scene) SetUpdatedAt(v time.Time) *Scene {
+	m.UpdatedAt = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *Scene) Validate() error {
-	for _, r := range m.Actions {
-		if err := r.Validate(); err != nil {
-			return err
+	if m.Actions != nil {
+		for _, r := range *m.Actions {
+			if err := r.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
+}
+
+// Action is defined in the .def file
+type Action struct {
+	Stage          *int32     `json:"stage,omitempty"`
+	Sequence       *int32     `json:"sequence,omitempty"`
+	Func           *string    `json:"func,omitempty"`
+	ControllerName *string    `json:"controller_name,omitempty"`
+	DeviceId       *string    `json:"device_id,omitempty"`
+	Command        *string    `json:"command,omitempty"`
+	Property       *string    `json:"property,omitempty"`
+	PropertyValue  *string    `json:"property_value,omitempty"`
+	PropertyType   *string    `json:"property_type,omitempty"`
+	CreatedAt      *time.Time `json:"created_at,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+}
+
+// GetStage returns the de-referenced value of Stage.
+// The second return value states whether the field was set.
+func (m *Action) GetStage() (val int32, set bool) {
+	if m.Stage == nil {
+		return
+	}
+
+	return *m.Stage, true
+}
+
+// SetStage sets the value of Stage
+func (m *Action) SetStage(v int32) *Action {
+	m.Stage = &v
+	return m
+}
+
+// GetSequence returns the de-referenced value of Sequence.
+// The second return value states whether the field was set.
+func (m *Action) GetSequence() (val int32, set bool) {
+	if m.Sequence == nil {
+		return
+	}
+
+	return *m.Sequence, true
+}
+
+// SetSequence sets the value of Sequence
+func (m *Action) SetSequence(v int32) *Action {
+	m.Sequence = &v
+	return m
+}
+
+// GetFunc returns the de-referenced value of Func.
+// The second return value states whether the field was set.
+func (m *Action) GetFunc() (val string, set bool) {
+	if m.Func == nil {
+		return
+	}
+
+	return *m.Func, true
+}
+
+// SetFunc sets the value of Func
+func (m *Action) SetFunc(v string) *Action {
+	m.Func = &v
+	return m
+}
+
+// GetControllerName returns the de-referenced value of ControllerName.
+// The second return value states whether the field was set.
+func (m *Action) GetControllerName() (val string, set bool) {
+	if m.ControllerName == nil {
+		return
+	}
+
+	return *m.ControllerName, true
+}
+
+// SetControllerName sets the value of ControllerName
+func (m *Action) SetControllerName(v string) *Action {
+	m.ControllerName = &v
+	return m
+}
+
+// GetDeviceId returns the de-referenced value of DeviceId.
+// The second return value states whether the field was set.
+func (m *Action) GetDeviceId() (val string, set bool) {
+	if m.DeviceId == nil {
+		return
+	}
+
+	return *m.DeviceId, true
+}
+
+// SetDeviceId sets the value of DeviceId
+func (m *Action) SetDeviceId(v string) *Action {
+	m.DeviceId = &v
+	return m
+}
+
+// GetCommand returns the de-referenced value of Command.
+// The second return value states whether the field was set.
+func (m *Action) GetCommand() (val string, set bool) {
+	if m.Command == nil {
+		return
+	}
+
+	return *m.Command, true
+}
+
+// SetCommand sets the value of Command
+func (m *Action) SetCommand(v string) *Action {
+	m.Command = &v
+	return m
+}
+
+// GetProperty returns the de-referenced value of Property.
+// The second return value states whether the field was set.
+func (m *Action) GetProperty() (val string, set bool) {
+	if m.Property == nil {
+		return
+	}
+
+	return *m.Property, true
+}
+
+// SetProperty sets the value of Property
+func (m *Action) SetProperty(v string) *Action {
+	m.Property = &v
+	return m
+}
+
+// GetPropertyValue returns the de-referenced value of PropertyValue.
+// The second return value states whether the field was set.
+func (m *Action) GetPropertyValue() (val string, set bool) {
+	if m.PropertyValue == nil {
+		return
+	}
+
+	return *m.PropertyValue, true
+}
+
+// SetPropertyValue sets the value of PropertyValue
+func (m *Action) SetPropertyValue(v string) *Action {
+	m.PropertyValue = &v
+	return m
+}
+
+// GetPropertyType returns the de-referenced value of PropertyType.
+// The second return value states whether the field was set.
+func (m *Action) GetPropertyType() (val string, set bool) {
+	if m.PropertyType == nil {
+		return
+	}
+
+	return *m.PropertyType, true
+}
+
+// SetPropertyType sets the value of PropertyType
+func (m *Action) SetPropertyType(v string) *Action {
+	m.PropertyType = &v
+	return m
+}
+
+// GetCreatedAt returns the de-referenced value of CreatedAt.
+// The second return value states whether the field was set.
+func (m *Action) GetCreatedAt() (val time.Time, set bool) {
+	if m.CreatedAt == nil {
+		return
+	}
+
+	return *m.CreatedAt, true
+}
+
+// SetCreatedAt sets the value of CreatedAt
+func (m *Action) SetCreatedAt(v time.Time) *Action {
+	m.CreatedAt = &v
+	return m
+}
+
+// GetUpdatedAt returns the de-referenced value of UpdatedAt.
+// The second return value states whether the field was set.
+func (m *Action) GetUpdatedAt() (val time.Time, set bool) {
+	if m.UpdatedAt == nil {
+		return
+	}
+
+	return *m.UpdatedAt, true
+}
+
+// SetUpdatedAt sets the value of UpdatedAt
+func (m *Action) SetUpdatedAt(v time.Time) *Action {
+	m.UpdatedAt = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -117,29 +323,264 @@ func (m *Action) Validate() error {
 	return nil
 }
 
+// CreateSceneRequest is defined in the .def file
+type CreateSceneRequest struct {
+	Name    *string                      `json:"name,omitempty"`
+	OwnerId *uint32                      `json:"owner_id,omitempty"`
+	Actions *[]CreateSceneRequest_Action `json:"actions,omitempty"`
+}
+
+// GetName returns the de-referenced value of Name.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest) GetName() (val string, set bool) {
+	if m.Name == nil {
+		return
+	}
+
+	return *m.Name, true
+}
+
+// SetName sets the value of Name
+func (m *CreateSceneRequest) SetName(v string) *CreateSceneRequest {
+	m.Name = &v
+	return m
+}
+
+// GetOwnerId returns the de-referenced value of OwnerId.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest) GetOwnerId() (val uint32, set bool) {
+	if m.OwnerId == nil {
+		return
+	}
+
+	return *m.OwnerId, true
+}
+
+// SetOwnerId sets the value of OwnerId
+func (m *CreateSceneRequest) SetOwnerId(v uint32) *CreateSceneRequest {
+	m.OwnerId = &v
+	return m
+}
+
+// GetActions returns the de-referenced value of Actions.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest) GetActions() (val []CreateSceneRequest_Action, set bool) {
+	if m.Actions == nil {
+		return
+	}
+
+	return *m.Actions, true
+}
+
+// SetActions sets the value of Actions
+func (m *CreateSceneRequest) SetActions(v []CreateSceneRequest_Action) *CreateSceneRequest {
+	m.Actions = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *CreateSceneRequest) Validate() error {
-	if m.Name == "" {
+	if m.Name == nil {
 		return oops.BadRequest("field 'name' is required")
 	}
-	if m.OwnerId == 0 {
+	if m.OwnerId == nil {
 		return oops.BadRequest("field 'owner_id' is required")
 	}
-	for _, r := range m.Actions {
-		if err := r.Validate(); err != nil {
-			return err
+	if m.Actions != nil {
+		for _, r := range *m.Actions {
+			if err := r.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 
-	if len(m.Actions) == 0 {
+	if m.Actions == nil {
 		return oops.BadRequest("field 'actions' is required")
 	}
 	return nil
 }
 
+// CreateSceneRequest_Action is defined in the .def file
+type CreateSceneRequest_Action struct {
+	Stage          *int32  `json:"stage,omitempty"`
+	Sequence       *int32  `json:"sequence,omitempty"`
+	Func           *string `json:"func,omitempty"`
+	ControllerName *string `json:"controller_name,omitempty"`
+	DeviceId       *string `json:"device_id,omitempty"`
+	Command        *string `json:"command,omitempty"`
+	Property       *string `json:"property,omitempty"`
+	PropertyValue  *string `json:"property_value,omitempty"`
+	PropertyType   *string `json:"property_type,omitempty"`
+}
+
+// GetStage returns the de-referenced value of Stage.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetStage() (val int32, set bool) {
+	if m.Stage == nil {
+		return
+	}
+
+	return *m.Stage, true
+}
+
+// SetStage sets the value of Stage
+func (m *CreateSceneRequest_Action) SetStage(v int32) *CreateSceneRequest_Action {
+	m.Stage = &v
+	return m
+}
+
+// GetSequence returns the de-referenced value of Sequence.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetSequence() (val int32, set bool) {
+	if m.Sequence == nil {
+		return
+	}
+
+	return *m.Sequence, true
+}
+
+// SetSequence sets the value of Sequence
+func (m *CreateSceneRequest_Action) SetSequence(v int32) *CreateSceneRequest_Action {
+	m.Sequence = &v
+	return m
+}
+
+// GetFunc returns the de-referenced value of Func.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetFunc() (val string, set bool) {
+	if m.Func == nil {
+		return
+	}
+
+	return *m.Func, true
+}
+
+// SetFunc sets the value of Func
+func (m *CreateSceneRequest_Action) SetFunc(v string) *CreateSceneRequest_Action {
+	m.Func = &v
+	return m
+}
+
+// GetControllerName returns the de-referenced value of ControllerName.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetControllerName() (val string, set bool) {
+	if m.ControllerName == nil {
+		return
+	}
+
+	return *m.ControllerName, true
+}
+
+// SetControllerName sets the value of ControllerName
+func (m *CreateSceneRequest_Action) SetControllerName(v string) *CreateSceneRequest_Action {
+	m.ControllerName = &v
+	return m
+}
+
+// GetDeviceId returns the de-referenced value of DeviceId.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetDeviceId() (val string, set bool) {
+	if m.DeviceId == nil {
+		return
+	}
+
+	return *m.DeviceId, true
+}
+
+// SetDeviceId sets the value of DeviceId
+func (m *CreateSceneRequest_Action) SetDeviceId(v string) *CreateSceneRequest_Action {
+	m.DeviceId = &v
+	return m
+}
+
+// GetCommand returns the de-referenced value of Command.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetCommand() (val string, set bool) {
+	if m.Command == nil {
+		return
+	}
+
+	return *m.Command, true
+}
+
+// SetCommand sets the value of Command
+func (m *CreateSceneRequest_Action) SetCommand(v string) *CreateSceneRequest_Action {
+	m.Command = &v
+	return m
+}
+
+// GetProperty returns the de-referenced value of Property.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetProperty() (val string, set bool) {
+	if m.Property == nil {
+		return
+	}
+
+	return *m.Property, true
+}
+
+// SetProperty sets the value of Property
+func (m *CreateSceneRequest_Action) SetProperty(v string) *CreateSceneRequest_Action {
+	m.Property = &v
+	return m
+}
+
+// GetPropertyValue returns the de-referenced value of PropertyValue.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetPropertyValue() (val string, set bool) {
+	if m.PropertyValue == nil {
+		return
+	}
+
+	return *m.PropertyValue, true
+}
+
+// SetPropertyValue sets the value of PropertyValue
+func (m *CreateSceneRequest_Action) SetPropertyValue(v string) *CreateSceneRequest_Action {
+	m.PropertyValue = &v
+	return m
+}
+
+// GetPropertyType returns the de-referenced value of PropertyType.
+// The second return value states whether the field was set.
+func (m *CreateSceneRequest_Action) GetPropertyType() (val string, set bool) {
+	if m.PropertyType == nil {
+		return
+	}
+
+	return *m.PropertyType, true
+}
+
+// SetPropertyType sets the value of PropertyType
+func (m *CreateSceneRequest_Action) SetPropertyType(v string) *CreateSceneRequest_Action {
+	m.PropertyType = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *CreateSceneRequest_Action) Validate() error {
 	return nil
+}
+
+// CreateSceneResponse is defined in the .def file
+type CreateSceneResponse struct {
+	Scene *Scene `json:"scene,omitempty"`
+}
+
+// GetScene returns the de-referenced value of Scene.
+// The second return value states whether the field was set.
+func (m *CreateSceneResponse) GetScene() (val Scene, set bool) {
+	if m.Scene == nil {
+		return
+	}
+
+	return *m.Scene, true
+}
+
+// SetScene sets the value of Scene
+func (m *CreateSceneResponse) SetScene(v Scene) *CreateSceneResponse {
+	m.Scene = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -151,9 +592,51 @@ func (m *CreateSceneResponse) Validate() error {
 	return nil
 }
 
+// ReadSceneRequest is defined in the .def file
+type ReadSceneRequest struct {
+	SceneId *uint32 `json:"scene_id,omitempty"`
+}
+
+// GetSceneId returns the de-referenced value of SceneId.
+// The second return value states whether the field was set.
+func (m *ReadSceneRequest) GetSceneId() (val uint32, set bool) {
+	if m.SceneId == nil {
+		return
+	}
+
+	return *m.SceneId, true
+}
+
+// SetSceneId sets the value of SceneId
+func (m *ReadSceneRequest) SetSceneId(v uint32) *ReadSceneRequest {
+	m.SceneId = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *ReadSceneRequest) Validate() error {
 	return nil
+}
+
+// ReadSceneResponse is defined in the .def file
+type ReadSceneResponse struct {
+	Scene *Scene `json:"scene,omitempty"`
+}
+
+// GetScene returns the de-referenced value of Scene.
+// The second return value states whether the field was set.
+func (m *ReadSceneResponse) GetScene() (val Scene, set bool) {
+	if m.Scene == nil {
+		return
+	}
+
+	return *m.Scene, true
+}
+
+// SetScene sets the value of Scene
+func (m *ReadSceneResponse) SetScene(v Scene) *ReadSceneResponse {
+	m.Scene = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -165,20 +648,85 @@ func (m *ReadSceneResponse) Validate() error {
 	return nil
 }
 
+// ListScenesRequest is defined in the .def file
+type ListScenesRequest struct {
+	OwnerId *uint32 `json:"owner_id,omitempty"`
+}
+
+// GetOwnerId returns the de-referenced value of OwnerId.
+// The second return value states whether the field was set.
+func (m *ListScenesRequest) GetOwnerId() (val uint32, set bool) {
+	if m.OwnerId == nil {
+		return
+	}
+
+	return *m.OwnerId, true
+}
+
+// SetOwnerId sets the value of OwnerId
+func (m *ListScenesRequest) SetOwnerId(v uint32) *ListScenesRequest {
+	m.OwnerId = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *ListScenesRequest) Validate() error {
 	return nil
 }
 
+// ListScenesResponse is defined in the .def file
+type ListScenesResponse struct {
+	Scenes *[]Scene `json:"scenes,omitempty"`
+}
+
+// GetScenes returns the de-referenced value of Scenes.
+// The second return value states whether the field was set.
+func (m *ListScenesResponse) GetScenes() (val []Scene, set bool) {
+	if m.Scenes == nil {
+		return
+	}
+
+	return *m.Scenes, true
+}
+
+// SetScenes sets the value of Scenes
+func (m *ListScenesResponse) SetScenes(v []Scene) *ListScenesResponse {
+	m.Scenes = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *ListScenesResponse) Validate() error {
-	for _, r := range m.Scenes {
-		if err := r.Validate(); err != nil {
-			return err
+	if m.Scenes != nil {
+		for _, r := range *m.Scenes {
+			if err := r.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
+}
+
+// DeleteSceneRequest is defined in the .def file
+type DeleteSceneRequest struct {
+	SceneId *int32 `json:"scene_id,omitempty"`
+}
+
+// GetSceneId returns the de-referenced value of SceneId.
+// The second return value states whether the field was set.
+func (m *DeleteSceneRequest) GetSceneId() (val int32, set bool) {
+	if m.SceneId == nil {
+		return
+	}
+
+	return *m.SceneId, true
+}
+
+// SetSceneId sets the value of SceneId
+func (m *DeleteSceneRequest) SetSceneId(v int32) *DeleteSceneRequest {
+	m.SceneId = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -186,9 +734,34 @@ func (m *DeleteSceneRequest) Validate() error {
 	return nil
 }
 
+// DeleteSceneResponse is defined in the .def file
+type DeleteSceneResponse struct {
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *DeleteSceneResponse) Validate() error {
 	return nil
+}
+
+// SetSceneRequest is defined in the .def file
+type SetSceneRequest struct {
+	SceneId *uint32 `json:"scene_id,omitempty"`
+}
+
+// GetSceneId returns the de-referenced value of SceneId.
+// The second return value states whether the field was set.
+func (m *SetSceneRequest) GetSceneId() (val uint32, set bool) {
+	if m.SceneId == nil {
+		return
+	}
+
+	return *m.SceneId, true
+}
+
+// SetSceneId sets the value of SceneId
+func (m *SetSceneRequest) SetSceneId(v uint32) *SetSceneRequest {
+	m.SceneId = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -196,9 +769,34 @@ func (m *SetSceneRequest) Validate() error {
 	return nil
 }
 
+// SetSceneResponse is defined in the .def file
+type SetSceneResponse struct {
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *SetSceneResponse) Validate() error {
 	return nil
+}
+
+// SetSceneEvent is defined in the .def file
+type SetSceneEvent struct {
+	SceneId *uint32 `json:"scene_id,omitempty"`
+}
+
+// GetSceneId returns the de-referenced value of SceneId.
+// The second return value states whether the field was set.
+func (m *SetSceneEvent) GetSceneId() (val uint32, set bool) {
+	if m.SceneId == nil {
+		return
+	}
+
+	return *m.SceneId, true
+}
+
+// SetSceneId sets the value of SceneId
+func (m *SetSceneEvent) SetSceneId(v uint32) *SetSceneEvent {
+	m.SceneId = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values

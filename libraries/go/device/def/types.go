@@ -8,50 +8,159 @@ import (
 
 // Device is defined in the .def file
 type Device struct {
-	Id             string                 `json:"id"`
-	Name           string                 `json:"name"`
-	Type           string                 `json:"type"`
-	Kind           string                 `json:"kind"`
-	ControllerName string                 `json:"controller_name"`
-	Attributes     map[string]interface{} `json:"attributes"`
-	StateProviders []string               `json:"state_providers"`
-	State          map[string]*Property   `json:"state"`
-	Commands       map[string]*Command    `json:"commands"`
+	Id             *string                 `json:"id,omitempty"`
+	Name           *string                 `json:"name,omitempty"`
+	Type           *string                 `json:"type,omitempty"`
+	Kind           *string                 `json:"kind,omitempty"`
+	ControllerName *string                 `json:"controller_name,omitempty"`
+	Attributes     *map[string]interface{} `json:"attributes,omitempty"`
+	StateProviders *[]string               `json:"state_providers,omitempty"`
+	State          *map[string]Property    `json:"state,omitempty"`
+	Commands       *map[string]Command     `json:"commands,omitempty"`
 }
 
-// Property is defined in the .def file
-type Property struct {
-	Value         interface{} `json:"value"`
-	Type          string      `json:"type"`
-	Min           *float64    `json:"min"`
-	Max           *float64    `json:"max"`
-	Interpolation string      `json:"interpolation"`
-	Options       []*Option   `json:"options"`
+// GetId returns the de-referenced value of Id.
+// The second return value states whether the field was set.
+func (m *Device) GetId() (val string, set bool) {
+	if m.Id == nil {
+		return
+	}
+
+	return *m.Id, true
 }
 
-// Command is defined in the .def file
-type Command struct {
-	Args map[string]*Arg `json:"args"`
+// SetId sets the value of Id
+func (m *Device) SetId(v string) *Device {
+	m.Id = &v
+	return m
 }
 
-// Arg is defined in the .def file
-type Arg struct {
-	Required bool      `json:"required"`
-	Type     string    `json:"type"`
-	Min      *float64  `json:"min"`
-	Max      *float64  `json:"max"`
-	Options  []*Option `json:"options"`
+// GetName returns the de-referenced value of Name.
+// The second return value states whether the field was set.
+func (m *Device) GetName() (val string, set bool) {
+	if m.Name == nil {
+		return
+	}
+
+	return *m.Name, true
 }
 
-// Option is defined in the .def file
-type Option struct {
-	Value string `json:"value"`
-	Name  string `json:"name"`
+// SetName sets the value of Name
+func (m *Device) SetName(v string) *Device {
+	m.Name = &v
+	return m
 }
 
-// DeviceStateChangedEvent is defined in the .def file
-type DeviceStateChangedEvent struct {
-	Device *Device `json:"device"`
+// GetType returns the de-referenced value of Type.
+// The second return value states whether the field was set.
+func (m *Device) GetType() (val string, set bool) {
+	if m.Type == nil {
+		return
+	}
+
+	return *m.Type, true
+}
+
+// SetType sets the value of Type
+func (m *Device) SetType(v string) *Device {
+	m.Type = &v
+	return m
+}
+
+// GetKind returns the de-referenced value of Kind.
+// The second return value states whether the field was set.
+func (m *Device) GetKind() (val string, set bool) {
+	if m.Kind == nil {
+		return
+	}
+
+	return *m.Kind, true
+}
+
+// SetKind sets the value of Kind
+func (m *Device) SetKind(v string) *Device {
+	m.Kind = &v
+	return m
+}
+
+// GetControllerName returns the de-referenced value of ControllerName.
+// The second return value states whether the field was set.
+func (m *Device) GetControllerName() (val string, set bool) {
+	if m.ControllerName == nil {
+		return
+	}
+
+	return *m.ControllerName, true
+}
+
+// SetControllerName sets the value of ControllerName
+func (m *Device) SetControllerName(v string) *Device {
+	m.ControllerName = &v
+	return m
+}
+
+// GetAttributes returns the de-referenced value of Attributes.
+// The second return value states whether the field was set.
+func (m *Device) GetAttributes() (val map[string]interface{}, set bool) {
+	if m.Attributes == nil {
+		return
+	}
+
+	return *m.Attributes, true
+}
+
+// SetAttributes sets the value of Attributes
+func (m *Device) SetAttributes(v map[string]interface{}) *Device {
+	m.Attributes = &v
+	return m
+}
+
+// GetStateProviders returns the de-referenced value of StateProviders.
+// The second return value states whether the field was set.
+func (m *Device) GetStateProviders() (val []string, set bool) {
+	if m.StateProviders == nil {
+		return
+	}
+
+	return *m.StateProviders, true
+}
+
+// SetStateProviders sets the value of StateProviders
+func (m *Device) SetStateProviders(v []string) *Device {
+	m.StateProviders = &v
+	return m
+}
+
+// GetState returns the de-referenced value of State.
+// The second return value states whether the field was set.
+func (m *Device) GetState() (val map[string]Property, set bool) {
+	if m.State == nil {
+		return
+	}
+
+	return *m.State, true
+}
+
+// SetState sets the value of State
+func (m *Device) SetState(v map[string]Property) *Device {
+	m.State = &v
+	return m
+}
+
+// GetCommands returns the de-referenced value of Commands.
+// The second return value states whether the field was set.
+func (m *Device) GetCommands() (val map[string]Command, set bool) {
+	if m.Commands == nil {
+		return
+	}
+
+	return *m.Commands, true
+}
+
+// SetCommands sets the value of Commands
+func (m *Device) SetCommands(v map[string]Command) *Device {
+	m.Commands = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -59,15 +168,144 @@ func (m *Device) Validate() error {
 	return nil
 }
 
+// Property is defined in the .def file
+type Property struct {
+	Value         *interface{} `json:"value,omitempty"`
+	Type          *string      `json:"type,omitempty"`
+	Min           *float64     `json:"min,omitempty"`
+	Max           *float64     `json:"max,omitempty"`
+	Interpolation *string      `json:"interpolation,omitempty"`
+	Options       *[]Option    `json:"options,omitempty"`
+}
+
+// GetValue returns the de-referenced value of Value.
+// The second return value states whether the field was set.
+func (m *Property) GetValue() (val interface{}, set bool) {
+	if m.Value == nil {
+		return
+	}
+
+	return *m.Value, true
+}
+
+// SetValue sets the value of Value
+func (m *Property) SetValue(v interface{}) *Property {
+	m.Value = &v
+	return m
+}
+
+// GetType returns the de-referenced value of Type.
+// The second return value states whether the field was set.
+func (m *Property) GetType() (val string, set bool) {
+	if m.Type == nil {
+		return
+	}
+
+	return *m.Type, true
+}
+
+// SetType sets the value of Type
+func (m *Property) SetType(v string) *Property {
+	m.Type = &v
+	return m
+}
+
+// GetMin returns the de-referenced value of Min.
+// The second return value states whether the field was set.
+func (m *Property) GetMin() (val float64, set bool) {
+	if m.Min == nil {
+		return
+	}
+
+	return *m.Min, true
+}
+
+// SetMin sets the value of Min
+func (m *Property) SetMin(v float64) *Property {
+	m.Min = &v
+	return m
+}
+
+// GetMax returns the de-referenced value of Max.
+// The second return value states whether the field was set.
+func (m *Property) GetMax() (val float64, set bool) {
+	if m.Max == nil {
+		return
+	}
+
+	return *m.Max, true
+}
+
+// SetMax sets the value of Max
+func (m *Property) SetMax(v float64) *Property {
+	m.Max = &v
+	return m
+}
+
+// GetInterpolation returns the de-referenced value of Interpolation.
+// The second return value states whether the field was set.
+func (m *Property) GetInterpolation() (val string, set bool) {
+	if m.Interpolation == nil {
+		return
+	}
+
+	return *m.Interpolation, true
+}
+
+// SetInterpolation sets the value of Interpolation
+func (m *Property) SetInterpolation(v string) *Property {
+	m.Interpolation = &v
+	return m
+}
+
+// GetOptions returns the de-referenced value of Options.
+// The second return value states whether the field was set.
+func (m *Property) GetOptions() (val []Option, set bool) {
+	if m.Options == nil {
+		return
+	}
+
+	return *m.Options, true
+}
+
+// SetOptions sets the value of Options
+func (m *Property) SetOptions(v []Option) *Property {
+	m.Options = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *Property) Validate() error {
-	for _, r := range m.Options {
-		if err := r.Validate(); err != nil {
-			return err
+	if m.Options != nil {
+		for _, r := range *m.Options {
+			if err := r.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
+}
+
+// Command is defined in the .def file
+type Command struct {
+	Args *map[string]Arg `json:"args,omitempty"`
+}
+
+// GetArgs returns the de-referenced value of Args.
+// The second return value states whether the field was set.
+func (m *Command) GetArgs() (val map[string]Arg, set bool) {
+	if m.Args == nil {
+		return
+	}
+
+	return *m.Args, true
+}
+
+// SetArgs sets the value of Args
+func (m *Command) SetArgs(v map[string]Arg) *Command {
+	m.Args = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
@@ -75,20 +313,170 @@ func (m *Command) Validate() error {
 	return nil
 }
 
+// Arg is defined in the .def file
+type Arg struct {
+	Required *bool     `json:"required,omitempty"`
+	Type     *string   `json:"type,omitempty"`
+	Min      *float64  `json:"min,omitempty"`
+	Max      *float64  `json:"max,omitempty"`
+	Options  *[]Option `json:"options,omitempty"`
+}
+
+// GetRequired returns the de-referenced value of Required.
+// The second return value states whether the field was set.
+func (m *Arg) GetRequired() (val bool, set bool) {
+	if m.Required == nil {
+		return
+	}
+
+	return *m.Required, true
+}
+
+// SetRequired sets the value of Required
+func (m *Arg) SetRequired(v bool) *Arg {
+	m.Required = &v
+	return m
+}
+
+// GetType returns the de-referenced value of Type.
+// The second return value states whether the field was set.
+func (m *Arg) GetType() (val string, set bool) {
+	if m.Type == nil {
+		return
+	}
+
+	return *m.Type, true
+}
+
+// SetType sets the value of Type
+func (m *Arg) SetType(v string) *Arg {
+	m.Type = &v
+	return m
+}
+
+// GetMin returns the de-referenced value of Min.
+// The second return value states whether the field was set.
+func (m *Arg) GetMin() (val float64, set bool) {
+	if m.Min == nil {
+		return
+	}
+
+	return *m.Min, true
+}
+
+// SetMin sets the value of Min
+func (m *Arg) SetMin(v float64) *Arg {
+	m.Min = &v
+	return m
+}
+
+// GetMax returns the de-referenced value of Max.
+// The second return value states whether the field was set.
+func (m *Arg) GetMax() (val float64, set bool) {
+	if m.Max == nil {
+		return
+	}
+
+	return *m.Max, true
+}
+
+// SetMax sets the value of Max
+func (m *Arg) SetMax(v float64) *Arg {
+	m.Max = &v
+	return m
+}
+
+// GetOptions returns the de-referenced value of Options.
+// The second return value states whether the field was set.
+func (m *Arg) GetOptions() (val []Option, set bool) {
+	if m.Options == nil {
+		return
+	}
+
+	return *m.Options, true
+}
+
+// SetOptions sets the value of Options
+func (m *Arg) SetOptions(v []Option) *Arg {
+	m.Options = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *Arg) Validate() error {
-	for _, r := range m.Options {
-		if err := r.Validate(); err != nil {
-			return err
+	if m.Options != nil {
+		for _, r := range *m.Options {
+			if err := r.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
+// Option is defined in the .def file
+type Option struct {
+	Value *string `json:"value,omitempty"`
+	Name  *string `json:"name,omitempty"`
+}
+
+// GetValue returns the de-referenced value of Value.
+// The second return value states whether the field was set.
+func (m *Option) GetValue() (val string, set bool) {
+	if m.Value == nil {
+		return
+	}
+
+	return *m.Value, true
+}
+
+// SetValue sets the value of Value
+func (m *Option) SetValue(v string) *Option {
+	m.Value = &v
+	return m
+}
+
+// GetName returns the de-referenced value of Name.
+// The second return value states whether the field was set.
+func (m *Option) GetName() (val string, set bool) {
+	if m.Name == nil {
+		return
+	}
+
+	return *m.Name, true
+}
+
+// SetName sets the value of Name
+func (m *Option) SetName(v string) *Option {
+	m.Name = &v
+	return m
+}
+
 // Validate returns an error if any of the fields have bad values
 func (m *Option) Validate() error {
 	return nil
+}
+
+// DeviceStateChangedEvent is defined in the .def file
+type DeviceStateChangedEvent struct {
+	Device *Device `json:"device,omitempty"`
+}
+
+// GetDevice returns the de-referenced value of Device.
+// The second return value states whether the field was set.
+func (m *DeviceStateChangedEvent) GetDevice() (val Device, set bool) {
+	if m.Device == nil {
+		return
+	}
+
+	return *m.Device, true
+}
+
+// SetDevice sets the value of Device
+func (m *DeviceStateChangedEvent) SetDevice(v Device) *DeviceStateChangedEvent {
+	m.Device = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
