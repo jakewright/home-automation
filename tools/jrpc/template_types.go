@@ -20,9 +20,9 @@ type typesDataField struct {
 	GoName        string
 	JSONName      string
 	Type          string
-	IsMessageType bool
+	IsMessageType bool // Used to know whether the field can be recursively validated
 	Repeated      bool
-	Pointer       bool
+	Pointer       bool // TODO: make all of them pointers by default
 
 	// Field options
 	Required bool
@@ -52,32 +52,40 @@ package {{ .PackageName }}
 	// {{ $message.Name }} is defined in the .def file
 	type {{ $message.Name }} struct {
 		{{- range $field := .Fields }}
-			{{ $field.GoName }} {{ $field.Type }} ` + "`" + `json:"{{ $field.JSONName }}"` + "`" + `
+			{{ $field.GoName }} *{{ $field.Type }} ` + "`" + `json:"{{ $field.JSONName }},omitempty"` + "`" + `
 		{{- end }}
 	}
-{{- end }}
 
-{{ range $message := .Messages }}
+	{{- range $field := .Fields }}
+		// Get{{ $field.GoName }} returns the de-referenced value of {{ $field.GoName }}.
+		// The second return value states whether the field was set.
+		func (m *{{ $message.Name }}) Get{{ $field.GoName }}() (val {{ $field.Type }}, set bool) {
+			if m.{{ $field.GoName }} == nil {
+				return
+			}
+
+			return *m.{{ $field.GoName }}, true
+		}
+
+		// Set{{ $field.GoName }} sets the value of {{ $field.GoName }}
+		func (m *{{ $message.Name }}) Set{{ $field.GoName }}(v {{ $field.Type }}) *{{ $message.Name }} {
+			m.{{ $field.GoName }} = &v
+			return m
+		}
+	{{- end }}
+
 	// Validate returns an error if any of the fields have bad values
 	func (m *{{ $message.Name }}) Validate() error {
 		{{- range $field := $message.Fields -}}
 			{{ if $field.IsMessageType -}}
 				{{ if $field.Repeated -}}
-					{{ if $field.Pointer -}}
-						if m.{{ $field.GoName }} != nil {
-							for _, r := range *m.{{ $field.GoName }} {
-								if err := r.Validate(); err != nil {
-									return err
-								}
-							}
-						}
-					{{ else -}}
-						for _, r := range m.{{ $field.GoName }} {
+					if m.{{ $field.GoName }} != nil {
+						for _, r := range *m.{{ $field.GoName }} {
 							if err := r.Validate(); err != nil {
 								return err
 							}
 						}
-					{{ end -}}
+					}
 				{{ else -}}
 					if err := m.{{ $field.GoName }}.Validate(); err != nil {
 						return err
@@ -86,33 +94,19 @@ package {{ .PackageName }}
 			{{ end -}}
 
 			{{ if $field.Required -}}
-				{{ if $field.Pointer -}}
-					if m.{{ $field.GoName }} == nil {
-				{{ else if $field.Repeated -}}
-					if len(m.{{ $field.GoName }}) == 0 {
-				{{ else if eq $field.Type "[]byte" -}}
-					if len(m.{{ $field.GoName }}) == 0 {
-				{{ else if eq $field.Type "string" -}}
-					if m.{{ $field.GoName }} == "" {
-				{{ else if eq $field.Type "int32" "int64" "uint8" "uint32" "uint64" "float32" "float64" -}}
-					if m.{{ $field.GoName }} == 0 {
-				{{ else if eq $field.Type "time.Time" -}} 
-					if m.{{ $field.GoName }}.IsZero() {
-				{{ else }}
-					if true {
-				{{ end -}}
+				if m.{{ $field.GoName }} == nil {
 					return oops.BadRequest("field '{{ $field.JSONName }}' is required")
 				}
 			{{ end -}}
 
 			{{ if $field.Min -}}
-				if m.{{ $field.GoName }} < {{ $field.Min }} {
+				if m.{{ $field.GoName }} != nil && *m.{{ $field.GoName }} < {{ $field.Min }} {
 					return oops.BadRequest("field '{{ $field.JSONName }}' should be ≥ {{ $field.Min }}")
 				}
 			{{ end -}}
 
 			{{ if $field.Max -}}
-				if m.{{ $field.GoName }} > {{ $field.Max }} {
+				if m.{{ $field.GoName }} != nil && *m.{{ $field.GoName }} > {{ $field.Max }} {
 					return oops.BadRequest("field '{{ $field.JSONName }}' should be ≤ {{ $field.Max }}")
 				}
 			{{ end -}}
@@ -138,6 +132,9 @@ func (g *typesGenerator) PackageDir() string {
 
 func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 	im.Add("github.com/jakewright/home-automation/libraries/go/oops")
+
+	// util is needed for the color type if any fields have type "rgb"
+	im.Add("github.com/jakewright/home-automation/libraries/go/util")
 
 	if len(g.file.Messages) == 0 {
 		return nil, nil

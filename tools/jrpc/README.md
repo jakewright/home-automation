@@ -1,8 +1,10 @@
 # JRPC
 
-JRPC generates code from .def files to assist with JSON-based RPCs.
+JRPC generates code from `def` files to assist with JSON-based RPCs.
 
 ### Types
+
+A message field can have one of the following types. The table shows the corresponding generated types. Fields can be marked as repeated by prepending the type with `[]`.
 
 | JRPC type   | Golang type   |
 | ----------- | ------------- |
@@ -18,8 +20,11 @@ JRPC generates code from .def files to assist with JSON-based RPCs.
 | `time`      | `time.Time`   |
 | `any`       | `interface{}` |
 | `map[x]y`   | `map[x]y`     |
+| `rgb`       | `util.RGB`    |
 
 ### Field options
+
+Message fields can take various options which are used to generate validation functions. The router code (`template_router.go`) automatically calls the validation functions in the generated handlers.
 
 **`required`** If set, the _zero value_ is not allowed. For pointer (`*`) fields, they must be set. For non-pointer fields, they must not be zero.
 

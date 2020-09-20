@@ -143,20 +143,21 @@ func resolveTypeName(t *svcdef.Type, f *svcdef.File, im *imports.Manager) (*type
 	}
 
 	// Type name can be used to instantiate the type as it
-	// is not prepended with pointer or slice characters.
+	// is not prepended with pointer or slice characters. // TODO fix comment
 	typeName := fullTypeName
 
-	if messageType {
-		fullTypeName = "*" + fullTypeName
-	}
+	// TODO clean this up
+	// if messageType {
+	// 	fullTypeName = "*" + fullTypeName
+	// }
 
 	if t.Repeated {
 		fullTypeName = "[]" + fullTypeName
 	}
 
-	if t.Optional && fullTypeName[0] != '*' { // Don't add a double * in the case of a non-repeated message type
-		fullTypeName = "*" + fullTypeName
-	}
+	// if t.Optional && fullTypeName[0] != '*' { // Don't add a double * in the case of a non-repeated message type
+	// 	fullTypeName = "*" + fullTypeName
+	// }
 
 	return &typeInfo{
 		TypeName:      typeName,
@@ -183,18 +184,19 @@ type typeData struct {
 }
 
 var typeMap = map[string]typeData{
-	"any":     {"interface{}", ""},
-	"bool":    {"bool", ""},
-	"string":  {"string", ""},
-	"int32":   {"int32", ""},
-	"int64":   {"int64", ""},
-	"uint8":   {"uint8", ""},
-	"uint32":  {"uint32", ""},
-	"uint64":  {"uint64", ""},
-	"float32": {"float32", ""},
-	"float64": {"float64", ""},
-	"bytes":   {"[]byte", ""},
-	"time":    {"Time", "time"},
+	typeAny:     {"interface{}", ""},
+	typeBool:    {"bool", ""},
+	typeString:  {"string", ""},
+	typeInt32:   {"int32", ""},
+	typeInt64:   {"int64", ""},
+	typeUint8:   {"uint8", ""},
+	typeUint32:  {"uint32", ""},
+	typeUint64:  {"uint64", ""},
+	typeFloat32: {"float32", ""},
+	typeFloat64: {"float64", ""},
+	typeBytes:   {"[]byte", ""}, // TODO why is this not just byte with the option to be repeated?
+	typeTime:    {"Time", "time"},
+	typeRGB:     {"RGB", "github.com/jakewright/home-automation/libraries/go/util"},
 }
 
 // todo: is this pascal case?
