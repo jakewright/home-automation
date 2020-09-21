@@ -104,9 +104,19 @@ func resolveTypeName(t *svcdef.Type, f *svcdef.File, im *imports.Manager) (*type
 
 		// Nothing needs to be imported for a map type. If either
 		// the key or value type needed an import, the recursive
-		// call will have already dealt with that.
+		// call will have already dealt with that. We do need to
+		// make message types pointers though. See comment below
+		// about doing the same for repeated types.
 		// TODO: support nested maps properly
-		fullTypeName = "map[" + key.FullTypeName + "]" + val.FullTypeName
+		fullTypeName = val.FullTypeName
+		if val.IsMessageType {
+			fullTypeName = "*" + fullTypeName
+		}
+		fullTypeName = key.FullTypeName + "]" + fullTypeName
+		if key.IsMessageType {
+			fullTypeName = "*" + fullTypeName
+		}
+		fullTypeName = "map[" + fullTypeName
 
 	} else if strings.HasPrefix(t.Qualified, ".") { // local type (message is defined in the same def file)
 		// Remove the first dot and replace any others with underscores
@@ -147,11 +157,17 @@ func resolveTypeName(t *svcdef.Type, f *svcdef.File, im *imports.Manager) (*type
 	typeName := fullTypeName
 
 	// TODO clean this up
-	// if messageType {
-	// 	fullTypeName = "*" + fullTypeName
-	// }
 
 	if t.Repeated {
+		// The template makes all types pointers except for reference types
+		// (maps and slices). In the case of slices, we usually don't want
+		// the values to be pointers (e.g. prefer []string over []*string)
+		// but message types are a special case (e.g. prefer []*Foo over
+		// []Foo where Foo is a struct type).
+		if messageType {
+			fullTypeName = "*" + fullTypeName
+		}
+
 		fullTypeName = "[]" + fullTypeName
 	}
 
@@ -187,9 +203,10 @@ var typeMap = map[string]typeData{
 	typeAny:     {"interface{}", ""},
 	typeBool:    {"bool", ""},
 	typeString:  {"string", ""},
+	typeInt8:    {"uint8", ""},
 	typeInt32:   {"int32", ""},
 	typeInt64:   {"int64", ""},
-	typeUint8:   {"uint8", ""},
+	typeUint8:   {"byte", ""},
 	typeUint32:  {"uint32", ""},
 	typeUint64:  {"uint64", ""},
 	typeFloat32: {"float32", ""},

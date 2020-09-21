@@ -4,6 +4,7 @@ const (
 	typeAny     = "any"
 	typeBool    = "bool"
 	typeString  = "string"
+	typeInt8    = "int8"
 	typeInt32   = "int32"
 	typeInt64   = "int64"
 	typeUint8   = "uint8"

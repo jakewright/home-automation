@@ -10,8 +10,10 @@ A message field can have one of the following types. The table shows the corresp
 | ----------- | ------------- |
 | `bool`      | `bool`        |
 | `string`    | `string`      |
+| `int8`      | `int8`        |
 | `int32`     | `int32`       |
 | `int64`     | `int64`       |
+| `uint8`     | `byte`        |
 | `uint32`    | `uint32`      |
 | `uint64`    | `uint64`      |
 | `float32`   | `float32`     |
@@ -26,7 +28,7 @@ A message field can have one of the following types. The table shows the corresp
 
 Message fields can take various options which are used to generate validation functions. The router code (`template_router.go`) automatically calls the validation functions in the generated handlers.
 
-**`required`** If set, the _zero value_ is not allowed. For pointer (`*`) fields, they must be set. For non-pointer fields, they must not be zero.
+**`required`** If set, the value in the incoming JSON must be set. This holds for repeated fields as well, i.e. the field must be set (but could be an empty array).
 
 **`min`** Can be used on numeric fields to enforce a minimum allowed value.
 

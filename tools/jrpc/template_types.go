@@ -22,7 +22,7 @@ type typesDataField struct {
 	Type          string
 	IsMessageType bool // Used to know whether the field can be recursively validated
 	Repeated      bool
-	Pointer       bool // TODO: make all of them pointers by default
+	Ptr           bool // Ptr is set if the field is not a reference type (slice or map)
 
 	// Field options
 	Required bool
@@ -52,24 +52,25 @@ package {{ .PackageName }}
 	// {{ $message.Name }} is defined in the .def file
 	type {{ $message.Name }} struct {
 		{{- range $field := .Fields }}
-			{{ $field.GoName }} *{{ $field.Type }} ` + "`" + `json:"{{ $field.JSONName }},omitempty"` + "`" + `
+			{{ $field.GoName }} {{ if $field.Ptr }}*{{ end }}{{ $field.Type }} ` + "`" + `json:"{{ $field.JSONName }},omitempty"` + "`" + `
 		{{- end }}
 	}
 
 	{{- range $field := .Fields }}
 		// Get{{ $field.GoName }} returns the de-referenced value of {{ $field.GoName }}.
-		// The second return value states whether the field was set.
-		func (m *{{ $message.Name }}) Get{{ $field.GoName }}() (val {{ $field.Type }}, set bool) {
+		{{ if $field.Required }} // If the field is nil, the function panics because {{ $field.JSONName }} is marked as required. 
+		{{- else }} // The second return value states whether the field was set. {{ end }}
+		func (m *{{ $message.Name }}) Get{{ $field.GoName }}() (val {{ $field.Type }}{{ if not $field.Required }}, set bool{{ end }}) {
 			if m.{{ $field.GoName }} == nil {
-				return
+				{{ if $field.Required }} panic("{{ $field.JSONName }} marked as required but was not set. This should have been caught by the validate function.") {{ else }} return {{ end }}
 			}
 
-			return *m.{{ $field.GoName }}, true
+			return {{ if $field.Ptr }}*{{ end }}m.{{ $field.GoName }}{{ if not $field.Required }}, true{{ end }}
 		}
 
 		// Set{{ $field.GoName }} sets the value of {{ $field.GoName }}
 		func (m *{{ $message.Name }}) Set{{ $field.GoName }}(v {{ $field.Type }}) *{{ $message.Name }} {
-			m.{{ $field.GoName }} = &v
+			m.{{ $field.GoName }} = {{ if $field.Ptr }}&{{ end }}v
 			return m
 		}
 	{{- end }}
@@ -80,7 +81,7 @@ package {{ .PackageName }}
 			{{ if $field.IsMessageType -}}
 				{{ if $field.Repeated -}}
 					if m.{{ $field.GoName }} != nil {
-						for _, r := range *m.{{ $field.GoName }} {
+						for _, r := range m.{{ $field.GoName }} {
 							if err := r.Validate(); err != nil {
 								return err
 							}
@@ -214,7 +215,7 @@ func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 				Type:          typ.FullTypeName,
 				IsMessageType: typ.IsMessageType,
 				Repeated:      typ.Repeated,
-				Pointer:       typ.Pointer,
+				Ptr:           !(f.Type.Map || f.Type.Repeated), // [1]
 				Required:      required,
 				Min:           min,
 				Max:           max,
@@ -237,3 +238,9 @@ func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 func (g *typesGenerator) Filename() string {
 	return "types.go"
 }
+
+// [1] A note on reference types
+// An empty array in JSON becomes an empty slice in go when unmarshaled.
+// If the JSON field is not set, then the slice in go remains nil. It
+// is therefore not necessary for slices to use pointers to determine
+// whether or not the value was set in the JSON.
