@@ -6,202 +6,183 @@ import (
 	oops "github.com/jakewright/home-automation/libraries/go/oops"
 )
 
-// Device is defined in the .def file
-type Device struct {
-	Id             *string                 `json:"id,omitempty"`
-	Name           *string                 `json:"name,omitempty"`
-	Type           *string                 `json:"type,omitempty"`
-	Kind           *string                 `json:"kind,omitempty"`
-	ControllerName *string                 `json:"controller_name,omitempty"`
-	Attributes     *map[string]interface{} `json:"attributes,omitempty"`
-	StateProviders *[]string               `json:"state_providers,omitempty"`
-	State          *map[string]Property    `json:"state,omitempty"`
-	Commands       *map[string]Command     `json:"commands,omitempty"`
+// Header is defined in the .def file
+type Header struct {
+	Id             *string                `json:"id,omitempty"`
+	Name           *string                `json:"name,omitempty"`
+	Type           *string                `json:"type,omitempty"`
+	Kind           *string                `json:"kind,omitempty"`
+	ControllerName *string                `json:"controller_name,omitempty"`
+	Attributes     map[string]interface{} `json:"attributes,omitempty"`
+	StateProviders []string               `json:"state_providers,omitempty"`
+	RoomId         *string                `json:"room_id,omitempty"`
 }
 
 // GetId returns the de-referenced value of Id.
-// The second return value states whether the field was set.
-func (m *Device) GetId() (val string, set bool) {
+// If the field is nil, the function panics because id is marked as required.
+func (m *Header) GetId() (val string) {
 	if m.Id == nil {
-		return
+		panic("id marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Id, true
+	return *m.Id
 }
 
 // SetId sets the value of Id
-func (m *Device) SetId(v string) *Device {
+func (m *Header) SetId(v string) *Header {
 	m.Id = &v
 	return m
 }
 
 // GetName returns the de-referenced value of Name.
-// The second return value states whether the field was set.
-func (m *Device) GetName() (val string, set bool) {
+// If the field is nil, the function panics because name is marked as required.
+func (m *Header) GetName() (val string) {
 	if m.Name == nil {
-		return
+		panic("name marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Name, true
+	return *m.Name
 }
 
 // SetName sets the value of Name
-func (m *Device) SetName(v string) *Device {
+func (m *Header) SetName(v string) *Header {
 	m.Name = &v
 	return m
 }
 
 // GetType returns the de-referenced value of Type.
-// The second return value states whether the field was set.
-func (m *Device) GetType() (val string, set bool) {
+// If the field is nil, the function panics because type is marked as required.
+func (m *Header) GetType() (val string) {
 	if m.Type == nil {
-		return
+		panic("type marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Type, true
+	return *m.Type
 }
 
 // SetType sets the value of Type
-func (m *Device) SetType(v string) *Device {
+func (m *Header) SetType(v string) *Header {
 	m.Type = &v
 	return m
 }
 
 // GetKind returns the de-referenced value of Kind.
-// The second return value states whether the field was set.
-func (m *Device) GetKind() (val string, set bool) {
+// If the field is nil, the function panics because kind is marked as required.
+func (m *Header) GetKind() (val string) {
 	if m.Kind == nil {
-		return
+		panic("kind marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Kind, true
+	return *m.Kind
 }
 
 // SetKind sets the value of Kind
-func (m *Device) SetKind(v string) *Device {
+func (m *Header) SetKind(v string) *Header {
 	m.Kind = &v
 	return m
 }
 
 // GetControllerName returns the de-referenced value of ControllerName.
-// The second return value states whether the field was set.
-func (m *Device) GetControllerName() (val string, set bool) {
+// If the field is nil, the function panics because controller_name is marked as required.
+func (m *Header) GetControllerName() (val string) {
 	if m.ControllerName == nil {
-		return
+		panic("controller_name marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.ControllerName, true
+	return *m.ControllerName
 }
 
 // SetControllerName sets the value of ControllerName
-func (m *Device) SetControllerName(v string) *Device {
+func (m *Header) SetControllerName(v string) *Header {
 	m.ControllerName = &v
 	return m
 }
 
 // GetAttributes returns the de-referenced value of Attributes.
 // The second return value states whether the field was set.
-func (m *Device) GetAttributes() (val map[string]interface{}, set bool) {
+func (m *Header) GetAttributes() (val map[string]interface{}, set bool) {
 	if m.Attributes == nil {
 		return
 	}
 
-	return *m.Attributes, true
+	return m.Attributes, true
 }
 
 // SetAttributes sets the value of Attributes
-func (m *Device) SetAttributes(v map[string]interface{}) *Device {
-	m.Attributes = &v
+func (m *Header) SetAttributes(v map[string]interface{}) *Header {
+	m.Attributes = v
 	return m
 }
 
 // GetStateProviders returns the de-referenced value of StateProviders.
 // The second return value states whether the field was set.
-func (m *Device) GetStateProviders() (val []string, set bool) {
+func (m *Header) GetStateProviders() (val []string, set bool) {
 	if m.StateProviders == nil {
 		return
 	}
 
-	return *m.StateProviders, true
+	return m.StateProviders, true
 }
 
 // SetStateProviders sets the value of StateProviders
-func (m *Device) SetStateProviders(v []string) *Device {
-	m.StateProviders = &v
+func (m *Header) SetStateProviders(v []string) *Header {
+	m.StateProviders = v
 	return m
 }
 
-// GetState returns the de-referenced value of State.
+// GetRoomId returns the de-referenced value of RoomId.
 // The second return value states whether the field was set.
-func (m *Device) GetState() (val map[string]Property, set bool) {
-	if m.State == nil {
+func (m *Header) GetRoomId() (val string, set bool) {
+	if m.RoomId == nil {
 		return
 	}
 
-	return *m.State, true
+	return *m.RoomId, true
 }
 
-// SetState sets the value of State
-func (m *Device) SetState(v map[string]Property) *Device {
-	m.State = &v
-	return m
-}
-
-// GetCommands returns the de-referenced value of Commands.
-// The second return value states whether the field was set.
-func (m *Device) GetCommands() (val map[string]Command, set bool) {
-	if m.Commands == nil {
-		return
-	}
-
-	return *m.Commands, true
-}
-
-// SetCommands sets the value of Commands
-func (m *Device) SetCommands(v map[string]Command) *Device {
-	m.Commands = &v
+// SetRoomId sets the value of RoomId
+func (m *Header) SetRoomId(v string) *Header {
+	m.RoomId = &v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
-func (m *Device) Validate() error {
+func (m *Header) Validate() error {
+	if m.Id == nil {
+		return oops.BadRequest("field 'id' is required")
+	}
+	if m.Name == nil {
+		return oops.BadRequest("field 'name' is required")
+	}
+	if m.Type == nil {
+		return oops.BadRequest("field 'type' is required")
+	}
+	if m.Kind == nil {
+		return oops.BadRequest("field 'kind' is required")
+	}
+	if m.ControllerName == nil {
+		return oops.BadRequest("field 'controller_name' is required")
+	}
 	return nil
 }
 
 // Property is defined in the .def file
 type Property struct {
-	Value         *interface{} `json:"value,omitempty"`
-	Type          *string      `json:"type,omitempty"`
-	Min           *float64     `json:"min,omitempty"`
-	Max           *float64     `json:"max,omitempty"`
-	Interpolation *string      `json:"interpolation,omitempty"`
-	Options       *[]Option    `json:"options,omitempty"`
-}
-
-// GetValue returns the de-referenced value of Value.
-// The second return value states whether the field was set.
-func (m *Property) GetValue() (val interface{}, set bool) {
-	if m.Value == nil {
-		return
-	}
-
-	return *m.Value, true
-}
-
-// SetValue sets the value of Value
-func (m *Property) SetValue(v interface{}) *Property {
-	m.Value = &v
-	return m
+	Type          *string   `json:"type,omitempty"`
+	Min           *float64  `json:"min,omitempty"`
+	Max           *float64  `json:"max,omitempty"`
+	Interpolation *string   `json:"interpolation,omitempty"`
+	Options       []*Option `json:"options,omitempty"`
 }
 
 // GetType returns the de-referenced value of Type.
-// The second return value states whether the field was set.
-func (m *Property) GetType() (val string, set bool) {
+// If the field is nil, the function panics because type is marked as required.
+func (m *Property) GetType() (val string) {
 	if m.Type == nil {
-		return
+		panic("type marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Type, true
+	return *m.Type
 }
 
 // SetType sets the value of Type
@@ -260,24 +241,27 @@ func (m *Property) SetInterpolation(v string) *Property {
 
 // GetOptions returns the de-referenced value of Options.
 // The second return value states whether the field was set.
-func (m *Property) GetOptions() (val []Option, set bool) {
+func (m *Property) GetOptions() (val []*Option, set bool) {
 	if m.Options == nil {
 		return
 	}
 
-	return *m.Options, true
+	return m.Options, true
 }
 
 // SetOptions sets the value of Options
-func (m *Property) SetOptions(v []Option) *Property {
-	m.Options = &v
+func (m *Property) SetOptions(v []*Option) *Property {
+	m.Options = v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *Property) Validate() error {
+	if m.Type == nil {
+		return oops.BadRequest("field 'type' is required")
+	}
 	if m.Options != nil {
-		for _, r := range *m.Options {
+		for _, r := range m.Options {
 			if err := r.Validate(); err != nil {
 				return err
 			}
@@ -289,22 +273,22 @@ func (m *Property) Validate() error {
 
 // Command is defined in the .def file
 type Command struct {
-	Args *map[string]Arg `json:"args,omitempty"`
+	Args map[string]*Arg `json:"args,omitempty"`
 }
 
 // GetArgs returns the de-referenced value of Args.
 // The second return value states whether the field was set.
-func (m *Command) GetArgs() (val map[string]Arg, set bool) {
+func (m *Command) GetArgs() (val map[string]*Arg, set bool) {
 	if m.Args == nil {
 		return
 	}
 
-	return *m.Args, true
+	return m.Args, true
 }
 
 // SetArgs sets the value of Args
-func (m *Command) SetArgs(v map[string]Arg) *Command {
-	m.Args = &v
+func (m *Command) SetArgs(v map[string]*Arg) *Command {
+	m.Args = v
 	return m
 }
 
@@ -319,17 +303,17 @@ type Arg struct {
 	Type     *string   `json:"type,omitempty"`
 	Min      *float64  `json:"min,omitempty"`
 	Max      *float64  `json:"max,omitempty"`
-	Options  *[]Option `json:"options,omitempty"`
+	Options  []*Option `json:"options,omitempty"`
 }
 
 // GetRequired returns the de-referenced value of Required.
-// The second return value states whether the field was set.
-func (m *Arg) GetRequired() (val bool, set bool) {
+// If the field is nil, the function panics because required is marked as required.
+func (m *Arg) GetRequired() (val bool) {
 	if m.Required == nil {
-		return
+		panic("required marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Required, true
+	return *m.Required
 }
 
 // SetRequired sets the value of Required
@@ -339,13 +323,13 @@ func (m *Arg) SetRequired(v bool) *Arg {
 }
 
 // GetType returns the de-referenced value of Type.
-// The second return value states whether the field was set.
-func (m *Arg) GetType() (val string, set bool) {
+// If the field is nil, the function panics because type is marked as required.
+func (m *Arg) GetType() (val string) {
 	if m.Type == nil {
-		return
+		panic("type marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Type, true
+	return *m.Type
 }
 
 // SetType sets the value of Type
@@ -388,24 +372,30 @@ func (m *Arg) SetMax(v float64) *Arg {
 
 // GetOptions returns the de-referenced value of Options.
 // The second return value states whether the field was set.
-func (m *Arg) GetOptions() (val []Option, set bool) {
+func (m *Arg) GetOptions() (val []*Option, set bool) {
 	if m.Options == nil {
 		return
 	}
 
-	return *m.Options, true
+	return m.Options, true
 }
 
 // SetOptions sets the value of Options
-func (m *Arg) SetOptions(v []Option) *Arg {
-	m.Options = &v
+func (m *Arg) SetOptions(v []*Option) *Arg {
+	m.Options = v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *Arg) Validate() error {
+	if m.Required == nil {
+		return oops.BadRequest("field 'required' is required")
+	}
+	if m.Type == nil {
+		return oops.BadRequest("field 'type' is required")
+	}
 	if m.Options != nil {
-		for _, r := range *m.Options {
+		for _, r := range m.Options {
 			if err := r.Validate(); err != nil {
 				return err
 			}
@@ -422,13 +412,13 @@ type Option struct {
 }
 
 // GetValue returns the de-referenced value of Value.
-// The second return value states whether the field was set.
-func (m *Option) GetValue() (val string, set bool) {
+// If the field is nil, the function panics because value is marked as required.
+func (m *Option) GetValue() (val string) {
 	if m.Value == nil {
-		return
+		panic("value marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Value, true
+	return *m.Value
 }
 
 // SetValue sets the value of Value
@@ -438,13 +428,13 @@ func (m *Option) SetValue(v string) *Option {
 }
 
 // GetName returns the de-referenced value of Name.
-// The second return value states whether the field was set.
-func (m *Option) GetName() (val string, set bool) {
+// If the field is nil, the function panics because name is marked as required.
+func (m *Option) GetName() (val string) {
 	if m.Name == nil {
-		return
+		panic("name marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Name, true
+	return *m.Name
 }
 
 // SetName sets the value of Name
@@ -455,38 +445,64 @@ func (m *Option) SetName(v string) *Option {
 
 // Validate returns an error if any of the fields have bad values
 func (m *Option) Validate() error {
+	if m.Value == nil {
+		return oops.BadRequest("field 'value' is required")
+	}
+	if m.Name == nil {
+		return oops.BadRequest("field 'name' is required")
+	}
 	return nil
 }
 
 // DeviceStateChangedEvent is defined in the .def file
 type DeviceStateChangedEvent struct {
-	Device *Device `json:"device,omitempty"`
+	Header *Header      `json:"header,omitempty"`
+	State  *interface{} `json:"state,omitempty"`
 }
 
-// GetDevice returns the de-referenced value of Device.
-// The second return value states whether the field was set.
-func (m *DeviceStateChangedEvent) GetDevice() (val Device, set bool) {
-	if m.Device == nil {
-		return
+// GetHeader returns the de-referenced value of Header.
+// If the field is nil, the function panics because header is marked as required.
+func (m *DeviceStateChangedEvent) GetHeader() (val Header) {
+	if m.Header == nil {
+		panic("header marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Device, true
+	return *m.Header
 }
 
-// SetDevice sets the value of Device
-func (m *DeviceStateChangedEvent) SetDevice(v Device) *DeviceStateChangedEvent {
-	m.Device = &v
+// SetHeader sets the value of Header
+func (m *DeviceStateChangedEvent) SetHeader(v Header) *DeviceStateChangedEvent {
+	m.Header = &v
+	return m
+}
+
+// GetState returns the de-referenced value of State.
+// If the field is nil, the function panics because state is marked as required.
+func (m *DeviceStateChangedEvent) GetState() (val interface{}) {
+	if m.State == nil {
+		panic("state marked as required but was not set. This should have been caught by the validate function.")
+	}
+
+	return *m.State
+}
+
+// SetState sets the value of State
+func (m *DeviceStateChangedEvent) SetState(v interface{}) *DeviceStateChangedEvent {
+	m.State = &v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *DeviceStateChangedEvent) Validate() error {
-	if err := m.Device.Validate(); err != nil {
+	if err := m.Header.Validate(); err != nil {
 		return err
 	}
 
-	if m.Device == nil {
-		return oops.BadRequest("field 'device' is required")
+	if m.Header == nil {
+		return oops.BadRequest("field 'header' is required")
+	}
+	if m.State == nil {
+		return oops.BadRequest("field 'state' is required")
 	}
 	return nil
 }

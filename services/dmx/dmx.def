@@ -36,13 +36,17 @@ message UpdateDeviceResponse {
     device.Device device
 }
 
+message MegaParProfileProperties {
+    bool power
+    uint32 brightness (min=0, max=255)
+    rgb rgb
+}
+
 message UpdateMegaParProfileRequest {
     *string device_id (required)
-    *bool power
-    *uint32 brightness (min=0, max=255)
-    *rgb rgb
+    MegaParProfileProperties state
 }
 
 message UpdateMegaParProfileResponse {
-
+    MegaParProfileProperties state
 }

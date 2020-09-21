@@ -143,12 +143,76 @@ func (m *UpdateDeviceResponse) Validate() error {
 	return nil
 }
 
-// UpdateMegaParProfileRequest is defined in the .def file
-type UpdateMegaParProfileRequest struct {
-	DeviceId   *string   `json:"device_id,omitempty"`
+// MegaParProfileProperties is defined in the .def file
+type MegaParProfileProperties struct {
 	Power      *bool     `json:"power,omitempty"`
 	Brightness *uint32   `json:"brightness,omitempty"`
 	Rgb        *util.RGB `json:"rgb,omitempty"`
+}
+
+// GetPower returns the de-referenced value of Power.
+// The second return value states whether the field was set.
+func (m *MegaParProfileProperties) GetPower() (val bool, set bool) {
+	if m.Power == nil {
+		return
+	}
+
+	return *m.Power, true
+}
+
+// SetPower sets the value of Power
+func (m *MegaParProfileProperties) SetPower(v bool) *MegaParProfileProperties {
+	m.Power = &v
+	return m
+}
+
+// GetBrightness returns the de-referenced value of Brightness.
+// The second return value states whether the field was set.
+func (m *MegaParProfileProperties) GetBrightness() (val uint32, set bool) {
+	if m.Brightness == nil {
+		return
+	}
+
+	return *m.Brightness, true
+}
+
+// SetBrightness sets the value of Brightness
+func (m *MegaParProfileProperties) SetBrightness(v uint32) *MegaParProfileProperties {
+	m.Brightness = &v
+	return m
+}
+
+// GetRgb returns the de-referenced value of Rgb.
+// The second return value states whether the field was set.
+func (m *MegaParProfileProperties) GetRgb() (val util.RGB, set bool) {
+	if m.Rgb == nil {
+		return
+	}
+
+	return *m.Rgb, true
+}
+
+// SetRgb sets the value of Rgb
+func (m *MegaParProfileProperties) SetRgb(v util.RGB) *MegaParProfileProperties {
+	m.Rgb = &v
+	return m
+}
+
+// Validate returns an error if any of the fields have bad values
+func (m *MegaParProfileProperties) Validate() error {
+	if m.Brightness != nil && *m.Brightness < 0 {
+		return oops.BadRequest("field 'brightness' should be ≥ 0")
+	}
+	if m.Brightness != nil && *m.Brightness > 255 {
+		return oops.BadRequest("field 'brightness' should be ≤ 255")
+	}
+	return nil
+}
+
+// UpdateMegaParProfileRequest is defined in the .def file
+type UpdateMegaParProfileRequest struct {
+	DeviceId *string                   `json:"device_id,omitempty"`
+	State    *MegaParProfileProperties `json:"state,omitempty"`
 }
 
 // GetDeviceId returns the de-referenced value of DeviceId.
@@ -167,51 +231,19 @@ func (m *UpdateMegaParProfileRequest) SetDeviceId(v string) *UpdateMegaParProfil
 	return m
 }
 
-// GetPower returns the de-referenced value of Power.
+// GetState returns the de-referenced value of State.
 // The second return value states whether the field was set.
-func (m *UpdateMegaParProfileRequest) GetPower() (val bool, set bool) {
-	if m.Power == nil {
+func (m *UpdateMegaParProfileRequest) GetState() (val MegaParProfileProperties, set bool) {
+	if m.State == nil {
 		return
 	}
 
-	return *m.Power, true
+	return *m.State, true
 }
 
-// SetPower sets the value of Power
-func (m *UpdateMegaParProfileRequest) SetPower(v bool) *UpdateMegaParProfileRequest {
-	m.Power = &v
-	return m
-}
-
-// GetBrightness returns the de-referenced value of Brightness.
-// The second return value states whether the field was set.
-func (m *UpdateMegaParProfileRequest) GetBrightness() (val uint32, set bool) {
-	if m.Brightness == nil {
-		return
-	}
-
-	return *m.Brightness, true
-}
-
-// SetBrightness sets the value of Brightness
-func (m *UpdateMegaParProfileRequest) SetBrightness(v uint32) *UpdateMegaParProfileRequest {
-	m.Brightness = &v
-	return m
-}
-
-// GetRgb returns the de-referenced value of Rgb.
-// The second return value states whether the field was set.
-func (m *UpdateMegaParProfileRequest) GetRgb() (val util.RGB, set bool) {
-	if m.Rgb == nil {
-		return
-	}
-
-	return *m.Rgb, true
-}
-
-// SetRgb sets the value of Rgb
-func (m *UpdateMegaParProfileRequest) SetRgb(v util.RGB) *UpdateMegaParProfileRequest {
-	m.Rgb = &v
+// SetState sets the value of State
+func (m *UpdateMegaParProfileRequest) SetState(v MegaParProfileProperties) *UpdateMegaParProfileRequest {
+	m.State = &v
 	return m
 }
 
@@ -220,20 +252,39 @@ func (m *UpdateMegaParProfileRequest) Validate() error {
 	if m.DeviceId == nil {
 		return oops.BadRequest("field 'device_id' is required")
 	}
-	if m.Brightness != nil && *m.Brightness < 0 {
-		return oops.BadRequest("field 'brightness' should be ≥ 0")
+	if err := m.State.Validate(); err != nil {
+		return err
 	}
-	if m.Brightness != nil && *m.Brightness > 255 {
-		return oops.BadRequest("field 'brightness' should be ≤ 255")
-	}
+
 	return nil
 }
 
 // UpdateMegaParProfileResponse is defined in the .def file
 type UpdateMegaParProfileResponse struct {
+	State *MegaParProfileProperties `json:"state,omitempty"`
+}
+
+// GetState returns the de-referenced value of State.
+// The second return value states whether the field was set.
+func (m *UpdateMegaParProfileResponse) GetState() (val MegaParProfileProperties, set bool) {
+	if m.State == nil {
+		return
+	}
+
+	return *m.State, true
+}
+
+// SetState sets the value of State
+func (m *UpdateMegaParProfileResponse) SetState(v MegaParProfileProperties) *UpdateMegaParProfileResponse {
+	m.State = &v
+	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *UpdateMegaParProfileResponse) Validate() error {
+	if err := m.State.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }

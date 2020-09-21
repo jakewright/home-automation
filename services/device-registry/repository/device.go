@@ -7,7 +7,7 @@ import (
 
 	"github.com/jinzhu/copier"
 
-	deviceregistrydef "github.com/jakewright/home-automation/services/device-registry/def"
+	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 )
 
 // DeviceRepository provides access to the underlying storage layer
@@ -15,8 +15,8 @@ type DeviceRepository struct {
 	// configFilename is the path to the device config file
 	configFilename string
 
-	devices []*deviceregistrydef.DeviceHeader
-	lock    sync.RWMutex
+	deviceHeaders []*devicedef.Header
+	lock          sync.RWMutex
 }
 
 // NewDeviceRepository returns a new device repository populated with devices
@@ -34,14 +34,17 @@ func NewDeviceRepository(configFilename string) (*DeviceRepository, error) {
 }
 
 // FindAll returns all devices
-func (r *DeviceRepository) FindAll() ([]*deviceregistrydef.DeviceHeader, error) {
+func (r *DeviceRepository) FindAll() ([]*devicedef.Header, error) {
 
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	devices := make([]*deviceregistrydef.DeviceHeader, len(r.devices))
-	for i, device := range r.devices {
-		out := &deviceregistrydef.DeviceHeader{}
+	devices := make([]*devicedef.Header, len(r.deviceHeaders))
+	for i, device := range r.deviceHeaders {
+		// todo: since the handler doesn't modify the device
+		// anymore (it used to decorate with rooms), there is
+		// probably no need to copy the struct.
+		out := &devicedef.Header{}
 		if err := copier.Copy(&out, device); err != nil {
 			return nil, err
 		}
@@ -52,7 +55,7 @@ func (r *DeviceRepository) FindAll() ([]*deviceregistrydef.DeviceHeader, error) 
 }
 
 // Find returns a device by ID
-func (r *DeviceRepository) Find(id string) (*deviceregistrydef.DeviceHeader, error) {
+func (r *DeviceRepository) Find(id string) (*devicedef.Header, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -60,9 +63,9 @@ func (r *DeviceRepository) Find(id string) (*deviceregistrydef.DeviceHeader, err
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	for _, device := range r.devices {
-		if device.Id == id {
-			out := &deviceregistrydef.DeviceHeader{}
+	for _, device := range r.deviceHeaders {
+		if device.GetId() == id {
+			out := &devicedef.Header{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}
@@ -75,7 +78,7 @@ func (r *DeviceRepository) Find(id string) (*deviceregistrydef.DeviceHeader, err
 }
 
 // FindByController returns all devices with the given controller name
-func (r *DeviceRepository) FindByController(controllerName string) ([]*deviceregistrydef.DeviceHeader, error) {
+func (r *DeviceRepository) FindByController(controllerName string) ([]*devicedef.Header, error) {
 	// Skip if we've recently reloaded
 	if err := r.reload(); err != nil {
 		return nil, err
@@ -87,10 +90,10 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*devicereg
 	// Use an empty slice declaration because if there are
 	// no devices we want to make sure an empty list is
 	// returned in JSON and not null.
-	devices := []*deviceregistrydef.DeviceHeader{}
-	for _, device := range r.devices {
-		if device.ControllerName == controllerName {
-			out := &deviceregistrydef.DeviceHeader{}
+	devices := []*devicedef.Header{}
+	for _, device := range r.deviceHeaders {
+		if device.GetControllerName() == controllerName {
+			out := &devicedef.Header{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}
@@ -102,7 +105,7 @@ func (r *DeviceRepository) FindByController(controllerName string) ([]*devicereg
 }
 
 // FindByRoom returns all devices for the given room
-func (r *DeviceRepository) FindByRoom(roomID string) ([]*deviceregistrydef.DeviceHeader, error) {
+func (r *DeviceRepository) FindByRoom(roomID string) ([]*devicedef.Header, error) {
 	if err := r.reload(); err != nil {
 		return nil, err
 	}
@@ -110,10 +113,10 @@ func (r *DeviceRepository) FindByRoom(roomID string) ([]*deviceregistrydef.Devic
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	var devices []*deviceregistrydef.DeviceHeader
-	for _, device := range r.devices {
-		if device.RoomId == roomID {
-			out := &deviceregistrydef.DeviceHeader{}
+	var devices []*devicedef.Header
+	for _, device := range r.deviceHeaders {
+		if deviceRoomID, set := device.GetRoomId(); set && deviceRoomID == roomID {
+			out := &devicedef.Header{}
 			if err := copier.Copy(out, device); err != nil {
 				return nil, err
 			}
@@ -132,7 +135,7 @@ func (r *DeviceRepository) reload() error {
 	}
 
 	var cfg struct {
-		Devices []*deviceregistrydef.DeviceHeader `json:"devices"`
+		Devices []*devicedef.Header `json:"devices"`
 	}
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return err
@@ -141,6 +144,6 @@ func (r *DeviceRepository) reload() error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	r.devices = cfg.Devices
+	r.deviceHeaders = cfg.Devices
 	return nil
 }

@@ -1,3 +1,5 @@
+import device "../../libraries/go/device/device.def"
+
 service DeviceRegistry {
     path = "device-registry"
 
@@ -24,32 +26,20 @@ service DeviceRegistry {
 
 // ---- Domain messages ---- //
 
-message DeviceHeader {
-    string id
-    string name
-    string type // e.g. huelight
-    string kind // e.g. lamp
-    string controller_name
-    map[string]any attributes
-    []string state_providers
-    string room_id
-    Room room
-}
-
 message Room {
-    string id
-    string name
-    []DeviceHeader devices
+    string id (required)
+    string name (required)
+    []device.Header devices
 }
 
 // ---- Request & Response messages ---- //
 
 message GetDeviceRequest {
-    string device_id
+    string device_id (required)
 }
 
 message GetDeviceResponse {
-    DeviceHeader device_header
+    device.Header device_header
 }
 
 message ListDevicesRequest {
@@ -57,20 +47,18 @@ message ListDevicesRequest {
 }
 
 message ListDevicesResponse {
-    []DeviceHeader device_headers
+    []device.Header device_headers
 }
 
 message GetRoomRequest {
-    string room_id
+    string room_id (required)
 }
 
 message GetRoomResponse {
     Room room
 }
 
-message ListRoomsRequest {
-
-}
+message ListRoomsRequest {}
 
 message ListRoomsResponse {
     []Room rooms

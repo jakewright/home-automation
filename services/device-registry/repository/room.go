@@ -64,7 +64,7 @@ func (r *RoomRepository) Find(id string) (*deviceregistrydef.Room, error) {
 	defer r.lock.RUnlock()
 
 	for _, room := range r.rooms {
-		if room.Id == id {
+		if room.GetId() == id {
 			out := &deviceregistrydef.Room{}
 			if err := copier.Copy(out, room); err != nil {
 				return nil, err

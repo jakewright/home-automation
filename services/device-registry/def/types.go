@@ -2,187 +2,26 @@
 
 package deviceregistrydef
 
-// DeviceHeader is defined in the .def file
-type DeviceHeader struct {
-	Id             *string                 `json:"id,omitempty"`
-	Name           *string                 `json:"name,omitempty"`
-	Type           *string                 `json:"type,omitempty"`
-	Kind           *string                 `json:"kind,omitempty"`
-	ControllerName *string                 `json:"controller_name,omitempty"`
-	Attributes     *map[string]interface{} `json:"attributes,omitempty"`
-	StateProviders *[]string               `json:"state_providers,omitempty"`
-	RoomId         *string                 `json:"room_id,omitempty"`
-	Room           *Room                   `json:"room,omitempty"`
-}
-
-// GetId returns the de-referenced value of Id.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetId() (val string, set bool) {
-	if m.Id == nil {
-		return
-	}
-
-	return *m.Id, true
-}
-
-// SetId sets the value of Id
-func (m *DeviceHeader) SetId(v string) *DeviceHeader {
-	m.Id = &v
-	return m
-}
-
-// GetName returns the de-referenced value of Name.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetName() (val string, set bool) {
-	if m.Name == nil {
-		return
-	}
-
-	return *m.Name, true
-}
-
-// SetName sets the value of Name
-func (m *DeviceHeader) SetName(v string) *DeviceHeader {
-	m.Name = &v
-	return m
-}
-
-// GetType returns the de-referenced value of Type.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetType() (val string, set bool) {
-	if m.Type == nil {
-		return
-	}
-
-	return *m.Type, true
-}
-
-// SetType sets the value of Type
-func (m *DeviceHeader) SetType(v string) *DeviceHeader {
-	m.Type = &v
-	return m
-}
-
-// GetKind returns the de-referenced value of Kind.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetKind() (val string, set bool) {
-	if m.Kind == nil {
-		return
-	}
-
-	return *m.Kind, true
-}
-
-// SetKind sets the value of Kind
-func (m *DeviceHeader) SetKind(v string) *DeviceHeader {
-	m.Kind = &v
-	return m
-}
-
-// GetControllerName returns the de-referenced value of ControllerName.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetControllerName() (val string, set bool) {
-	if m.ControllerName == nil {
-		return
-	}
-
-	return *m.ControllerName, true
-}
-
-// SetControllerName sets the value of ControllerName
-func (m *DeviceHeader) SetControllerName(v string) *DeviceHeader {
-	m.ControllerName = &v
-	return m
-}
-
-// GetAttributes returns the de-referenced value of Attributes.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetAttributes() (val map[string]interface{}, set bool) {
-	if m.Attributes == nil {
-		return
-	}
-
-	return *m.Attributes, true
-}
-
-// SetAttributes sets the value of Attributes
-func (m *DeviceHeader) SetAttributes(v map[string]interface{}) *DeviceHeader {
-	m.Attributes = &v
-	return m
-}
-
-// GetStateProviders returns the de-referenced value of StateProviders.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetStateProviders() (val []string, set bool) {
-	if m.StateProviders == nil {
-		return
-	}
-
-	return *m.StateProviders, true
-}
-
-// SetStateProviders sets the value of StateProviders
-func (m *DeviceHeader) SetStateProviders(v []string) *DeviceHeader {
-	m.StateProviders = &v
-	return m
-}
-
-// GetRoomId returns the de-referenced value of RoomId.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetRoomId() (val string, set bool) {
-	if m.RoomId == nil {
-		return
-	}
-
-	return *m.RoomId, true
-}
-
-// SetRoomId sets the value of RoomId
-func (m *DeviceHeader) SetRoomId(v string) *DeviceHeader {
-	m.RoomId = &v
-	return m
-}
-
-// GetRoom returns the de-referenced value of Room.
-// The second return value states whether the field was set.
-func (m *DeviceHeader) GetRoom() (val Room, set bool) {
-	if m.Room == nil {
-		return
-	}
-
-	return *m.Room, true
-}
-
-// SetRoom sets the value of Room
-func (m *DeviceHeader) SetRoom(v Room) *DeviceHeader {
-	m.Room = &v
-	return m
-}
-
-// Validate returns an error if any of the fields have bad values
-func (m *DeviceHeader) Validate() error {
-	if err := m.Room.Validate(); err != nil {
-		return err
-	}
-
-	return nil
-}
+import (
+	def "github.com/jakewright/home-automation/libraries/go/device/def"
+	oops "github.com/jakewright/home-automation/libraries/go/oops"
+)
 
 // Room is defined in the .def file
 type Room struct {
-	Id      *string         `json:"id,omitempty"`
-	Name    *string         `json:"name,omitempty"`
-	Devices *[]DeviceHeader `json:"devices,omitempty"`
+	Id      *string       `json:"id,omitempty"`
+	Name    *string       `json:"name,omitempty"`
+	Devices []*def.Header `json:"devices,omitempty"`
 }
 
 // GetId returns the de-referenced value of Id.
-// The second return value states whether the field was set.
-func (m *Room) GetId() (val string, set bool) {
+// If the field is nil, the function panics because id is marked as required.
+func (m *Room) GetId() (val string) {
 	if m.Id == nil {
-		return
+		panic("id marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Id, true
+	return *m.Id
 }
 
 // SetId sets the value of Id
@@ -192,13 +31,13 @@ func (m *Room) SetId(v string) *Room {
 }
 
 // GetName returns the de-referenced value of Name.
-// The second return value states whether the field was set.
-func (m *Room) GetName() (val string, set bool) {
+// If the field is nil, the function panics because name is marked as required.
+func (m *Room) GetName() (val string) {
 	if m.Name == nil {
-		return
+		panic("name marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Name, true
+	return *m.Name
 }
 
 // SetName sets the value of Name
@@ -209,24 +48,30 @@ func (m *Room) SetName(v string) *Room {
 
 // GetDevices returns the de-referenced value of Devices.
 // The second return value states whether the field was set.
-func (m *Room) GetDevices() (val []DeviceHeader, set bool) {
+func (m *Room) GetDevices() (val []*def.Header, set bool) {
 	if m.Devices == nil {
 		return
 	}
 
-	return *m.Devices, true
+	return m.Devices, true
 }
 
 // SetDevices sets the value of Devices
-func (m *Room) SetDevices(v []DeviceHeader) *Room {
-	m.Devices = &v
+func (m *Room) SetDevices(v []*def.Header) *Room {
+	m.Devices = v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *Room) Validate() error {
+	if m.Id == nil {
+		return oops.BadRequest("field 'id' is required")
+	}
+	if m.Name == nil {
+		return oops.BadRequest("field 'name' is required")
+	}
 	if m.Devices != nil {
-		for _, r := range *m.Devices {
+		for _, r := range m.Devices {
 			if err := r.Validate(); err != nil {
 				return err
 			}
@@ -242,13 +87,13 @@ type GetDeviceRequest struct {
 }
 
 // GetDeviceId returns the de-referenced value of DeviceId.
-// The second return value states whether the field was set.
-func (m *GetDeviceRequest) GetDeviceId() (val string, set bool) {
+// If the field is nil, the function panics because device_id is marked as required.
+func (m *GetDeviceRequest) GetDeviceId() (val string) {
 	if m.DeviceId == nil {
-		return
+		panic("device_id marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.DeviceId, true
+	return *m.DeviceId
 }
 
 // SetDeviceId sets the value of DeviceId
@@ -259,17 +104,20 @@ func (m *GetDeviceRequest) SetDeviceId(v string) *GetDeviceRequest {
 
 // Validate returns an error if any of the fields have bad values
 func (m *GetDeviceRequest) Validate() error {
+	if m.DeviceId == nil {
+		return oops.BadRequest("field 'device_id' is required")
+	}
 	return nil
 }
 
 // GetDeviceResponse is defined in the .def file
 type GetDeviceResponse struct {
-	DeviceHeader *DeviceHeader `json:"device_header,omitempty"`
+	DeviceHeader *def.Header `json:"device_header,omitempty"`
 }
 
 // GetDeviceHeader returns the de-referenced value of DeviceHeader.
 // The second return value states whether the field was set.
-func (m *GetDeviceResponse) GetDeviceHeader() (val DeviceHeader, set bool) {
+func (m *GetDeviceResponse) GetDeviceHeader() (val def.Header, set bool) {
 	if m.DeviceHeader == nil {
 		return
 	}
@@ -278,7 +126,7 @@ func (m *GetDeviceResponse) GetDeviceHeader() (val DeviceHeader, set bool) {
 }
 
 // SetDeviceHeader sets the value of DeviceHeader
-func (m *GetDeviceResponse) SetDeviceHeader(v DeviceHeader) *GetDeviceResponse {
+func (m *GetDeviceResponse) SetDeviceHeader(v def.Header) *GetDeviceResponse {
 	m.DeviceHeader = &v
 	return m
 }
@@ -320,29 +168,29 @@ func (m *ListDevicesRequest) Validate() error {
 
 // ListDevicesResponse is defined in the .def file
 type ListDevicesResponse struct {
-	DeviceHeaders *[]DeviceHeader `json:"device_headers,omitempty"`
+	DeviceHeaders []*def.Header `json:"device_headers,omitempty"`
 }
 
 // GetDeviceHeaders returns the de-referenced value of DeviceHeaders.
 // The second return value states whether the field was set.
-func (m *ListDevicesResponse) GetDeviceHeaders() (val []DeviceHeader, set bool) {
+func (m *ListDevicesResponse) GetDeviceHeaders() (val []*def.Header, set bool) {
 	if m.DeviceHeaders == nil {
 		return
 	}
 
-	return *m.DeviceHeaders, true
+	return m.DeviceHeaders, true
 }
 
 // SetDeviceHeaders sets the value of DeviceHeaders
-func (m *ListDevicesResponse) SetDeviceHeaders(v []DeviceHeader) *ListDevicesResponse {
-	m.DeviceHeaders = &v
+func (m *ListDevicesResponse) SetDeviceHeaders(v []*def.Header) *ListDevicesResponse {
+	m.DeviceHeaders = v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *ListDevicesResponse) Validate() error {
 	if m.DeviceHeaders != nil {
-		for _, r := range *m.DeviceHeaders {
+		for _, r := range m.DeviceHeaders {
 			if err := r.Validate(); err != nil {
 				return err
 			}
@@ -358,13 +206,13 @@ type GetRoomRequest struct {
 }
 
 // GetRoomId returns the de-referenced value of RoomId.
-// The second return value states whether the field was set.
-func (m *GetRoomRequest) GetRoomId() (val string, set bool) {
+// If the field is nil, the function panics because room_id is marked as required.
+func (m *GetRoomRequest) GetRoomId() (val string) {
 	if m.RoomId == nil {
-		return
+		panic("room_id marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.RoomId, true
+	return *m.RoomId
 }
 
 // SetRoomId sets the value of RoomId
@@ -375,6 +223,9 @@ func (m *GetRoomRequest) SetRoomId(v string) *GetRoomRequest {
 
 // Validate returns an error if any of the fields have bad values
 func (m *GetRoomRequest) Validate() error {
+	if m.RoomId == nil {
+		return oops.BadRequest("field 'room_id' is required")
+	}
 	return nil
 }
 
@@ -419,29 +270,29 @@ func (m *ListRoomsRequest) Validate() error {
 
 // ListRoomsResponse is defined in the .def file
 type ListRoomsResponse struct {
-	Rooms *[]Room `json:"rooms,omitempty"`
+	Rooms []*Room `json:"rooms,omitempty"`
 }
 
 // GetRooms returns the de-referenced value of Rooms.
 // The second return value states whether the field was set.
-func (m *ListRoomsResponse) GetRooms() (val []Room, set bool) {
+func (m *ListRoomsResponse) GetRooms() (val []*Room, set bool) {
 	if m.Rooms == nil {
 		return
 	}
 
-	return *m.Rooms, true
+	return m.Rooms, true
 }
 
 // SetRooms sets the value of Rooms
-func (m *ListRoomsResponse) SetRooms(v []Room) *ListRoomsResponse {
-	m.Rooms = &v
+func (m *ListRoomsResponse) SetRooms(v []*Room) *ListRoomsResponse {
+	m.Rooms = v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *ListRoomsResponse) Validate() error {
 	if m.Rooms != nil {
-		for _, r := range *m.Rooms {
+		for _, r := range m.Rooms {
 			if err := r.Validate(); err != nil {
 				return err
 			}
