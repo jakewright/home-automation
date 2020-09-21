@@ -215,7 +215,7 @@ func (g *typesGenerator) Data(im *imports.Manager) (interface{}, error) {
 				Type:          typ.FullTypeName,
 				IsMessageType: typ.IsMessageType,
 				Repeated:      typ.Repeated,
-				Ptr:           !(f.Type.Map || f.Type.Repeated), // [1]
+				Ptr:           !(f.Type.Map || f.Type.Repeated || f.Type.Name == typeAny), // [1]
 				Required:      required,
 				Min:           min,
 				Max:           max,

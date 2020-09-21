@@ -456,8 +456,8 @@ func (m *Option) Validate() error {
 
 // DeviceStateChangedEvent is defined in the .def file
 type DeviceStateChangedEvent struct {
-	Header *Header      `json:"header,omitempty"`
-	State  *interface{} `json:"state,omitempty"`
+	Header *Header     `json:"header,omitempty"`
+	State  interface{} `json:"state,omitempty"`
 }
 
 // GetHeader returns the de-referenced value of Header.
@@ -483,12 +483,12 @@ func (m *DeviceStateChangedEvent) GetState() (val interface{}) {
 		panic("state marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.State
+	return m.State
 }
 
 // SetState sets the value of State
 func (m *DeviceStateChangedEvent) SetState(v interface{}) *DeviceStateChangedEvent {
-	m.State = &v
+	m.State = v
 	return m
 }
 
