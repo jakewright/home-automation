@@ -13,7 +13,7 @@ type Scene struct {
 	Id        *uint32    `json:"id,omitempty"`
 	Name      *string    `json:"name,omitempty"`
 	OwnerId   *uint32    `json:"owner_id,omitempty"`
-	Actions   *[]Action  `json:"actions,omitempty"`
+	Actions   []*Action  `json:"actions,omitempty"`
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
@@ -68,17 +68,17 @@ func (m *Scene) SetOwnerId(v uint32) *Scene {
 
 // GetActions returns the de-referenced value of Actions.
 // The second return value states whether the field was set.
-func (m *Scene) GetActions() (val []Action, set bool) {
+func (m *Scene) GetActions() (val []*Action, set bool) {
 	if m.Actions == nil {
 		return
 	}
 
-	return *m.Actions, true
+	return m.Actions, true
 }
 
 // SetActions sets the value of Actions
-func (m *Scene) SetActions(v []Action) *Scene {
-	m.Actions = &v
+func (m *Scene) SetActions(v []*Action) *Scene {
+	m.Actions = v
 	return m
 }
 
@@ -117,7 +117,7 @@ func (m *Scene) SetUpdatedAt(v time.Time) *Scene {
 // Validate returns an error if any of the fields have bad values
 func (m *Scene) Validate() error {
 	if m.Actions != nil {
-		for _, r := range *m.Actions {
+		for _, r := range m.Actions {
 			if err := r.Validate(); err != nil {
 				return err
 			}
@@ -327,17 +327,17 @@ func (m *Action) Validate() error {
 type CreateSceneRequest struct {
 	Name    *string                      `json:"name,omitempty"`
 	OwnerId *uint32                      `json:"owner_id,omitempty"`
-	Actions *[]CreateSceneRequest_Action `json:"actions,omitempty"`
+	Actions []*CreateSceneRequest_Action `json:"actions,omitempty"`
 }
 
 // GetName returns the de-referenced value of Name.
-// The second return value states whether the field was set.
-func (m *CreateSceneRequest) GetName() (val string, set bool) {
+// If the field is nil, the function panics because name is marked as required.
+func (m *CreateSceneRequest) GetName() (val string) {
 	if m.Name == nil {
-		return
+		panic("name marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Name, true
+	return *m.Name
 }
 
 // SetName sets the value of Name
@@ -347,13 +347,13 @@ func (m *CreateSceneRequest) SetName(v string) *CreateSceneRequest {
 }
 
 // GetOwnerId returns the de-referenced value of OwnerId.
-// The second return value states whether the field was set.
-func (m *CreateSceneRequest) GetOwnerId() (val uint32, set bool) {
+// If the field is nil, the function panics because owner_id is marked as required.
+func (m *CreateSceneRequest) GetOwnerId() (val uint32) {
 	if m.OwnerId == nil {
-		return
+		panic("owner_id marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.OwnerId, true
+	return *m.OwnerId
 }
 
 // SetOwnerId sets the value of OwnerId
@@ -363,18 +363,18 @@ func (m *CreateSceneRequest) SetOwnerId(v uint32) *CreateSceneRequest {
 }
 
 // GetActions returns the de-referenced value of Actions.
-// The second return value states whether the field was set.
-func (m *CreateSceneRequest) GetActions() (val []CreateSceneRequest_Action, set bool) {
+// If the field is nil, the function panics because actions is marked as required.
+func (m *CreateSceneRequest) GetActions() (val []*CreateSceneRequest_Action) {
 	if m.Actions == nil {
-		return
+		panic("actions marked as required but was not set. This should have been caught by the validate function.")
 	}
 
-	return *m.Actions, true
+	return m.Actions
 }
 
 // SetActions sets the value of Actions
-func (m *CreateSceneRequest) SetActions(v []CreateSceneRequest_Action) *CreateSceneRequest {
-	m.Actions = &v
+func (m *CreateSceneRequest) SetActions(v []*CreateSceneRequest_Action) *CreateSceneRequest {
+	m.Actions = v
 	return m
 }
 
@@ -387,7 +387,7 @@ func (m *CreateSceneRequest) Validate() error {
 		return oops.BadRequest("field 'owner_id' is required")
 	}
 	if m.Actions != nil {
-		for _, r := range *m.Actions {
+		for _, r := range m.Actions {
 			if err := r.Validate(); err != nil {
 				return err
 			}
@@ -676,29 +676,29 @@ func (m *ListScenesRequest) Validate() error {
 
 // ListScenesResponse is defined in the .def file
 type ListScenesResponse struct {
-	Scenes *[]Scene `json:"scenes,omitempty"`
+	Scenes []*Scene `json:"scenes,omitempty"`
 }
 
 // GetScenes returns the de-referenced value of Scenes.
 // The second return value states whether the field was set.
-func (m *ListScenesResponse) GetScenes() (val []Scene, set bool) {
+func (m *ListScenesResponse) GetScenes() (val []*Scene, set bool) {
 	if m.Scenes == nil {
 		return
 	}
 
-	return *m.Scenes, true
+	return m.Scenes, true
 }
 
 // SetScenes sets the value of Scenes
-func (m *ListScenesResponse) SetScenes(v []Scene) *ListScenesResponse {
-	m.Scenes = &v
+func (m *ListScenesResponse) SetScenes(v []*Scene) *ListScenesResponse {
+	m.Scenes = v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *ListScenesResponse) Validate() error {
 	if m.Scenes != nil {
-		for _, r := range *m.Scenes {
+		for _, r := range m.Scenes {
 			if err := r.Validate(); err != nil {
 				return err
 			}

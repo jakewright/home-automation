@@ -150,29 +150,29 @@ func (m *ListUsersRequest) Validate() error {
 
 // ListUsersResponse is defined in the .def file
 type ListUsersResponse struct {
-	Users *[]User `json:"users,omitempty"`
+	Users []*User `json:"users,omitempty"`
 }
 
 // GetUsers returns the de-referenced value of Users.
 // The second return value states whether the field was set.
-func (m *ListUsersResponse) GetUsers() (val []User, set bool) {
+func (m *ListUsersResponse) GetUsers() (val []*User, set bool) {
 	if m.Users == nil {
 		return
 	}
 
-	return *m.Users, true
+	return m.Users, true
 }
 
 // SetUsers sets the value of Users
-func (m *ListUsersResponse) SetUsers(v []User) *ListUsersResponse {
-	m.Users = &v
+func (m *ListUsersResponse) SetUsers(v []*User) *ListUsersResponse {
+	m.Users = v
 	return m
 }
 
 // Validate returns an error if any of the fields have bad values
 func (m *ListUsersResponse) Validate() error {
 	if m.Users != nil {
-		for _, r := range *m.Users {
+		for _, r := range m.Users {
 			if err := r.Validate(); err != nil {
 				return err
 			}
