@@ -16,7 +16,7 @@ import (
 
 //go:generate jrpc dmx.def
 
-const serviceName = "service.dmx"
+const serviceName = "dmx"
 
 type universeConfig struct {
 	UniverseNumber domain.UniverseNumber `envconfig:"UNIVERSE_NUMBER"`
