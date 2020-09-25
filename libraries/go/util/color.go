@@ -12,22 +12,42 @@ import (
 // methods that convert to & from hexadecimal color codes.
 type RGB color.RGBA
 
-// MarshalJSON converts the RGB color into a hex value (e.g. #FBEE13)
+// ToHex returns the hexadecimal representation of the
+// RGB value, e.g. #FBEE13. The alpha value is ignored.
+func (r *RGB) ToHex() string {
+	return fmt.Sprintf("#%02X%02X%02X", r.R, r.G, r.B)
+}
+
+// MarshalJSON converts the RGB color into a hex value (e.g. "#FBEE13")
 func (r *RGB) MarshalJSON() ([]byte, error) {
 	if r == nil {
 		return json.Marshal(nil)
 	}
 
-	return []byte(ColorToHex(color.RGBA(*r))), nil
+	b := make([]byte, 0, 7)
+	b = append(b, '"')
+	b = append(b, r.ToHex()...)
+	b = append(b, '"')
+	return b, nil
 }
 
-// UnmarshalJSON converts a hex value (e.g. #FF0000) to an RGB struct
+// UnmarshalJSON converts a hex value (e.g. "#FF0000") to an RGB struct
 func (r *RGB) UnmarshalJSON(b []byte) error {
 	if r == nil {
 		return oops.InternalService("cannot unmarshal into nil receiver")
 	}
 
-	c, err := HexToColor(string(b))
+	// Unmarshalling JSON null is a no-op
+	if string(b) == "null" {
+		return nil
+	}
+
+	if b[0] != '"' || b[len(b)-1] != '"' {
+		return oops.BadRequest("must be a quoted string to unmarshal color")
+	}
+
+	// Ignore the first and last char because they're the quotes
+	c, err := HexToColor(string(b[1 : len(b)-1]))
 	if err != nil {
 		return err
 	}
