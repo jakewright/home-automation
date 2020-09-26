@@ -1,0 +1,32 @@
+import device "../../libraries/go/device/device.def"
+
+service Infrared {
+    path = "infrared"
+
+    rpc GetDevice(GetDeviceRequest) GetDeviceResponse {
+        method = "GET"
+        path = "/device"
+    }
+
+    rpc UpdateDevice(UpdateDeviceRequest) UpdateDeviceResponse {
+        method = "PATCH"
+        path = "/device"
+    }
+}
+
+message GetDeviceRequest {
+    string device_id (required)
+}
+
+message GetDeviceResponse {
+    // device.Device device
+}
+
+message UpdateDeviceRequest {
+    string device_id (required)
+    map[string]any state
+}
+
+message UpdateDeviceResponse {
+    // device.Device device
+}
