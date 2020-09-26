@@ -5,7 +5,6 @@ import (
 
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/oops"
-	deviceregistrydef "github.com/jakewright/home-automation/services/device-registry/def"
 )
 
 //go:generate devicegen fixtures.json
@@ -25,14 +24,6 @@ type Fixture interface {
 	// universe of which the fixture is a part
 	UniverseNumber() UniverseNumber
 
-	// SetProperties sets the fixture's internal state
-	// such that dmxValues returns updated values
-	SetProperties(map[string]interface{}) error
-
-	// ToDevice returns the standard Device representation
-	// of the fixture, ready to be sent in a response.
-	ToDevice() *devicedef.Device
-
 	// offset returns the device's offset
 	// into the universe's channel space
 	offset() int
@@ -51,11 +42,11 @@ type Fixture interface {
 
 	// setHeader is used by newFromDeviceHeader to set
 	// properties common to all fixtures
-	setHeader(*deviceregistrydef.DeviceHeader) error
+	setHeader(header *devicedef.Header) error
 }
 
 // NewFixture returns a Fixture based on the device's fixture type attribute
-func NewFixture(h *deviceregistrydef.DeviceHeader) (Fixture, error) {
+func NewFixture(h *devicedef.Header) (Fixture, error) {
 	fixtureType, ok := h.Attributes["fixture_type"].(string)
 	if !ok {
 		return nil, oops.PreconditionFailed("fixture_type not found in %s device header", h.Id)

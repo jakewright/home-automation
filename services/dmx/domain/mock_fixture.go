@@ -2,7 +2,6 @@ package domain
 
 import (
 	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
-	deviceregistrydef "github.com/jakewright/home-automation/services/device-registry/def"
 )
 
 // MockFixture can be used in tests
@@ -50,12 +49,7 @@ func (f *MockFixture) dmxValues() []byte {
 	panic("implement me")
 }
 
-// ToDevice is not implemented
-func (f *MockFixture) ToDevice() *devicedef.Device {
-	panic("implement me")
-}
-
 // setHeader is not implemented
-func (f *MockFixture) setHeader(header *deviceregistrydef.DeviceHeader) error {
+func (f *MockFixture) setHeader(header *devicedef.Header) error {
 	panic("implement me")
 }

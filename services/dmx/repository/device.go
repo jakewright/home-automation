@@ -21,21 +21,21 @@ func Init(
 ) (*FixtureRepository, error) {
 	// Load devices from the registry
 	rsp, err := deviceRegistry.ListDevices(ctx, &deviceregistrydef.ListDevicesRequest{
-		ControllerName: serviceName,
+		ControllerName: &serviceName,
 	}).Wait()
 	if err != nil {
 		return nil, oops.WithMessage(err, "failed to fetch devices")
 	}
 
-	fixtures := make([]domain.Fixture, len(rsp.DeviceHeaders))
+	headers, _ := rsp.GetDeviceHeaders()
+
+	fixtures := make([]domain.Fixture, len(headers))
 
 	for i, header := range rsp.DeviceHeaders {
 		// Be defensive against the device registry returning the wrong devices
 		switch {
-		case header.ControllerName != serviceName:
-			return nil, oops.InternalService("device %s is not for this controller", header.Id)
-		case header.Type != "dmx":
-			return nil, oops.InternalService("device %s does not have type dmx", header.Id)
+		case header.GetControllerName() != serviceName:
+			return nil, oops.InternalService("device %s is not for this controller", header.GetId())
 		}
 
 		fixture, err := domain.NewFixture(header)

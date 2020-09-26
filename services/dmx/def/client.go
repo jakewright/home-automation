@@ -11,33 +11,19 @@ import (
 
 // DMXService is the public interface of this service
 type DMXService interface {
-	GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture
-	UpdateDevice(ctx context.Context, body *UpdateDeviceRequest) *UpdateDeviceFuture
+	GetMegaParProfile(ctx context.Context, body *GetMegaParProfileRequest) *GetMegaParProfileFuture
 	UpdateMegaParProfile(ctx context.Context, body *UpdateMegaParProfileRequest) *UpdateMegaParProfileFuture
 }
 
-// GetDeviceFuture represents an in-flight GetDevice request
-type GetDeviceFuture struct {
+// GetMegaParProfileFuture represents an in-flight GetMegaParProfile request
+type GetMegaParProfileFuture struct {
 	done <-chan struct{}
-	rsp  *GetDeviceResponse
+	rsp  *MegaParProfileResponse
 	err  error
 }
 
 // Wait blocks until the response is ready
-func (f *GetDeviceFuture) Wait() (*GetDeviceResponse, error) {
-	<-f.done
-	return f.rsp, f.err
-}
-
-// UpdateDeviceFuture represents an in-flight UpdateDevice request
-type UpdateDeviceFuture struct {
-	done <-chan struct{}
-	rsp  *UpdateDeviceResponse
-	err  error
-}
-
-// Wait blocks until the response is ready
-func (f *UpdateDeviceFuture) Wait() (*UpdateDeviceResponse, error) {
+func (f *GetMegaParProfileFuture) Wait() (*MegaParProfileResponse, error) {
 	<-f.done
 	return f.rsp, f.err
 }
@@ -45,12 +31,12 @@ func (f *UpdateDeviceFuture) Wait() (*UpdateDeviceResponse, error) {
 // UpdateMegaParProfileFuture represents an in-flight UpdateMegaParProfile request
 type UpdateMegaParProfileFuture struct {
 	done <-chan struct{}
-	rsp  *UpdateMegaParProfileResponse
+	rsp  *MegaParProfileResponse
 	err  error
 }
 
 // Wait blocks until the response is ready
-func (f *UpdateMegaParProfileFuture) Wait() (*UpdateMegaParProfileResponse, error) {
+func (f *UpdateMegaParProfileFuture) Wait() (*MegaParProfileResponse, error) {
 	<-f.done
 	return f.rsp, f.err
 }
@@ -70,40 +56,18 @@ func NewClient(dispatcher taxi.Dispatcher) *Client {
 	}
 }
 
-// GetDevice dispatches an RPC to the service
-func (c *Client) GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture {
+// GetMegaParProfile dispatches an RPC to the service
+func (c *Client) GetMegaParProfile(ctx context.Context, body *GetMegaParProfileRequest) *GetMegaParProfileFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "http://dmx/device",
+		URL:    "http://dmx/mega-par-profile",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
-	ftr := &GetDeviceFuture{
+	ftr := &GetMegaParProfileFuture{
 		done: done,
-		rsp:  &GetDeviceResponse{},
-	}
-
-	go func() {
-		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(ftr.rsp)
-	}()
-
-	return ftr
-}
-
-// UpdateDevice dispatches an RPC to the service
-func (c *Client) UpdateDevice(ctx context.Context, body *UpdateDeviceRequest) *UpdateDeviceFuture {
-	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
-		Method: "PATCH",
-		URL:    "http://dmx/device",
-		Body:   body,
-	})
-
-	done := make(chan struct{})
-	ftr := &UpdateDeviceFuture{
-		done: done,
-		rsp:  &UpdateDeviceResponse{},
+		rsp:  &MegaParProfileResponse{},
 	}
 
 	go func() {
@@ -125,7 +89,7 @@ func (c *Client) UpdateMegaParProfile(ctx context.Context, body *UpdateMegaParPr
 	done := make(chan struct{})
 	ftr := &UpdateMegaParProfileFuture{
 		done: done,
-		rsp:  &UpdateMegaParProfileResponse{},
+		rsp:  &MegaParProfileResponse{},
 	}
 
 	go func() {
@@ -153,40 +117,18 @@ func NewMockClient(ctx context.Context, t *testing.T) *MockClient {
 	}
 }
 
-// GetDevice dispatches an RPC to the mock client
-func (c *MockClient) GetDevice(ctx context.Context, body *GetDeviceRequest) *GetDeviceFuture {
+// GetMegaParProfile dispatches an RPC to the mock client
+func (c *MockClient) GetMegaParProfile(ctx context.Context, body *GetMegaParProfileRequest) *GetMegaParProfileFuture {
 	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
 		Method: "GET",
-		URL:    "http://dmx/device",
+		URL:    "http://dmx/mega-par-profile",
 		Body:   body,
 	})
 
 	done := make(chan struct{})
-	ftr := &GetDeviceFuture{
+	ftr := &GetMegaParProfileFuture{
 		done: done,
-		rsp:  &GetDeviceResponse{},
-	}
-
-	go func() {
-		defer close(done)
-		ftr.err = taxiFtr.DecodeResponse(&ftr.rsp)
-	}()
-
-	return ftr
-}
-
-// UpdateDevice dispatches an RPC to the mock client
-func (c *MockClient) UpdateDevice(ctx context.Context, body *UpdateDeviceRequest) *UpdateDeviceFuture {
-	taxiFtr := c.dispatcher.Dispatch(ctx, &taxi.RPC{
-		Method: "PATCH",
-		URL:    "http://dmx/device",
-		Body:   body,
-	})
-
-	done := make(chan struct{})
-	ftr := &UpdateDeviceFuture{
-		done: done,
-		rsp:  &UpdateDeviceResponse{},
+		rsp:  &MegaParProfileResponse{},
 	}
 
 	go func() {
@@ -208,7 +150,7 @@ func (c *MockClient) UpdateMegaParProfile(ctx context.Context, body *UpdateMegaP
 	done := make(chan struct{})
 	ftr := &UpdateMegaParProfileFuture{
 		done: done,
-		rsp:  &UpdateMegaParProfileResponse{},
+		rsp:  &MegaParProfileResponse{},
 	}
 
 	go func() {

@@ -1,12 +1,9 @@
 package domain
 
 import (
-	"image/color"
-
-	"github.com/jakewright/home-automation/libraries/go/device"
-	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
 	"github.com/jakewright/home-automation/libraries/go/oops"
-	"github.com/jakewright/home-automation/libraries/go/ptr"
+	"github.com/jakewright/home-automation/libraries/go/util"
+	dmxdef "github.com/jakewright/home-automation/services/dmx/def"
 )
 
 // MegaParProfile is a light by ADJ
@@ -14,7 +11,7 @@ type MegaParProfile struct {
 	baseFixture
 
 	power      bool
-	color      device.RGB
+	color      util.RGB
 	colorMacro byte
 	strobe     byte
 	program    byte
@@ -35,13 +32,11 @@ func (f *MegaParProfile) hydrate(values []byte) error {
 		)
 	}
 
-	f.color = device.RGB{
-		RGBA: color.RGBA{
-			R: values[0],
-			G: values[1],
-			B: values[2],
-			A: 0xff,
-		},
+	f.color = util.RGB{
+		R: values[0],
+		G: values[1],
+		B: values[2],
+		A: 0xff,
 	}
 
 	f.colorMacro = values[3]
@@ -64,49 +59,38 @@ func (f *MegaParProfile) dmxValues() []byte {
 	return []byte{f.color.R, f.color.G, f.color.B, f.colorMacro, f.strobe, f.program, b}
 }
 
-// SetProperties sets any properties that exist in the state map
-func (f *MegaParProfile) SetProperties(m map[string]interface{}) error {
-	props := &MegaParProfileProperties{}
-	if err := props.unmarshal(m); err != nil {
-		return err
+// SetState sets any properties that exist in the state map
+func (f *MegaParProfile) SetState(p *dmxdef.MegaParProfileState) error {
+	if p == nil {
+		return nil
 	}
 
-	if props.Power != nil {
-		f.power = *props.Power
+	if power, ok := p.GetPower(); ok {
+		f.power = power
 	}
-	if props.Rgb != nil {
-		f.color = *props.Rgb
+
+	if color, ok := p.GetColor(); ok {
+		f.color = color
 	}
-	if props.Strobe != nil {
-		f.strobe = byte(*props.Strobe)
+
+	if strobe, ok := p.GetStrobe(); ok {
+		f.strobe = strobe
 	}
-	if props.Brightness != nil {
-		f.brightness = byte(*props.Brightness)
-		f.power = *props.Brightness > 0
+
+	if brightness, ok := p.GetBrightness(); ok {
+		f.brightness = brightness
+		f.power = brightness > 0
 	}
 
 	return nil
 }
 
-// ToDevice returns a standard Device type for a MegaParProfile
-func (f *MegaParProfile) ToDevice() *devicedef.Device {
-	state := &MegaParProfileProperties{
-		Brightness: ptr.Int64(int64(f.brightness)),
-		Power:      &f.power,
-		Rgb:        &f.color,
-		Strobe:     ptr.Int64(int64(f.strobe)),
-	}
-
-	return &devicedef.Device{
-		Id:             f.ID(),
-		Name:           f.Name,
-		Type:           f.Type,
-		Kind:           f.Kind,
-		ControllerName: f.ControllerName,
-		Attributes:     f.Attributes,
-		StateProviders: nil,
-		State:          state.describe(),
-	}
+func (f *MegaParProfile) State() *dmxdef.MegaParProfileState {
+	return (&dmxdef.MegaParProfileState{}).
+		SetPower(f.power).
+		SetBrightness(f.brightness).
+		SetColor(f.color).
+		SetStrobe(f.strobe)
 }
 
 // Copy returns a copy of the fixture but with zero values for the state

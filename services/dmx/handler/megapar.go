@@ -7,6 +7,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/distsync"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
+	def "github.com/jakewright/home-automation/services/dmx/def"
 	dmxdef "github.com/jakewright/home-automation/services/dmx/def"
 	"github.com/jakewright/home-automation/services/dmx/dmx"
 	"github.com/jakewright/home-automation/services/dmx/domain"
@@ -20,21 +21,25 @@ type Controller struct {
 	Publisher  firehose.Publisher
 }
 
-// GetDevice returns the current state of a fixture
-func (c *Controller) GetDevice(ctx context.Context, body *dmxdef.GetDeviceRequest) (*dmxdef.GetDeviceResponse, error) {
+func (c *Controller) GetMegaParProfile(ctx context.Context, body *dmxdef.GetMegaParProfileRequest) (*def.MegaParProfileResponse, error) {
 	errParams := map[string]string{
-		"device_id": body.DeviceId,
+		"device_id": body.GetDeviceId(),
 	}
 
-	lock, err := distsync.Lock(ctx, "device", body.DeviceId)
+	lock, err := distsync.Lock(ctx, "device", body.GetDeviceId())
 	if err != nil {
 		return nil, oops.WithMetadata(err, errParams)
 	}
 	defer lock.Unlock()
 
-	f := c.Repository.Find(body.DeviceId)
+	f := c.Repository.Find(body.GetDeviceId())
 	if f == nil {
-		return nil, oops.NotFound("device %q not found", body.DeviceId)
+		return nil, oops.NotFound("device %q not found", body.GetDeviceId())
+	}
+
+	megaParProfile, ok := f.(*domain.MegaParProfile)
+	if !ok {
+		return nil, oops.BadRequest("device %q is not a MegaParProfile", body.DeviceId)
 	}
 
 	values, err := c.Client.GetValues(ctx, f.UniverseNumber())
@@ -48,26 +53,40 @@ func (c *Controller) GetDevice(ctx context.Context, body *dmxdef.GetDeviceReques
 		return nil, oops.WithMetadata(err, errParams)
 	}
 
-	return &dmxdef.GetDeviceResponse{
-		Device: f.ToDevice(),
+	return &dmxdef.MegaParProfileResponse{
+		Header: megaParProfile.Header,
+		Properties: map[string]*devicedef.Property{
+			"power":      (&devicedef.Property{}).SetType("bool"),
+			"brightness": (&devicedef.Property{}).SetType("uint8"),
+			"color":      (&devicedef.Property{}).SetType("rgb"),
+			"strobe":     (&devicedef.Property{}).SetType("uint8"),
+		},
+		State: megaParProfile.State(),
 	}, nil
 }
 
-// UpdateDevice modifies fixture properties
-func (c *Controller) UpdateDevice(ctx context.Context, body *dmxdef.UpdateDeviceRequest) (*dmxdef.UpdateDeviceResponse, error) {
+func (c *Controller) UpdateMegaParProfile(
+	ctx context.Context,
+	body *dmxdef.UpdateMegaParProfileRequest,
+) (*dmxdef.MegaParProfileResponse, error) {
 	errParams := map[string]string{
-		"device_id": body.DeviceId,
+		"device_id": body.GetDeviceId(),
 	}
 
-	lock, err := distsync.Lock(ctx, "device", body.DeviceId)
+	lock, err := distsync.Lock(ctx, "device", body.GetDeviceId())
 	if err != nil {
 		return nil, oops.WithMetadata(err, errParams)
 	}
 	defer lock.Unlock()
 
-	f := c.Repository.Find(body.DeviceId)
+	f := c.Repository.Find(body.GetDeviceId())
 	if f == nil {
-		return nil, oops.NotFound("device %q not found", body.DeviceId)
+		return nil, oops.NotFound("device %q not found", body.GetDeviceId())
+	}
+
+	megaParProfile, ok := f.(*domain.MegaParProfile)
+	if !ok {
+		return nil, oops.BadRequest("device %q is not a MegaParProfile", body.DeviceId)
 	}
 
 	values, err := c.Client.GetValues(ctx, f.UniverseNumber())
@@ -80,7 +99,7 @@ func (c *Controller) UpdateDevice(ctx context.Context, body *dmxdef.UpdateDevice
 		return nil, oops.WithMetadata(err, errParams)
 	}
 
-	if err := f.SetProperties(body.State); err != nil {
+	if err := megaParProfile.SetState(body.State); err != nil {
 		return nil, oops.WithMessage(err, "failed to update fixture", errParams)
 	}
 
@@ -90,12 +109,20 @@ func (c *Controller) UpdateDevice(ctx context.Context, body *dmxdef.UpdateDevice
 	}
 
 	if err := (&devicedef.DeviceStateChangedEvent{
-		Device: f.ToDevice(),
+		Header: megaParProfile.Header,
+		State:  megaParProfile.State(),
 	}).Publish(c.Publisher); err != nil {
 		return nil, oops.WithMessage(err, "failed to publish state changed event", errParams)
 	}
 
-	return &dmxdef.UpdateDeviceResponse{
-		Device: f.ToDevice(),
+	return &dmxdef.MegaParProfileResponse{
+		Header: megaParProfile.Header,
+		Properties: map[string]*devicedef.Property{
+			"power":      (&devicedef.Property{}).SetType("bool"),
+			"brightness": (&devicedef.Property{}).SetType("uint8"),
+			"color":      (&devicedef.Property{}).SetType("rgb"),
+			"strobe":     (&devicedef.Property{}).SetType("uint8"),
+		},
+		State: megaParProfile.State(),
 	}, nil
 }
