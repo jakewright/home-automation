@@ -31,10 +31,10 @@ func (c *Controller) ListDevices(ctx context.Context, body *deviceregistrydef.Li
 func (c *Controller) GetDevice(ctx context.Context, body *deviceregistrydef.GetDeviceRequest) (*deviceregistrydef.GetDeviceResponse, error) {
 	device, err := c.DeviceRepository.Find(body.GetDeviceId())
 	if err != nil {
-		return nil, oops.WithMessage(err, "failed to find device %q", body.DeviceId)
+		return nil, oops.WithMessage(err, "failed to find device %q", body.GetDeviceId())
 	}
 	if device == nil {
-		return nil, oops.NotFound("device %q not found", body.DeviceId)
+		return nil, oops.NotFound("device %q not found", body.GetDeviceId())
 	}
 
 	return &deviceregistrydef.GetDeviceResponse{
