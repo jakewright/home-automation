@@ -48,9 +48,9 @@ import (
 	}
 
 	// HandleEvent handles the Firehose event
-	func (h {{ .TypeName }}Handler) HandleEvent(e *firehose.Event) firehose.Result {
+	func (h {{ .TypeName }}Handler) HandleEvent(e firehose.Event) firehose.Result {
 		var body {{ .TypeName }}
-		if err := json.Unmarshal(e.Payload, &body); err != nil {
+		if err := e.Decode(&body); err != nil {
 			return firehose.Discard(oops.WithMessage(err, "failed to unmarshal payload"))
 		}
 		return h(&body)

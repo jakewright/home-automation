@@ -38,7 +38,7 @@ type Service struct {
 	// functions which will initialise them if necessary.
 	mysqlCon       *gorm.DB
 	redisClient    *redis.Client
-	firehoseClient *firehose.RedisClient
+	firehoseClient *firehose.StreamsClient
 }
 
 // Opts defines basic initialisation options for a service
@@ -194,14 +194,14 @@ func initRouter(svc *Service) {
 	svc.runner.addProcess(svc.router)
 }
 
-func (s *Service) getFirehoseClient() (*firehose.RedisClient, error) {
+func (s *Service) getFirehoseClient() (*firehose.StreamsClient, error) {
 	if s.firehoseClient == nil {
 		redisClient, err := s.getRedisClient()
 		if err != nil {
 			return nil, err
 		}
 
-		s.firehoseClient = firehose.NewRedisClient(redisClient)
+		s.firehoseClient = firehose.NewStreamsClient(redisClient)
 		s.runner.addProcess(s.firehoseClient)
 	}
 

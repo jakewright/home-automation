@@ -3,8 +3,6 @@
 package devicedef
 
 import (
-	"encoding/json"
-
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 )
@@ -27,9 +25,9 @@ func (h DeviceStateChangedEventHandler) EventName() string {
 }
 
 // HandleEvent handles the Firehose event
-func (h DeviceStateChangedEventHandler) HandleEvent(e *firehose.Event) firehose.Result {
+func (h DeviceStateChangedEventHandler) HandleEvent(e firehose.Event) firehose.Result {
 	var body DeviceStateChangedEvent
-	if err := json.Unmarshal(e.Payload, &body); err != nil {
+	if err := e.Decode(&body); err != nil {
 		return firehose.Discard(oops.WithMessage(err, "failed to unmarshal payload"))
 	}
 	return h(&body)

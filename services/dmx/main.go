@@ -65,6 +65,7 @@ func run(svc *bootstrap.Service, conf *config) error {
 	handler.RegisterRoutes(svc, &handler.Controller{
 		Repository: repo,
 		Client:     client,
+		Publisher:  svc.FirehosePublisher(),
 	})
 
 	svc.Run()
