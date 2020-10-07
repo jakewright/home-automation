@@ -2,7 +2,7 @@
 
 ![](https://media.giphy.com/media/3o6Mb3dvYo1WSH1lw4/source.gif)
 
-Devices are registered with `service.device-registry`. 
+Devices are registered with the `device-registry` service. 
 Various metadata about the devices are stored here, including which controller controls them. This allows the frontend to discover controllers.
 
  
@@ -12,7 +12,7 @@ Devices have _properties_ and _commands_.
 
 ### Read a device
 
-`GET service.device-controller/device?device_id=foo`
+`GET http://[device-controller]/[device-type]?device_id=foo`
 
 **Response**
 
@@ -24,18 +24,16 @@ Devices have _properties_ and _commands_.
 }
 ```
 
-_See `libraries/go/device/device.def` for the device object definition._
+The specific response received is dependent on the type of the device, and will be described in the controller's def file. 
 
 ### Updating a property
 
-`PATCH service.device-controller/device`
+`PATCH http://[device-controller]/[device-type]`
 
 **Request**
 
 - `"device_id":string` the globally unique ID for this device
-- `"state":object` a map of property names to new values
-
-The response from reading the device will define the available properties and their types.
+- See the controller's def file for the list of fields that can be set
 
 **Response**
 
@@ -46,8 +44,6 @@ The response from reading the device will define the available properties and th
     }
 }
 ```
-
-_See `libraries/go/device/device.def` for the device object definition._
 
 ### Calling a command
 
@@ -72,4 +68,4 @@ Devices do not have dependencies because of the complexity of implementing this 
 
 Devices can, however, have _state providers_. E.g. a WiFi plug might know whether the TV is on or off, and provide that state to the TV's controller which has no way to know on its own.
 
-State providers are only implemented where needed. The state providers controller names are listed as part of the device's metadata. The device's controller, when fetching state, will hit `/provide-state?device_id=<device-id>` on all of the state providers and merge the resulting state together.
+State providers are only implemented where needed. The state providers' controller names are listed as part of the device's metadata. The device's controller, when fetching state, will hit `/provide-state?device_id=<device-id>` on all of the state providers and merge the resulting state together.
