@@ -2,9 +2,6 @@ package device
 
 import (
 	"context"
-	"image/color"
-
-	"github.com/jakewright/home-automation/libraries/go/util"
 )
 
 //go:generate jrpc device.def
@@ -18,40 +15,6 @@ const (
 	TypeString              = "string"
 	TypeRGB                 = "rgb"
 )
-
-// RGB wraps color.RGBA but provides marshaling
-// functions to marshal to/from hex color codes
-type RGB struct {
-	color.RGBA
-}
-
-// MustParseHex converts a hex value (e.g. #FF0000) to
-// an RGB struct. It panics if the hex value is not valid.
-func MustParseHex(s string) RGB {
-	c, err := util.HexToColor(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return RGB{
-		RGBA: c,
-	}
-}
-
-// UnmarshalText reads a hex value (e.g. #FF0000)
-func (R *RGB) UnmarshalText(text []byte) error {
-	c, err := util.HexToColor(string(text))
-	if err != nil {
-		return err
-	}
-	R.RGBA = c
-	return nil
-}
-
-// MarshalText returns a hex value (e.g. #FF0000)
-func (R *RGB) MarshalText() (text []byte, err error) {
-	return []byte(util.ColorToHex(R.RGBA)), nil
-}
 
 // LoadProvidedState returns the state from a set of providers
 func LoadProvidedState(ctx context.Context, deviceID string, providers []string) (map[string]interface{}, error) {

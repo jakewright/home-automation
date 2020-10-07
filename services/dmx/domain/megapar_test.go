@@ -1,53 +1,50 @@
 package domain
 
 import (
-	"image/color"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/jakewright/home-automation/libraries/go/device"
-	deviceregistrydef "github.com/jakewright/home-automation/services/device-registry/def"
+	devicedef "github.com/jakewright/home-automation/libraries/go/device/def"
+	"github.com/jakewright/home-automation/libraries/go/util"
+	dmxdef "github.com/jakewright/home-automation/services/dmx/def"
 )
 
-func TestMegaParProfile_SetProperties(t *testing.T) {
+func TestMegaParProfile_ApplyState(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
 		power      bool
-		color      color.RGBA
+		color      util.RGB
 		strobe     byte
 		brightness byte
 	}
 
 	tests := []struct {
-		name    string
-		state   map[string]interface{}
-		wantErr bool
-		before  fields
-		after   fields
+		name   string
+		state  *dmxdef.MegaParProfileState
+		before fields
+		after  fields
 	}{
 		{
 			name:  "empty state",
-			state: map[string]interface{}{},
+			state: nil,
 			before: fields{
 				power:      true,
-				color:      color.RGBA{10, 10, 10, 0},
+				color:      util.RGB{R: 10, G: 10, B: 10, A: 0xff},
 				strobe:     100,
 				brightness: 50,
 			},
 			after: fields{
 				power:      true,
-				color:      color.RGBA{10, 10, 10, 0},
+				color:      util.RGB{R: 10, G: 10, B: 10, A: 0xff},
 				strobe:     100,
 				brightness: 50,
 			},
 		},
 		{
-			name: "no change",
-			state: map[string]interface{}{
-				"brightness": 50,
-			},
+			name:  "no change",
+			state: (&dmxdef.MegaParProfileState{}).SetBrightness(50),
 			before: fields{
 				brightness: 50,
 			},
@@ -57,26 +54,18 @@ func TestMegaParProfile_SetProperties(t *testing.T) {
 		},
 		{
 			name: "change all fields",
-			state: map[string]interface{}{
-				"rgb":        "#FF0000",
-				"strobe":     100,
-				"brightness": 50,
-				"power":      true,
-			},
+			state: (&dmxdef.MegaParProfileState{}).
+				SetColor(util.RGB{R: 0xFF, A: 0xff}).
+				SetStrobe(100).
+				SetBrightness(50).
+				SetPower(true),
 			before: fields{},
 			after: fields{
 				power:      true,
-				color:      color.RGBA{255, 0, 0, 255},
+				color:      util.RGB{R: 255, A: 0xff},
 				strobe:     100,
 				brightness: 50,
 			},
-		},
-		{
-			name: "brightness out of bounds",
-			state: map[string]interface{}{
-				"brightness": 300,
-			},
-			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -85,25 +74,20 @@ func TestMegaParProfile_SetProperties(t *testing.T) {
 
 			f := &MegaParProfile{
 				baseFixture: baseFixture{
-					DeviceHeader: &deviceregistrydef.DeviceHeader{},
+					Header: &devicedef.Header{},
 				},
 				power:      tt.before.power,
-				color:      device.RGB{RGBA: tt.before.color},
+				color:      tt.before.color,
 				strobe:     tt.before.strobe,
 				brightness: tt.before.brightness,
 			}
 
-			err := f.SetProperties(tt.state)
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
+			f.ApplyState(tt.state)
 
-			require.Equal(t, f.power, tt.after.power)
-			require.Equal(t, f.color.RGBA, tt.after.color)
-			require.Equal(t, f.strobe, tt.after.strobe)
-			require.Equal(t, f.brightness, tt.after.brightness)
+			require.Equal(t, tt.after.power, f.power)
+			require.Equal(t, tt.after.color, f.color)
+			require.Equal(t, tt.after.strobe, f.strobe)
+			require.Equal(t, tt.after.brightness, f.brightness)
 		})
 	}
 }

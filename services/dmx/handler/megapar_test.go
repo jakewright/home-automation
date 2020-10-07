@@ -35,13 +35,12 @@ func TestController_Update(t *testing.T) {
 	require.True(t, ok)
 
 	// Set the fixture's initial state
-	err = megaParProfile.SetState((&dmxdef.MegaParProfileState{}).
+	megaParProfile.ApplyState((&dmxdef.MegaParProfileState{}).
 		SetPower(false).
 		SetColor(util.RGB{R: 255}).
 		SetStrobe(0).
 		SetBrightness(0),
 	)
-	require.NoError(t, err)
 
 	// Create a repository with the fixture
 	repo := repository.New(f)

@@ -59,10 +59,10 @@ func (f *MegaParProfile) dmxValues() []byte {
 	return []byte{f.color.R, f.color.G, f.color.B, f.colorMacro, f.strobe, f.program, b}
 }
 
-// SetState sets any properties that exist in the state map
-func (f *MegaParProfile) SetState(p *dmxdef.MegaParProfileState) error {
+// ApplyState sets any properties that exist in the state map
+func (f *MegaParProfile) ApplyState(p *dmxdef.MegaParProfileState) {
 	if p == nil {
-		return nil
+		return
 	}
 
 	if power, ok := p.GetPower(); ok {
@@ -81,10 +81,9 @@ func (f *MegaParProfile) SetState(p *dmxdef.MegaParProfileState) error {
 		f.brightness = brightness
 		f.power = brightness > 0
 	}
-
-	return nil
 }
 
+// State returns the current state of the device's properties
 func (f *MegaParProfile) State() *dmxdef.MegaParProfileState {
 	return (&dmxdef.MegaParProfileState{}).
 		SetPower(f.power).

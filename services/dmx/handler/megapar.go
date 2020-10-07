@@ -21,6 +21,7 @@ type Controller struct {
 	Publisher  firehose.Publisher
 }
 
+// GetMegaParProfile returns the current state of a device of type mega-par-profile
 func (c *Controller) GetMegaParProfile(ctx context.Context, body *dmxdef.GetMegaParProfileRequest) (*def.MegaParProfileResponse, error) {
 	errParams := map[string]string{
 		"device_id": body.GetDeviceId(),
@@ -65,6 +66,7 @@ func (c *Controller) GetMegaParProfile(ctx context.Context, body *dmxdef.GetMega
 	}, nil
 }
 
+// UpdateMegaParProfile updates a device of type mega-par-profile
 func (c *Controller) UpdateMegaParProfile(
 	ctx context.Context,
 	body *dmxdef.UpdateMegaParProfileRequest,
@@ -99,9 +101,7 @@ func (c *Controller) UpdateMegaParProfile(
 		return nil, oops.WithMetadata(err, errParams)
 	}
 
-	if err := megaParProfile.SetState(body.State); err != nil {
-		return nil, oops.WithMessage(err, "failed to update fixture", errParams)
-	}
+	megaParProfile.ApplyState(body.State)
 
 	values = u.DMXValues()
 	if err = c.Client.SetValues(ctx, f.UniverseNumber(), values); err != nil {
