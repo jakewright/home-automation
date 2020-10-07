@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/jakewright/home-automation/libraries/go/environment"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
 	"github.com/jakewright/home-automation/libraries/go/taxi"
@@ -22,12 +21,7 @@ func panicRecovery(next http.Handler) http.Handler {
 					slog.Errorf("Failed to write response: %v", err)
 				}
 
-				if environment.IsProd() {
-					slog.Error(err)
-				} else {
-					// Panicking is useful in dev for the pretty-printed stack trace in terminal
-					panic(err)
-				}
+				slog.Error(err)
 			}
 		}()
 
