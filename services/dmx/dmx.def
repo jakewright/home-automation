@@ -14,23 +14,6 @@ service DMX {
     }
 }
 
-message GetDeviceRequest {
-    string device_id (required)
-}
-
-message GetDeviceResponse {
-    // device.Device device
-}
-
-message UpdateDeviceRequest {
-    string device_id (required)
-    map[string]any state
-}
-
-message UpdateDeviceResponse {
-    // device.Device device
-}
-
 message MegaParProfileState {
     bool power
     uint8 brightness
