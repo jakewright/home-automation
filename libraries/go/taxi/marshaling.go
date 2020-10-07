@@ -110,11 +110,16 @@ func WriteError(w http.ResponseWriter, err error) error {
 	status := http.StatusInternalServerError
 	payload := struct {
 		Error string `json:"error"`
+		Stack string `json:"stack,omitempty"`
 	}{Error: err.Error()}
 
 	if oerr, ok := err.(*oops.Error); ok {
 		status = oerr.HTTPStatus()
 		payload.Error = oerr.GetMessage()
+
+		// See the comment on the Format() function of
+		// github.com/pkg/errors.StackTrace for formatting options
+		payload.Stack = fmt.Sprintf("%+v", oerr.StackTrace())
 	}
 
 	rsp, err := json.Marshal(&payload)
