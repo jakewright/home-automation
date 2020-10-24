@@ -112,7 +112,6 @@ type Consumer struct {
 	mu                 sync.Mutex // guards the maps
 
 	messages chan *Message
-	stopWork chan struct{}
 	backoff  *backoff.Backoff
 }
 
@@ -130,7 +129,6 @@ func NewConsumer(opts *ConsumerOptions) *Consumer {
 		deadLetterHandlers: make(map[string]Handler),
 		mu:                 sync.Mutex{},
 		messages:           make(chan *Message, opts.BufferSize),
-		stopWork:           make(chan struct{}, opts.Concurrency),
 		backoff:            b,
 	}
 }
@@ -166,6 +164,8 @@ func (c *Consumer) listen(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	defer close(c.Errors)
+
 	if len(c.handlers) == 0 {
 		return nil
 	}
@@ -186,18 +186,13 @@ func (c *Consumer) listen(ctx context.Context) error {
 		streams = append(streams, ">")
 	}
 
-	wg := &sync.WaitGroup{}
-
-	// Start the workers
-	for i := 0; i < c.opts.Concurrency; i++ {
-		go func() {
-			defer wg.Done()
-			c.work(ctx)
-		}()
-	}
-
-	// Start polling and reclaiming
 	g, ctx := errgroup.WithContext(ctx)
+
+	for i := 0; i < c.opts.Concurrency; i++ {
+		g.Go(func() error {
+			return c.work(ctx)
+		})
+	}
 
 	g.Go(func() error {
 		return c.poll(ctx, streams)
@@ -207,27 +202,13 @@ func (c *Consumer) listen(ctx context.Context) error {
 		return c.claim(ctx)
 	})
 
-	// Wait for polling and reclaiming to stop before
-	// stopping the workers. If workers are stopped too
-	// early, polling/reclaiming could deadlock trying
-	// to write to a full messages channel.
-	err := g.Wait()
-
-	for i := 0; i < c.opts.Concurrency; i++ {
-		c.stopWork <- struct{}{}
-	}
-
-	wg.Wait()
-
-	close(c.Errors)
-
-	return err
+	return g.Wait()
 }
 
 func (c *Consumer) poll(ctx context.Context, streams []string) error {
 	for {
 		if err := ctx.Err(); err != nil {
-			return nil
+			return err
 		}
 
 		results, err := c.xReadGroup(ctx, streams)
@@ -237,7 +218,9 @@ func (c *Consumer) poll(ctx context.Context, streams []string) error {
 
 		for _, result := range results {
 			for _, x := range result.Messages {
-				c.enqueue(result.Stream, &x, 0)
+				if err := c.enqueue(ctx, result.Stream, &x, 0); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -259,7 +242,7 @@ func (c *Consumer) claim(ctx context.Context) error {
 		case <-time.After(c.opts.ClaimInterval):
 			continue
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		}
 	}
 }
@@ -269,7 +252,7 @@ func (c *Consumer) claimStream(ctx context.Context, stream string) error {
 
 	for {
 		if err := ctx.Err(); err != nil {
-			return nil
+			return err
 		}
 
 		res, err := c.xPendingExt(ctx, stream, start, end)
@@ -305,7 +288,9 @@ func (c *Consumer) claimStream(ctx context.Context, stream string) error {
 		}
 
 		for _, x := range claimed {
-			c.enqueue(stream, &x, retryCnt[x.ID])
+			if err := c.enqueue(ctx, stream, &x, retryCnt[x.ID]); err != nil {
+				return err
+			}
 		}
 
 		start, err = incrementMessageID(res[len(res)-1].ID)
@@ -317,36 +302,76 @@ func (c *Consumer) claimStream(ctx context.Context, stream string) error {
 	return nil
 }
 
-func (c *Consumer) enqueue(stream string, x *redis.XMessage, rc int64) {
-	c.messages <- &Message{
+func (c *Consumer) enqueue(ctx context.Context, stream string, x *redis.XMessage, rc int64) error {
+	// Don't block writing to the channel once context is cancelled
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case c.messages <- &Message{
 		ID:         x.ID,
 		Stream:     stream,
 		Values:     x.Values,
 		retryCount: rc,
+	}:
+		return nil
 	}
 }
 
-func (c *Consumer) work(ctx context.Context) {
+func (c *Consumer) work(ctx context.Context) error {
 	for {
 		select {
-		case <-c.stopWork:
-			return
+		case <-ctx.Done():
+			return ctx.Err()
 		case msg := <-c.messages:
 			if err := c.process(ctx, msg); err != nil {
-				c.Errors <- err
+				return err
 			}
 		}
 	}
 }
 
-func (c *Consumer) process(ctx context.Context, msg *Message) (err error) {
+func (c *Consumer) process(ctx context.Context, msg *Message) error {
+	handlerCtx, cancel := context.WithTimeout(ctx, c.opts.HandlerTimeout)
+	defer cancel()
+
+	r, err := c.handle(handlerCtx, msg)
+	if err != nil { // Panic
+		if err := c.reschedule(ctx, msg, Result{}); err != nil {
+			return err
+		}
+
+		c.Errors <- &HandlerPanic{Err: err, Msg: msg}
+		return nil
+	}
+
+	if r.Err != nil && r.Retry { // Failure
+		if err := c.reschedule(ctx, msg, r); err != nil {
+			return err
+		}
+
+		c.Errors <- &HandlerError{Err: r.Err, Msg: msg}
+		return nil
+	}
+
+	if err := c.xAck(ctx, msg.Stream, msg.ID); err != nil {
+		return err
+	}
+
+	if r.Err != nil { // Discarded
+		c.Errors <- &HandlerError{Err: r.Err, Msg: msg}
+	}
+
+	return nil // Success or no handler
+}
+
+func (c *Consumer) handle(ctx context.Context, msg *Message) (res Result, err error) {
 	defer func() {
 		if v := recover(); v != nil {
 			if e, ok := v.(error); ok {
-				err = &HandlerPanic{Err: e, Msg: msg}
+				err = e
 				return
 			}
-			err = &HandlerPanic{Err: fmt.Errorf("%v", v)}
+			err = fmt.Errorf("%v", v)
 		}
 	}()
 
@@ -358,32 +383,11 @@ func (c *Consumer) process(ctx context.Context, msg *Message) (err error) {
 		handler = c.deadLetterHandlers[msg.Stream]
 	}
 
-	var r Result
-
-	if handler != nil {
-		handlerCtx, cancel := context.WithTimeout(ctx, c.opts.HandlerTimeout)
-		defer cancel()
-		r = handler.HandleEvent(handlerCtx, msg)
+	if handler == nil {
+		return Result{}, nil
 	}
 
-	if r.Err != nil && r.Retry { // Failure
-		// TODO should this be able to return fatal errors?
-		if err := c.reschedule(ctx, msg, r); err != nil {
-			return err
-		}
-
-		return &HandlerError{Err: r.Err, Msg: msg}
-	}
-
-	if err := c.xAck(ctx, msg.Stream, msg.ID); err != nil {
-		return err
-	}
-
-	if r.Err != nil { // Discarded
-		return &HandlerError{Err: r.Err, Msg: msg}
-	}
-
-	return nil // Success or no handler
+	return handler.HandleEvent(ctx, msg), nil
 }
 
 func (c *Consumer) reschedule(ctx context.Context, msg *Message, res Result) error {
@@ -394,7 +398,7 @@ func (c *Consumer) reschedule(ctx context.Context, msg *Message, res Result) err
 
 	select {
 	case <-ctx.Done():
-		return nil
+		return ctx.Err()
 	case <-time.After(d):
 		// Continue
 	}
@@ -419,7 +423,14 @@ func (c *Consumer) reschedule(ctx context.Context, msg *Message, res Result) err
 	}
 
 	for _, x := range claimed {
-		c.enqueue(msg.Stream, &x, pending[0].RetryCount)
+		if err := c.enqueue(
+			ctx,
+			msg.Stream,
+			&x,
+			pending[0].RetryCount,
+		); err != nil {
+			return nil
+		}
 	}
 
 	return nil
