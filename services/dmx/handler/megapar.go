@@ -108,12 +108,13 @@ func (c *Controller) UpdateMegaParProfile(
 		return nil, oops.WithMessage(err, "failed to set DMX values", errParams)
 	}
 
-	if err := (&devicedef.DeviceStateChangedEvent{
-		Header: megaParProfile.Header,
-		State:  megaParProfile.State(),
-	}).Publish(c.Publisher); err != nil {
-		return nil, oops.WithMessage(err, "failed to publish state changed event", errParams)
-	}
+	// TODO: enable event publishing
+	// if err := (&devicedef.DeviceStateChangedEvent{
+	// 	Header: megaParProfile.Header,
+	// 	State:  megaParProfile.State(),
+	// }).Publish(ctx, c.Publisher); err != nil {
+	// 	return nil, oops.WithMessage(err, "failed to publish state changed event", errParams)
+	// }
 
 	return &dmxdef.MegaParProfileResponse{
 		Header: megaParProfile.Header,

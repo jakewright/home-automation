@@ -1,11 +1,13 @@
 package firehose
 
+import "context"
+
 // MockClient can be used by unit tests
 type MockClient struct {
 }
 
 // Publish does nothing
-func (m MockClient) Publish(string, interface{}) error {
+func (m MockClient) Publish(context.Context, string, interface{}) error {
 	return nil
 }
 
