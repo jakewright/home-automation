@@ -65,7 +65,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	binName = fmt.Sprintf("%s-%s", binName, shortHash)
 	binOut := filepath.Join(workingDir, binName)
 
-	flags := fmt.Sprintf("-X github.com/jakewright/home-automation/libraries/go/router.Revision=%s", hash)
+	flags := fmt.Sprintf("-X github.com/jakewright/home-automation/libraries/go/bootstrap.Revision=%s", hash)
 
 	if err := exe.Command("go", "build", "-o", binOut, "-ldflags", flags, pkgToBuild).
 		Dir(git.Dir()).Env(buildEnv).Run().Err; err != nil {

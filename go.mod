@@ -8,7 +8,6 @@ require (
 	github.com/creack/pty v1.1.9
 	github.com/danielchatfield/go-randutils v0.0.0-20161222111725-43a1b7eba548
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-redis/redis/v7 v7.2.0
 	github.com/go-redis/redis/v8 v8.3.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.4.2
@@ -33,6 +32,7 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20201024132449-ef9fd89ba245 // indirect
 	golang.org/x/tools v0.0.0-20200117220505-0cba7a3a9ee9
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	gotest.tools v2.2.0+incompatible
