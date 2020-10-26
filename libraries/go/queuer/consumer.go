@@ -50,9 +50,6 @@ type ConsumerOptions struct {
 
 	// PendingTimeout is the duration for which a message
 	// can be pending before the consumer tries to claim it.
-	// Note that a consumer can claim its own messages if
-	// they are not acknowledged after processing. This is
-	// how the retry mechanism works.
 	//
 	// This value should not be shorter than HandlerTimeout
 	// otherwise you risk claiming messages that are still
@@ -62,9 +59,7 @@ type ConsumerOptions struct {
 	// ClaimInterval is the time between attempts to claim
 	// any messages that have been pending for longer than
 	// the PendingTimeout. If this value is zero, then the
-	// consumer will not try to claim pending messages. If
-	// all consumers in the group have this set to zero then
-	// unacknowledged messages will never be retried.
+	// consumer will not try to claim pending messages.
 	ClaimInterval time.Duration
 
 	// MaxRetry is the number of times a message will be

@@ -52,7 +52,7 @@ services:
       - 3306:3306
 
   redis:
-    image: redis:latest
+    image: redis:6.0
     ports:
       - 6379:6379
 

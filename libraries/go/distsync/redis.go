@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/danielchatfield/go-randutils"
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v8"
 
 	"github.com/jakewright/home-automation/libraries/go/oops"
 	"github.com/jakewright/home-automation/libraries/go/slog"
@@ -41,7 +41,7 @@ func (l *redisLock) Lock(ctx context.Context) error {
 			return oops.WithMessage(err, "failed to acquire lock in time")
 		}
 
-		set, err := l.client.SetNX(l.key, l.value, l.expiration).Result()
+		set, err := l.client.SetNX(ctx, l.key, l.value, l.expiration).Result()
 		if err != nil {
 			// We don't know whether we have the lock in this case, but even if we
 			// do, it'll expire at some point anyway so there's no need to try to
@@ -57,7 +57,7 @@ func (l *redisLock) Lock(ctx context.Context) error {
 
 // Unlock releases the lock
 func (l *redisLock) Unlock() {
-	rsp, err := luaReleaseLock.Run(l.client, []string{l.key}, l.value).Result()
+	rsp, err := luaReleaseLock.Run(context.TODO(), l.client, []string{l.key}, l.value).Result()
 	if err != nil && err != redis.Nil {
 		slog.Errorf("Failed to release lock on resource %q", l.key)
 	}

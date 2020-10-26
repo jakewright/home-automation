@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v8"
 
 	"github.com/jakewright/home-automation/libraries/go/config"
 	"github.com/jakewright/home-automation/libraries/go/healthz"
@@ -45,7 +45,7 @@ func (s *Service) getRedisClient() (*redis.Client, error) {
 		})
 
 		healthCheck := func(ctx context.Context) error {
-			_, err := s.redisClient.Ping().Result()
+			_, err := s.redisClient.Ping(ctx).Result()
 			return err
 		}
 

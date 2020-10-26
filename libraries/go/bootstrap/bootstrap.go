@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v7"
+	"github.com/danielchatfield/go-randutils"
+	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/gorm"
 
 	"github.com/jakewright/home-automation/libraries/go/config"
@@ -30,6 +31,7 @@ type Service struct {
 	name     string
 	hostname string
 	revision string
+	id       string // Used to identify the instance in a Firehose consumer group
 	router   *router.Router
 	runner   *runner
 
@@ -38,7 +40,7 @@ type Service struct {
 	// functions which will initialise them if necessary.
 	mysqlCon       *gorm.DB
 	redisClient    *redis.Client
-	firehoseClient *firehose.StreamsClient
+	firehoseClient *firehose.Client
 }
 
 // Opts defines basic initialisation options for a service
@@ -109,7 +111,7 @@ func (s *Service) HandleFunc(method, path string, handler func(context.Context, 
 }
 
 // HandleRaw registers a new http.Handler with the application's
-// router for the specifed method and path.
+// router for the specified method and path.
 func (s *Service) HandleRaw(method, path string, handler http.Handler) {
 	s.router.HandleRaw(method, path, handler)
 }
@@ -134,10 +136,16 @@ func initService(opts *Opts) (*Service, error) {
 		return nil, err
 	}
 
+	id, err := randutils.String(5)
+	if err != nil {
+		return nil, err
+	}
+
 	service := &Service{
 		name:     opts.ServiceName,
 		hostname: hostname,
 		revision: Revision,
+		id:       id,
 		runner:   &runner{},
 	}
 
@@ -194,14 +202,19 @@ func initRouter(svc *Service) {
 	svc.runner.addProcess(svc.router)
 }
 
-func (s *Service) getFirehoseClient() (*firehose.StreamsClient, error) {
+func (s *Service) getFirehoseClient() (*firehose.Client, error) {
 	if s.firehoseClient == nil {
 		redisClient, err := s.getRedisClient()
 		if err != nil {
 			return nil, err
 		}
 
-		s.firehoseClient = firehose.NewStreamsClient(redisClient)
+		s.firehoseClient = firehose.NewClient(&firehose.ClientOptions{
+			Group:          s.name,
+			Consumer:       s.id,
+			Redis:          redisClient,
+			HandlerTimeout: 0, // TODO: let services override this
+		})
 		s.runner.addProcess(s.firehoseClient)
 	}
 
