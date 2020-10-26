@@ -3,31 +3,28 @@
 package scenedef
 
 import (
+	context "context"
+
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
 // Publish publishes the event to the Firehose
-func (m *SetSceneEvent) Publish(p firehose.Publisher) error {
+func (m *SetSceneEvent) Publish(ctx context.Context, p firehose.Publisher) error {
 	if err := m.Validate(); err != nil {
 		return err
 	}
 
-	return p.Publish("set-scene", m)
+	return p.Publish(ctx, "set-scene", m)
 }
 
 // SetSceneEventHandler implements the necessary functions to be a Firehose handler
 type SetSceneEventHandler func(*SetSceneEvent) firehose.Result
 
-// EventName returns the Firehose channel name
-func (h SetSceneEventHandler) EventName() string {
-	return "set-scene"
-}
-
 // HandleEvent handles the Firehose event
-func (h SetSceneEventHandler) HandleEvent(e firehose.Event) firehose.Result {
+func (h SetSceneEventHandler) HandleEvent(ctx context.Context, decode firehose.Decoder) firehose.Result {
 	var body SetSceneEvent
-	if err := e.Decode(&body); err != nil {
+	if err := decode(&body); err != nil {
 		return firehose.Discard(oops.WithMessage(err, "failed to unmarshal payload"))
 	}
 	return h(&body)

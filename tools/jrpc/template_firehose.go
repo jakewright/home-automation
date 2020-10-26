@@ -31,26 +31,21 @@ import (
 
 {{ range .Events }}
 	// Publish publishes the event to the Firehose
-	func (m *{{ .TypeName }}) Publish(p firehose.Publisher) error {
+	func (m *{{ .TypeName }}) Publish(ctx context.Context, p firehose.Publisher) error {
 		if err := m.Validate(); err != nil {
 			return err
 		}
 
-		return p.Publish("{{ .EventName }}", m)
+		return p.Publish(ctx, "{{ .EventName }}", m)
 	}
 
 	// {{ .TypeName }}Handler implements the necessary functions to be a Firehose handler
 	type {{ .TypeName }}Handler func(*{{ .TypeName }}) firehose.Result
 
-	// EventName returns the Firehose channel name
-	func (h {{ .TypeName }}Handler) EventName() string {
-		return "{{ .EventName }}"
-	}
-
 	// HandleEvent handles the Firehose event
-	func (h {{ .TypeName }}Handler) HandleEvent(e firehose.Event) firehose.Result {
+	func (h {{ .TypeName }}Handler) HandleEvent(ctx context.Context, decode firehose.Decoder) firehose.Result {
 		var body {{ .TypeName }}
-		if err := e.Decode(&body); err != nil {
+		if err := decode(&body); err != nil {
 			return firehose.Discard(oops.WithMessage(err, "failed to unmarshal payload"))
 		}
 		return h(&body)
