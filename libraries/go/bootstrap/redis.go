@@ -51,7 +51,7 @@ func (s *Service) getRedisClient() (*redis.Client, error) {
 
 		healthz.RegisterCheck("redis", healthCheck)
 
-		if err := healthCheck(nil); err != nil {
+		if err := healthCheck(context.Background()); err != nil {
 			return nil, err
 		}
 	}
