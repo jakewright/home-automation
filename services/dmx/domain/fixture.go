@@ -7,8 +7,6 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/oops"
 )
 
-//go:generate devicegen fixtures.json
-
 // Fixture types
 const (
 	FixtureTypeMegaParProfile = "mega_par_profile"
