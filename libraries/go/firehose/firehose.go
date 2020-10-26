@@ -15,6 +15,33 @@ import (
 
 const firehoseStream = "firehose"
 
+// Result is an alias for queuer.Result
+type Result queuer.Result
+
+// Success should be returned when the event was
+// successfully processed.
+func Success() Result {
+	return Result{}
+}
+
+// Fail should be returned when the event was not
+// successfully processed and should be retried
+func Fail(err error) Result {
+	return Result{
+		Retry: true,
+		Err:   err,
+	}
+}
+
+// Discard should be returned when the event was not
+// successfully processed but should not be retried
+func Discard(err error) Result {
+	return Result{
+		Retry: false,
+		Err:   err,
+	}
+}
+
 // Decoder is a function that decodes an event into v
 type Decoder func(v interface{}) error
 
@@ -23,17 +50,17 @@ type Decoder func(v interface{}) error
 // that tells the client whether the handling was successful
 // or not.
 type Handler interface {
-	HandleEvent(ctx context.Context, decode Decoder) queuer.Result
+	HandleEvent(ctx context.Context, decode Decoder) Result
 }
 
 // HandlerFunc is an adapter that allows ordinary functions
 // to be used as event handlers. If f is a function with the
 // appropriate signature, HandlerFunc(f) is a Handler that
 // calls f.
-type HandlerFunc func(ctx context.Context, decode Decoder) queuer.Result
+type HandlerFunc func(ctx context.Context, decode Decoder) Result
 
 // HandleEvent calls f(ctx, decode)
-func (f HandlerFunc) HandleEvent(ctx context.Context, decode Decoder) queuer.Result {
+func (f HandlerFunc) HandleEvent(ctx context.Context, decode Decoder) Result {
 	return f(ctx, decode)
 }
 
@@ -187,7 +214,7 @@ func (c *Client) Start(ctx context.Context) error {
 			return nil
 		}
 
-		return h.HandleEvent(ctx, decode)
+		return queuer.Result(h.HandleEvent(ctx, decode))
 	}
 
 	var deadLetterHandler = func(ctx context.Context, m *queuer.Message) queuer.Result {

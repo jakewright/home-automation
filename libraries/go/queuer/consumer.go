@@ -207,7 +207,7 @@ func (c *Consumer) poll(ctx context.Context, streams []string) error {
 		}
 
 		results, err := c.xReadGroup(ctx, streams)
-		if err != nil {
+		if err != nil && !errors.Is(err, redis.Nil) {
 			return err
 		}
 
@@ -251,7 +251,7 @@ func (c *Consumer) claimStream(ctx context.Context, stream string) error {
 		}
 
 		res, err := c.xPendingExt(ctx, stream, start, end)
-		if err != nil {
+		if err != nil && !errors.Is(err, redis.Nil) {
 			return err
 		}
 
@@ -453,7 +453,11 @@ func (c *Consumer) xGroupCreateMkStream(ctx context.Context, stream string) erro
 		return nil
 	}
 
-	return c.xRetry(ctx, f)
+	if err := c.xRetry(ctx, f); err != nil {
+		return fmt.Errorf("failed to create group %q for stream %q: %w", c.opts.Group, stream, err)
+	}
+
+	return nil
 }
 
 func (c *Consumer) xReadGroup(ctx context.Context, streams []string) ([]redis.XStream, error) {
@@ -471,7 +475,11 @@ func (c *Consumer) xReadGroup(ctx context.Context, streams []string) ([]redis.XS
 		return err
 	}
 
-	return results, c.xRetry(ctx, f)
+	if err := c.xRetry(ctx, f); err != nil {
+		return nil, fmt.Errorf("failed to read stream: %w", err)
+	}
+
+	return results, nil
 }
 
 func (c *Consumer) xPendingExt(ctx context.Context, stream, start, end string) ([]redis.XPendingExt, error) {
@@ -490,7 +498,11 @@ func (c *Consumer) xPendingExt(ctx context.Context, stream, start, end string) (
 		return err
 	}
 
-	return results, c.xRetry(ctx, f)
+	if err := c.xRetry(ctx, f); err != nil {
+		return nil, fmt.Errorf("failed to list pending entries: %w", err)
+	}
+
+	return results, nil
 }
 
 func (c *Consumer) xClaim(ctx context.Context, stream string, messages []string) ([]redis.XMessage, error) {
@@ -512,13 +524,21 @@ func (c *Consumer) xClaim(ctx context.Context, stream string, messages []string)
 		return err
 	}
 
-	return results, c.xRetry(ctx, f)
+	if err := c.xRetry(ctx, f); err != nil {
+		return nil, fmt.Errorf("failed to claim message: %w", err)
+	}
+
+	return results, nil
 }
 
 func (c *Consumer) xAck(ctx context.Context, stream, ID string) error {
-	return c.xRetry(ctx, func() error {
+	if err := c.xRetry(ctx, func() error {
 		return c.opts.Redis.XAck(ctx, stream, c.opts.Group, ID).Err()
-	})
+	}); err != nil {
+		return fmt.Errorf("failed to ack message: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Consumer) xRetry(ctx context.Context, f func() error) error {

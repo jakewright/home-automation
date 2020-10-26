@@ -68,6 +68,9 @@ func xRetry(args *xRetryArgs) error {
 		}
 
 		err := args.f()
+		if err == nil {
+			return nil
+		}
 
 		// Was this a network error?
 		if err, ok := err.(net.Error); ok {
