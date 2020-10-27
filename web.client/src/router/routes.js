@@ -22,7 +22,7 @@ export default [
     ]
   },
   {
-    path: '*',
+    path: '/:pathMatch(.*)*',
     name: "not-found",
     component: NotFound,
   }

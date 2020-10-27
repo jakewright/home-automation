@@ -1,20 +1,18 @@
-import createLogger from "vuex/dist/logger";
-import Vue from "vue";
-import Vuex from "vuex";
+import { createLogger, createStore } from "vuex";
 import devices from "./modules/devices";
 import errors from "./modules/errors";
 import rooms from "./modules/rooms";
 
-Vue.use(Vuex);
-
 const debug = true;
 
-export default new Vuex.Store({
+const store = createStore({
   modules: {
     devices,
     errors,
     rooms
   },
   strict: debug,
-  plugins: debug ? [createLogger()] : []
+  plugins: debug ? [createLogger()]: []
 });
+
+export default store

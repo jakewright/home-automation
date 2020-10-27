@@ -11,9 +11,9 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Install app dependencies
-RUN npm install -g @vue/cli@3.5.5
-COPY ./web.client/.npmrc .
+RUN npm install -g @vue/cli@4.5.8
 COPY ./web.client/package.json .
+COPY ./web.client/package-lock.json .
 RUN npm install
 
 # Copy source code

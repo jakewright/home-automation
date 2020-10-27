@@ -34,8 +34,8 @@ const updateDevice = async ({ identifier, controllerName }, properties) => {
  * @returns {Array.<Room>}
  */
 const fetchRooms = async () => {
-  const rsp = await http.get("service.device-registry/rooms");
-  return apiToRooms(rsp);
+  const rsp = await http.get("device-registry/rooms");
+  return apiToRooms(rsp.rooms);
 };
 
 /**
@@ -45,7 +45,7 @@ const fetchRooms = async () => {
  * @returns {Room}
  */
 const fetchRoom = async identifier => {
-  const rsp = await http.get(`service.device-registry/room/${identifier}`);
+  const rsp = await http.get(`device-registry/room/${identifier}`);
   return apiToRoom(rsp);
 };
 
