@@ -9,9 +9,6 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.0-14",
-    "@fortawesome/pro-light-svg-icons": "^5.11.0",
-    "@fortawesome/pro-regular-svg-icons": "^5.10.2",
-    "@fortawesome/pro-solid-svg-icons": "^5.1.0",
     "@fortawesome/vue-fontawesome": "0.1.0-5",
     "axios": "^0.18.0",
     "color-circle": "^1.0.0",
@@ -23,9 +20,9 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.4",
     "@vue/cli-service": "^3.0.4",
-    "vue-template-compiler": "^2.5.17",
     "node-sass": "^4.9.0",
-    "sass-loader": "^7.0.1"
+    "sass-loader": "^7.0.1",
+    "vue-template-compiler": "^2.5.17"
   },
   "babel": {
     "presets": [

@@ -1,8 +1,9 @@
 #!/bin/bash
 
+# This should be run from the web.client directory
+
 docker \
   run --rm -it \
   --volume "$PWD":/usr/src/app \
-  --volume $(dirname "$PWD")/private/.npmrc:/usr/src/app/.npmrc \
   --workdir /usr/src/app \
-  node:12 npm "$@"
+  node:15 npm "$@"
