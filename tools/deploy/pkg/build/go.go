@@ -13,6 +13,8 @@ import (
 	"github.com/jakewright/home-automation/tools/libraries/env"
 )
 
+const revisionVarPath = "github.com/jakewright/home-automation/libraries/go/bootstrap.Revision"
+
 // GoBuilder is a builder for golang
 type GoBuilder struct {
 	Service *config.Service
@@ -65,7 +67,7 @@ func (b *GoBuilder) Build(revision, workingDir string) (*Release, error) {
 	binName = fmt.Sprintf("%s-%s", binName, shortHash)
 	binOut := filepath.Join(workingDir, binName)
 
-	flags := fmt.Sprintf("-X github.com/jakewright/home-automation/libraries/go/bootstrap.Revision=%s", hash)
+	flags := fmt.Sprintf("-X %s=%s", revisionVarPath, hash)
 
 	if err := exe.Command("go", "build", "-o", binOut, "-ldflags", flags, pkgToBuild).
 		Dir(git.Dir()).Env(buildEnv).Run().Err; err != nil {

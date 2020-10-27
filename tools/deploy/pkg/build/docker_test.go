@@ -1,12 +1,16 @@
 package build
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/jakewright/home-automation/tools/libraries/env"
+)
 
 func Test_compareDockerfileArgs(t *testing.T) {
 	tests := []struct {
 		name              string
 		dockerfileContent string
-		givenArgs         map[string]string
+		givenArgs         env.Environment
 		wantErr           bool
 	}{
 		{
@@ -24,14 +28,28 @@ func Test_compareDockerfileArgs(t *testing.T) {
 		{
 			name:              "Missing one arg",
 			dockerfileContent: egDockerfileArgs,
-			givenArgs:         map[string]string{"work_dir": "/"},
-			wantErr:           true,
+			givenArgs: []*env.Variable{
+				{
+					Name:  "work_dir",
+					Value: "/",
+				},
+			},
+			wantErr: true,
 		},
 		{
 			name:              "Got both args",
 			dockerfileContent: egDockerfileArgs,
-			givenArgs:         map[string]string{"work_dir": "/", "service_name": "foo"},
-			wantErr:           false,
+			givenArgs: []*env.Variable{
+				{
+					Name:  "work_dir",
+					Value: "/",
+				},
+				{
+					Name:  "service_name",
+					Value: "foo",
+				},
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

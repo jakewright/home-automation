@@ -9,7 +9,10 @@ COPY . .
 RUN go mod download
 
 ARG service_name
-RUN CGO_ENABLED=0 GOOS=linux go install ./services/${service_name}
+ARG revision
+RUN CGO_ENABLED=0 GOOS=linux go install \
+    -ldflags "-X github.com/jakewright/home-automation/libraries/go/bootstrap.Revision=${revision}" \
+    ./services/${service_name}
 
 FROM alpine:latest
 

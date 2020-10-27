@@ -63,11 +63,6 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 		return nil, oops.WithMessage(err, "failed to stat service directory")
 	}
 
-	if err := validateDockerfile(b.Service.Docker()); err != nil {
-		op.Failed()
-		return nil, oops.WithMessage(err, "failed to validate Dockerfile")
-	}
-
 	longHash, shortHash, err := git.CurrentHash()
 	if err != nil {
 		op.Failed()
@@ -92,6 +87,16 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 			Name:  name,
 			Value: value,
 		})
+	}
+
+	buildArgs = append(buildArgs, &env.Variable{
+		Name:  "revision",
+		Value: longHash,
+	})
+
+	if err := validateBuildArgs(b.Service.Docker(), buildArgs); err != nil {
+		op.Failed()
+		return nil, oops.WithMessage(err, "failed to validate Dockerfile")
 	}
 
 	op.Success()
@@ -140,7 +145,7 @@ func (b *DockerBuilder) Build(revision string) (*DockerBuild, error) {
 	}, nil
 }
 
-func validateDockerfile(conf *config.DockerConfig) error {
+func validateBuildArgs(conf *config.DockerConfig, args env.Environment) error {
 	if conf == nil {
 		return oops.InternalService("missing docker config")
 	}
@@ -150,13 +155,13 @@ func validateDockerfile(conf *config.DockerConfig) error {
 		return oops.WithMessage(err, "failed to read dockerfile")
 	}
 
-	return compareDockerfileArgs(string(b), conf.Args())
+	return compareDockerfileArgs(string(b), args)
 }
 
 // compareDockerfileArgs returns an error if there is an arg specified in the
 // Dockerfile that isn't in the map, or if there is an arg in the map that
 // isn't required by the Dockerfile.
-func compareDockerfileArgs(dockerfileContent string, givenArgs map[string]string) error {
+func compareDockerfileArgs(dockerfileContent string, givenArgs env.Environment) error {
 	matches := reDockerfileArg.FindAllStringSubmatch(dockerfileContent, -1)
 	requiredArgs := make(map[string]struct{}, len(matches))
 
@@ -169,13 +174,13 @@ func compareDockerfileArgs(dockerfileContent string, givenArgs map[string]string
 	}
 
 	for arg := range requiredArgs {
-		if _, ok := givenArgs[arg]; !ok {
+		if _, ok := givenArgs.Lookup(arg); !ok {
 			return oops.InternalService("missing Dockerfile arg %q", arg)
 		}
 	}
 
-	for arg := range givenArgs {
-		if _, ok := requiredArgs[arg]; !ok {
+	for _, arg := range givenArgs {
+		if _, ok := requiredArgs[arg.Name]; !ok {
 			return oops.InternalService("arg %q specified but not required by Dockerfile", arg)
 		}
 	}
