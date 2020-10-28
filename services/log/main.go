@@ -4,8 +4,8 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/router"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	"github.com/jakewright/home-automation/services/log/handler"
 	"github.com/jakewright/home-automation/services/log/repository"
+	"github.com/jakewright/home-automation/services/log/routes"
 	"github.com/jakewright/home-automation/services/log/watch"
 )
 
@@ -36,7 +36,7 @@ func main() {
 		LogRepository: logRepository,
 	}
 
-	_ = &handler.Handler{
+	_ = &routes.Handler{
 		TemplateDirectory: conf.TemplateDirectory,
 		LogRepository:     logRepository,
 		Watcher:           watcher,

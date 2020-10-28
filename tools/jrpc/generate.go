@@ -62,7 +62,7 @@ func generate(defPath string, file *svcdef.File) error {
 		// Initialise the generator
 		generator.Init(opts, file)
 
-		// Generate the package directory name e.g. "handler"
+		// Generate the package directory name e.g. "routes"
 		packageDir := generator.PackageDir()
 
 		// Generate the filename

@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/slog"
-	"github.com/jakewright/home-automation/services/device-registry/handler"
 	"github.com/jakewright/home-automation/services/device-registry/repository"
+	"github.com/jakewright/home-automation/services/device-registry/routes"
 )
 
 //go:generate jrpc deviceregistry.def
@@ -15,7 +15,7 @@ func main() {
 	}{}
 
 	svc := bootstrap.Init(&bootstrap.Opts{
-		ServiceName: "service.device-registry",
+		ServiceName: "device-registry",
 		Config:      &conf,
 	})
 
@@ -33,7 +33,7 @@ func main() {
 		slog.Panicf("failed to init room repository: %v", err)
 	}
 
-	handler.RegisterRoutes(svc, &handler.Controller{
+	routes.Register(svc, &routes.Controller{
 		DeviceRepository: dr,
 		RoomRepository:   rr,
 	})

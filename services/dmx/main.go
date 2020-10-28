@@ -10,8 +10,8 @@ import (
 	deviceregistrydef "github.com/jakewright/home-automation/services/device-registry/def"
 	"github.com/jakewright/home-automation/services/dmx/dmx"
 	"github.com/jakewright/home-automation/services/dmx/domain"
-	"github.com/jakewright/home-automation/services/dmx/handler"
 	"github.com/jakewright/home-automation/services/dmx/repository"
+	"github.com/jakewright/home-automation/services/dmx/routes"
 )
 
 //go:generate jrpc dmx.def
@@ -62,7 +62,7 @@ func run(svc *bootstrap.Service, conf *config) error {
 		return err
 	}
 
-	handler.RegisterRoutes(svc, &handler.Controller{
+	routes.Register(svc, &routes.Controller{
 		Repository: repo,
 		Client:     client,
 		Publisher:  svc.FirehosePublisher(),

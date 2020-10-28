@@ -8,7 +8,7 @@ import (
 	"github.com/jakewright/home-automation/tools/libraries/imports"
 )
 
-const packageDirRouter = "handler"
+const packageDirRouter = "routes"
 
 type routerDataEndpoint struct {
 	NameUpper  string

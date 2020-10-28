@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	"github.com/jakewright/home-automation/services/infrared/handler"
+	"github.com/jakewright/home-automation/services/infrared/routes"
 )
 
 //go:generate jrpc infrared.def
@@ -13,7 +13,7 @@ func main() {
 		Firehose:    true,
 	})
 
-	r := handler.NewRouter(svc)
+	r := routes.NewRouter(svc)
 
 	svc.Run(r)
 }

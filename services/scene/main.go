@@ -4,7 +4,7 @@ import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
 	"github.com/jakewright/home-automation/libraries/go/firehose"
 	"github.com/jakewright/home-automation/services/scene/consumer"
-	"github.com/jakewright/home-automation/services/scene/handler"
+	"github.com/jakewright/home-automation/services/scene/routes"
 )
 
 //go:generate jrpc scene.def
@@ -16,7 +16,7 @@ func main() {
 
 	firehose.Subscribe(consumer.HandleSetSceneEvent)
 
-	handler.RegisterRoutes(svc, &handler.Controller{
+	routes.Register(svc, &routes.Controller{
 		Database: svc.Database(),
 	})
 

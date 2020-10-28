@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/jakewright/home-automation/libraries/go/bootstrap"
-	"github.com/jakewright/home-automation/services/user/handler"
+	"github.com/jakewright/home-automation/services/user/routes"
 )
 
 //go:generate jrpc user.def
@@ -10,9 +10,9 @@ import (
 func main() {
 	svc := bootstrap.Init(&bootstrap.Opts{
 		ServiceName: "service.user",
-		Database:    true,
 	})
 
-	r := handler.NewRouter(svc, &handler.Controller{})
-	svc.Run(r)
+	routes.Register(svc, &routes.Controller{})
+
+	svc.Run()
 }
