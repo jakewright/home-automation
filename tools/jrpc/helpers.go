@@ -17,8 +17,13 @@ var (
 )
 
 // externalPackageName returns the name to use for the external package
+// E.g. if the path to the def file is services/foo-bar/foo_bar.def
+// it will return a package name foobardef
 func externalPackageName(opts *options) string {
-	return strings.ReplaceAll(filepath.Base(opts.DefPath), ".", "")
+	// This matches any character that is not a-z or 0-9
+	re := regexp.MustCompile(`[^a-z0-9]`)
+	s := strings.ToLower(filepath.Base(opts.DefPath))
+	return re.ReplaceAllString(s, "")
 }
 
 func getMethod(r *svcdef.RPC) (string, error) {
