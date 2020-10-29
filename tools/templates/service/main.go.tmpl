@@ -1,0 +1,21 @@
+package main
+
+import (
+	"github.com/jakewright/home-automation/libraries/go/bootstrap"
+	"github.com/jakewright/home-automation/services/{{service_name_kebab}}/routes"
+)
+
+//go:generate jrpc {{service_name_snake}}.def
+
+func main() {
+	conf := struct{}{}
+
+	svc := bootstrap.Init(&bootstrap.Opts{
+		ServiceName: "{{service_name_kebab}}",
+		Config:      &conf,
+	})
+
+	routes.Register(svc, &routes.Controller{})
+
+	svc.Run()
+}

@@ -47,8 +47,8 @@ type handler interface {
 	{{- end }}
 }
 
-// RegisterRoutes adds the service's routes to the router
-func RegisterRoutes(r taxiRouter, h handler) {
+// Register adds the service's routes to the router
+func Register(r taxiRouter, h handler) {
 	{{ range .Endpoints -}}
 		r.HandleFunc("{{ .HTTPMethod }}", "{{ .Path }}", func(ctx context.Context, decode taxi.Decoder) (interface{}, error) {
 			body := &{{ .InputType }}{}
@@ -98,10 +98,6 @@ func (g *routerGenerator) Data(im *imports.Manager) (interface{}, error) {
 	}
 
 	if g.file.Service == nil {
-		return nil, nil
-	}
-
-	if len(g.file.Service.RPCs) == 0 {
 		return nil, nil
 	}
 
