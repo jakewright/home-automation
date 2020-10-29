@@ -1,0 +1,15 @@
+service LircProxy {
+    path = "lirc-proxy"
+
+    rpc SendOnce(SendOnceRequest) SendOnceResponse {
+        method = "POST"
+        path = "/send-once"
+    }
+}
+
+message SendOnceRequest {
+    string device (required)
+    string key (required)
+}
+
+message SendOnceResponse {}
