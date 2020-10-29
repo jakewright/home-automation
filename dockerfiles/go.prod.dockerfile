@@ -1,7 +1,7 @@
 # This is a generic Dockerfile used for running golang services in production.
 # It's referenced in the deployment config file.
 
-FROM golang:1.14-alpine
+FROM golang:1.15-alpine
 
 WORKDIR /app
 COPY . .

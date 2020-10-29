@@ -1,6 +1,6 @@
 module github.com/jakewright/home-automation
 
-go 1.14
+go 1.15
 
 require (
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect

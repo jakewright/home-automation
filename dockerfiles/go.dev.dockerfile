@@ -1,7 +1,7 @@
 # This is a generic Dockerfile used for running golang services locally.
 # It's referenced in the project's Docker Compose file.
 
-FROM golang:1.14-alpine
+FROM golang:1.15-alpine
 
 # Alpine doesn't have git but go get needs it
 RUN apk add --no-cache git
