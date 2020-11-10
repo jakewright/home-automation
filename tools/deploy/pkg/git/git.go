@@ -145,7 +145,7 @@ func (r *Repository) checkout(revision string) error {
 		return oops.WithMessage(err, "failed to fetch revision %s from remote", revision)
 	}
 
-	if err := r.exec("checkout", "--recurse-submodules", revision).Err; err != nil {
+	if err := r.exec("checkout", "--recurse-submodules", "--force", revision).Err; err != nil {
 		return oops.WithMessage(err, "failed to checkout %q", revision)
 	}
 
