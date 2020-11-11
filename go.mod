@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/containerd/continuity v0.0.0-20200928162600-f2cc35102c2a // indirect
-	github.com/creack/pty v1.1.9
+	github.com/creack/pty v1.1.11
 	github.com/danielchatfield/go-randutils v0.0.0-20161222111725-43a1b7eba548
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v8 v8.3.0
@@ -30,7 +30,7 @@ require (
 	golang.org/x/mod v0.2.0
 	golang.org/x/net v0.0.0-20201024042810-be3efd7ff127 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20201024132449-ef9fd89ba245 // indirect
+	golang.org/x/sys v0.0.0-20201110211018-35f3e6cf4a65 // indirect
 	golang.org/x/tools v0.0.0-20200117220505-0cba7a3a9ee9
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.3.0
