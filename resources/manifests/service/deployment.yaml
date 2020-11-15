@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .ServiceName }}
+  labels:
+    app: {{ .ServiceName }}
+  annotations:
+    revision: {{ .Revision }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .ServiceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .ServiceName }}
+    spec:
+      containers:
+        - name: {{ .ServiceName }}
+          image: {{ .Image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ .ContainerPort }}
+          env:
+            {{- range $key, $value := .Config }}
+            - name: {{ $key }}
+              value: "{{ $value }}"
+            {{- end }}

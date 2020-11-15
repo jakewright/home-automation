@@ -1,8 +1,0 @@
-# The chart API version (required)
-apiVersion: v1
-
-# The name of the chart (required)
-name: service
-
-# A SemVer 2 version (required)
-version: 0.0.1

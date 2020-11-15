@@ -73,7 +73,12 @@ var (
 					output.Fatal("Failed to get revision: %v", err)
 				}
 
-				output.Info("Currently deployed revision: %s\n", revision)
+				if revision == "" {
+					output.Info("\nNot yet deployed\n")
+					return
+				}
+
+				output.Info("\nCurrently deployed revision: %s\n", revision)
 				return
 			}
 

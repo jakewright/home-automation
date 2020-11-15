@@ -37,11 +37,16 @@ type dockerConfig struct {
 	Args       map[string]string `yaml:"args"`
 }
 
+type kubernetesConfig struct {
+	Manifests []string `yaml:"manifests"`
+}
+
 type service struct {
-	TargetNames []string      `yaml:"targets"`
-	Language    string        `yaml:"language"`
-	EnvFiles    []string      `yaml:"env_files"`
-	Docker      *dockerConfig `yaml:"docker"`
+	TargetNames []string          `yaml:"targets"`
+	Language    string            `yaml:"language"`
+	EnvFiles    []string          `yaml:"env_files"`
+	Docker      *dockerConfig     `yaml:"docker"`
+	Kubernetes  *kubernetesConfig `yaml:"k8s"`
 }
 
 // Init reads and validates config
@@ -118,6 +123,11 @@ func Init(filename string) (err error) {
 			serviceTargets = append(serviceTargets, target)
 		}
 
+		var k8sManifests []string
+		if s.Kubernetes != nil {
+			k8sManifests = s.Kubernetes.Manifests
+		}
+
 		services[name] = &Service{
 			name:        name,
 			targetNames: s.TargetNames,
@@ -127,6 +137,9 @@ func Init(filename string) (err error) {
 			docker: &DockerConfig{
 				dockerfile: s.Docker.Dockerfile,
 				args:       s.Docker.Args,
+			},
+			kubernetes: &KubernetesConfig{
+				manifests: k8sManifests,
 			},
 		}
 	}

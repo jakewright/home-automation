@@ -118,6 +118,20 @@ func (d *DockerConfig) Args() map[string]string {
 	return d.args
 }
 
+// KubernetesConfig holds options related to a Kubernetes deployment
+type KubernetesConfig struct {
+	manifests []string
+}
+
+// Manifests returns the paths of the Kubernetes manifest files
+func (k *KubernetesConfig) Manifests() []string {
+	if k == nil {
+		return nil
+	}
+
+	return k.manifests
+}
+
 // Service is the microservice to be deployed
 type Service struct {
 	name        string
@@ -126,6 +140,7 @@ type Service struct {
 	language    string
 	envFiles    []string
 	docker      *DockerConfig
+	kubernetes  *KubernetesConfig
 }
 
 // Name returns the name of the service
@@ -162,6 +177,11 @@ func (s *Service) EnvFiles() []string {
 // Docker returns the docker configuration for the service
 func (s *Service) Docker() *DockerConfig {
 	return s.docker
+}
+
+// Kubernetes returns the Kubernetes configuration for the service
+func (s *Service) Kubernetes() *KubernetesConfig {
+	return s.kubernetes
 }
 
 // DashedName returns home-automation-foo for foo

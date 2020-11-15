@@ -1,9 +1,11 @@
 package kubernetes
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/logrusorgru/aurora"
 
@@ -16,9 +18,8 @@ import (
 )
 
 const (
-	helmReleaseNotFoundErr = "release: not found"
-	helmChartPath          = "./tools/deploy/helm/service"
-	constPortEnv           = "PORT"
+	k8sNotFoundErr = "NotFound"
+	constPortEnv   = "PORT"
 )
 
 // Target is the interface implemented by a Kubernetes target
@@ -37,17 +38,19 @@ type Kubernetes struct {
 	Target  Target
 }
 
-// Revision returns the currently deployed revision according to the
-// revision label on the helm release
+// Revision returns the currently deployed revision from the k8s annotation
 func (k *Kubernetes) Revision() (string, error) {
 	op := output.Info("Fetching current revision")
 	result := exe.Command(
-		"helm", "get", "values", k.releaseName(),
+		"kubectl",
+		"get",
+		fmt.Sprintf("deployments/%s", k.releaseName()),
+		"--context", k.Target.KubeContext(),
 		"--namespace", k.Target.Namespace(),
-		"--output", "json",
+		"--output", "jsonpath=\"{.metadata.annotations.revision}\"",
 	).Run()
 	if result.Err != nil {
-		if strings.Contains(result.Err.Error(), helmReleaseNotFoundErr) {
+		if strings.Contains(result.Err.Error(), k8sNotFoundErr) {
 			op.Success()
 			return "", nil // Not deployed before
 		}
@@ -58,30 +61,27 @@ func (k *Kubernetes) Revision() (string, error) {
 	op.Success()
 
 	if len(result.Stderr) > 0 {
-		return "", oops.InternalService("helm wrote to stderr: %s", result.Stderr)
+		return "", oops.InternalService("kubectl wrote to stderr: %s", result.Stderr)
 	}
 
 	if len(result.Stdout) == 0 {
-		return "", oops.InternalService("no response from helm get values")
+		return "", oops.InternalService("no response from kubectl")
 	}
 
-	values := &struct {
-		Revision string `json:"revision"`
-	}{}
-
-	if err := json.Unmarshal([]byte(result.Stdout), values); err != nil {
-		return "", oops.WithMessage(err, "failed to unmarshal helm response")
+	revision, err := strconv.Unquote(result.Stdout)
+	if err != nil {
+		return "", oops.WithMessage(err, "failed to read response")
 	}
 
-	if values.Revision == "" {
-		return "", oops.InternalService("could not find revision in helm response: %s", result.Stdout)
-	}
-
-	return values.Revision, nil
+	return revision, nil
 }
 
-// Deploy upgrades the helm release
+// Deploy builds and applies a kubernetes manifest for the service
 func (k *Kubernetes) Deploy(revision string) error {
+	if len(k.Service.Kubernetes().Manifests()) == 0 {
+		return oops.InternalService("no k8s manifests specified for service")
+	}
+
 	builder := build.DockerBuilder{
 		Service: k.Service,
 		Target:  k.Target,
@@ -92,53 +92,80 @@ func (k *Kubernetes) Deploy(revision string) error {
 		return oops.WithMessage(err, "failed to build docker image")
 	}
 
+	args := &struct {
+		ServiceName   string
+		Image         string
+		Revision      string
+		ServicePort   int
+		ContainerPort int
+		Config        map[string]string
+	}{
+		ServiceName:   k.releaseName(),
+		Image:         dockerBuild.Image,
+		Revision:      dockerBuild.LongHash,
+		ServicePort:   80,
+		ContainerPort: 80, // Might be overridden below
+		Config:        make(map[string]string),
+	}
+
+	// If a port is specified in the config, set the containerPort
+	// which is used as the targetPort in the k8s service spec.
+	if port, ok := dockerBuild.Env.Lookup(constPortEnv); ok {
+		p, err := strconv.Atoi(port)
+		if err != nil {
+			return oops.WithMessage(err, "failed to parse port from service's env file")
+		}
+		args.ContainerPort = p
+	}
+
+	for _, v := range dockerBuild.Env {
+		args.Config[v.Name] = v.Value
+	}
+
+	var manifest bytes.Buffer
+
+	// Read the k8s resource files
+	for _, filename := range k.Service.Kubernetes().Manifests() {
+		t, err := template.ParseFiles(filename)
+		if err != nil {
+			return oops.WithMessage(err, "failed to parse manifest: %q", filename)
+		}
+
+		manifest.WriteString("---\n")
+
+		if err := t.Execute(&manifest, args); err != nil {
+			return oops.WithMessage(err, "failed to execute template")
+		}
+	}
+
+	op := output.Info("Deploying service")
+
+	// TODO: use the go library instead of kubectl
+	cmd := exe.Command(
+		"kubectl",
+		"apply",
+		"--filename", "-", // Read from stdin
+		"--context", k.Target.KubeContext(),
+		"--namespace", k.Target.Namespace(),
+	).SetInput(manifest.String())
+
+	output.Debug("\n\n%s\n\n", manifest.String())
+
 	if ok, err := k.confirm(dockerBuild); err != nil {
 		return oops.WithMessage(err, "failed to confirm")
 	} else if !ok {
 		return nil
 	}
 
-	args := []string{
-		"upgrade",
-		k.releaseName(),
-		helmChartPath,
-		"--install",        // If a release by this name doesn't already exist, run an install
-		"--wait",           // Wait until all resources are in a ready state
-		"--timeout", "30s", // Time to wait for any individual k8s operation
-		"--cleanup-on-fail", // Allow deletion of new resources created in this upgrade when upgrade fails
-		"--output", "json",
-		"--kube-context", k.Target.KubeContext(),
-		"--namespace", k.Target.Namespace(),
-		"--set", "image=" + dockerBuild.Image,
-		"--set", "revision=" + dockerBuild.LongHash,
-	}
+	res := cmd.Run()
 
-	// If a port is specified in the config, set the containerPort
-	// which is used as the targetPort in the k8s service spec.
-	if port, ok := dockerBuild.Env.Lookup(constPortEnv); ok {
-		args = append(args, "--set", "containerPort="+port)
-	}
-
-	for _, v := range dockerBuild.Env {
-		s := fmt.Sprintf("config.%s=%s", v.Name, v.Value)
-		args = append(args, "--set-string", s)
-	}
-
-	op := output.Info("Deploying service")
-	cmd := exe.Command(
-		"helm", args...,
-	)
-
-	output.Debug("helm %s", strings.Join(args, " "))
-
-	if output.Verbose {
-		cmd = cmd.SetPseudoTTY()
-	}
-
-	if err := cmd.Run().Err; err != nil {
+	if res.Err != nil {
 		op.Failed()
-		return oops.WithMessage(err, "failed to upgrade release")
+		return oops.WithMessage(res.Err, "failed to upgrade release")
 	}
+
+	output.Info(res.Stdout)
+
 	op.Success()
 
 	k.success()
@@ -147,7 +174,7 @@ func (k *Kubernetes) Deploy(revision string) error {
 
 // releaseName returns home-automation-foo for foo
 func (k *Kubernetes) releaseName() string {
-	return k.Service.DashedName()
+	return k.Service.Name()
 }
 
 func (k *Kubernetes) confirm(db *build.DockerBuild) (bool, error) {
