@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/logrusorgru/aurora"
 
@@ -30,6 +31,37 @@ type Target interface {
 	Namespace() string
 	DockerRegistry() string
 	DockerRepository() string
+}
+
+type manifestTemplateData struct {
+	// ServiceName becomes the name of the Kubernetes
+	// service and deployment
+	ServiceName string
+
+	// Image is the name of the Docker image the pods should run
+	Image string
+
+	// Revision should be the full git hash
+	Revision string
+
+	// DeploymentTimestamp should be set to time.Now() when
+	// the deployment happens. This makes sure that each
+	// deployment contains a change, even if the image name
+	// hasn't changed. Combined with imagePullPolicy: Always,
+	// all deployments cause K8s to re-pull the image and
+	// roll the pods.
+	DeploymentTimestamp string
+
+	// ServicePort is the port that will be exposed by the service
+	ServicePort int
+
+	// ContainerPort is the port that the service should
+	// access in the pods that it targets
+	ContainerPort int
+
+	// Config is a map of environment variables that the
+	// service should have at runtime
+	Config map[string]string
 }
 
 // Kubernetes is a deployer for k8s
@@ -92,20 +124,14 @@ func (k *Kubernetes) Deploy(revision string) error {
 		return oops.WithMessage(err, "failed to build docker image")
 	}
 
-	args := &struct {
-		ServiceName   string
-		Image         string
-		Revision      string
-		ServicePort   int
-		ContainerPort int
-		Config        map[string]string
-	}{
-		ServiceName:   k.releaseName(),
-		Image:         dockerBuild.Image,
-		Revision:      dockerBuild.LongHash,
-		ServicePort:   80,
-		ContainerPort: 80, // Might be overridden below
-		Config:        make(map[string]string),
+	args := &manifestTemplateData{
+		ServiceName:         k.releaseName(),
+		Image:               dockerBuild.Image,
+		Revision:            dockerBuild.LongHash,
+		DeploymentTimestamp: time.Now().Format(time.RFC3339),
+		ServicePort:         80,
+		ContainerPort:       80, // Might be overridden below
+		Config:              make(map[string]string),
 	}
 
 	// If a port is specified in the config, set the containerPort
