@@ -155,7 +155,7 @@ func (r *Repository) checkout(revision string) error {
 		return nil
 	}
 
-	if err := r.exec("reset", "--hard", "@{u}").Err; err != nil {
+	if err := r.exec("reset", "--hard", "--recurse-submodules", "@{u}").Err; err != nil {
 		return oops.WithMessage(err, "failed to reset branch")
 	}
 
