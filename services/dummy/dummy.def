@@ -1,0 +1,21 @@
+service Dummy {
+    path = "dummy"
+
+    rpc Log(LogRequest) LogResponse {
+        method = "POST"
+        path = "/log"
+    }
+
+    rpc Panic(PanicRequest) PanicResponse {
+        method = "POST"
+        path = "/panic"
+    }
+}
+
+message LogRequest {}
+
+message LogResponse {}
+
+message PanicRequest {}
+
+message PanicResponse {}
