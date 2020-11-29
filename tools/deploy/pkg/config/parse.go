@@ -107,7 +107,7 @@ func Init(filename string) (err error) {
 		}
 
 		switch s.Language {
-		case LangGo: // ok
+		case LangGo, "": // ok (support no language)
 		default:
 			return oops.InternalService("Invalid language '%s' for service '%s'", s.Language, name)
 		}

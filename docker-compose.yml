@@ -29,6 +29,19 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  fluentd:
+    build:
+      dockerfile: services/fluentd/Dockerfile
+      context: ./services/fluentd/
+    volumes:
+      - ./services/fluentd/log:/fluentd/log
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    env_file:
+      - ./private/config/dev/fluentd.env
+
+
   logstash:
     build:
       dockerfile: logstash/Dockerfile
@@ -128,6 +141,17 @@ services:
     env_file:
       - private/config/dev/dmx.env
 
+  dummy:
+    extends:
+      service: go-service
+    build:
+      args:
+        service_name: dummy
+    ports:
+      - 7014:80
+    env_file:
+      - private/config/dev/common.env
+
   event-bus:
     build:
       dockerfile: services/event-bus/dev.dockerfile
@@ -153,6 +177,28 @@ services:
       - ./log/:/var/log:ro
     ports:
       - 7020:80
+
+  mongo:
+    image: mongo:4.4.2-bionic
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: home_automation_logs
+    volumes:
+      - ./data/mongo:/data/db
+      - ./services/mongo/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
+
 
   ping:
     extends:

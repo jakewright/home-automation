@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-logging
+    version: v1
+spec:
+  selector:
+    matchLabels:
+      k8s-app: fluentd-logging
+      version: v1
+  template:
+    metadata:
+      labels:
+        k8s-app: fluentd-logging
+        version: v1
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+        - name: fluentd
+          image: localhost:5000/jakewright/home-automation-fluentd:latest
+          imagePullPolicy: Always
+          env:
+            - name: "MONGO_HOST"
+              value: "192.168.64.1"
+            - name: "MONGO_PORT"
+              value: "27017"
+            - name: "MONGO_USERNAME"
+              value: "fluentd"
+            - name: "MONGO_PASSWORD"
+              value: "fluentd"
+            - name: "MONGO_DATABASE"
+              value: "home_automation_logs"
+            - name: "MONGO_COLLECTION"
+              value: "logs"
+
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
