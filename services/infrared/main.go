@@ -13,7 +13,10 @@ func main() {
 		Firehose:    true,
 	})
 
-	r := routes.NewRouter(svc)
+	r := routes.Register(svc, &routes.Controller{
+		Repository: nil,
+		IR:         nil,
+	})
 
 	svc.Run(r)
 }

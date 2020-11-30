@@ -1,31 +1,31 @@
 package ir
 
 import (
-	"bytes"
 	"context"
-	"os/exec"
 	"time"
 
 	"github.com/jakewright/home-automation/libraries/go/distsync"
-	"github.com/jakewright/home-automation/libraries/go/oops"
+	lircproxydef "github.com/jakewright/home-automation/services/lirc-proxy/def"
 )
 
-type Instruction func(context.Context) error
+type Instruction func(context.Context, lircproxydef.LircProxyService) error
 
 func Wait(ms int) Instruction {
-	return func(context.Context) error {
+	return func(context.Context, lircproxydef.LircProxyService) error {
 		time.Sleep(time.Millisecond * time.Duration(ms))
 		return nil
 	}
 }
 
 func Key(device, key string) Instruction {
-	return func(ctx context.Context) error {
+	return func(ctx context.Context, lirc lircproxydef.LircProxyService) error {
 		return send(ctx, device, key)
 	}
 }
 
-type IRSend struct{}
+type IRSend struct {
+	LIRC lircproxydef.LircProxyService
+}
 
 func (s *IRSend) Execute(ctx context.Context, ins []Instruction) error {
 	// dsync will take care of time outs
@@ -45,18 +45,15 @@ func (s *IRSend) Execute(ctx context.Context, ins []Instruction) error {
 	return nil
 }
 
-func send(ctx context.Context, device, key string) error {
-	cmd := exec.CommandContext(ctx, "irsend", "SEND_ONCE", device, key)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &stdout, &stderr
-	if err := cmd.Run(); err != nil {
-		return oops.WithMessage(err, "failed to run `irsend SEND_ONCE %s %s`", device, key)
+func send(
+	ctx context.Context,
+	lirc lircproxydef.LircProxyService,
+	device, key string,
+) error {
+	if _, err := lirc.SendOnce(ctx, &lircproxydef.SendOnceRequest{
+		Device: device,
+		Key:    key,
+	}).Wait(); err != nil {
+		return
 	}
-
-	// Assume anything written to stderr is a bad thing
-	if stderr.Len() > 0 {
-		return oops.InternalService("irsend wrote to stderr: %s", stderr.String())
-	}
-
-	return nil
 }
