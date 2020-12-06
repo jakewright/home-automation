@@ -38,7 +38,12 @@ type dockerConfig struct {
 }
 
 type kubernetesConfig struct {
-	Manifests []string `yaml:"manifests"`
+	Manifests []string               `yaml:"manifests"`
+	Args      kubernetesManifestArgs `yaml:"args"`
+}
+
+type kubernetesManifestArgs struct {
+	NodePort int `yaml:"node_port"`
 }
 
 type service struct {
@@ -124,8 +129,12 @@ func Init(filename string) (err error) {
 		}
 
 		var k8sManifests []string
+		var k8sManifestArgs *KubernetesManifestArgs
 		if s.Kubernetes != nil {
 			k8sManifests = s.Kubernetes.Manifests
+			k8sManifestArgs = &KubernetesManifestArgs{
+				nodePort: s.Kubernetes.Args.NodePort,
+			}
 		}
 
 		services[name] = &Service{
@@ -140,6 +149,7 @@ func Init(filename string) (err error) {
 			},
 			kubernetes: &KubernetesConfig{
 				manifests: k8sManifests,
+				args:      k8sManifestArgs,
 			},
 		}
 	}

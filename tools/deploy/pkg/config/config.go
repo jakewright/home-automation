@@ -121,6 +121,7 @@ func (d *DockerConfig) Args() map[string]string {
 // KubernetesConfig holds options related to a Kubernetes deployment
 type KubernetesConfig struct {
 	manifests []string
+	args      *KubernetesManifestArgs
 }
 
 // Manifests returns the paths of the Kubernetes manifest files
@@ -130,6 +131,29 @@ func (k *KubernetesConfig) Manifests() []string {
 	}
 
 	return k.manifests
+}
+
+// ManifestArgs returns data that should be given to the manifest template
+func (k *KubernetesConfig) ManifestArgs() *KubernetesManifestArgs {
+	if k == nil {
+		return nil
+	}
+
+	return k.args
+}
+
+// KubernetesManifestArgs holds data that should be given to the manifest template
+type KubernetesManifestArgs struct {
+	nodePort int
+}
+
+// NodePort returns a non-zero int if a custom node port is set in the manifest args
+func (a *KubernetesManifestArgs) NodePort() int {
+	if a == nil {
+		return 0
+	}
+
+	return a.nodePort
 }
 
 // Service is the microservice to be deployed

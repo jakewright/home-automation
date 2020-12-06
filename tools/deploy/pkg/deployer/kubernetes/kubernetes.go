@@ -59,6 +59,8 @@ type manifestTemplateData struct {
 	// access in the pods that it targets
 	ContainerPort int
 
+	NodePort int
+
 	// Config is a map of environment variables that the
 	// service should have at runtime
 	Config map[string]string
@@ -131,6 +133,7 @@ func (k *Kubernetes) Deploy(revision string) error {
 		DeploymentTimestamp: time.Now().Format(time.RFC3339),
 		ServicePort:         80,
 		ContainerPort:       80, // Might be overridden below
+		NodePort:            k.Service.Kubernetes().ManifestArgs().NodePort(),
 		Config:              make(map[string]string),
 	}
 
