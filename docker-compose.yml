@@ -72,7 +72,7 @@ services:
   api-gateway:
     image: jakewright/drawbridge
     volumes:
-      - ./service.api-gateway/config.dev.yaml:/config/config.yaml
+      - ./services/api-gateway/config.dev.yaml:/config/config.yaml
     ports:
       - 7005:80
 
