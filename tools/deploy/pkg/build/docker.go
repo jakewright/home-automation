@@ -179,11 +179,12 @@ func compareDockerfileArgs(dockerfileContent string, givenArgs env.Environment) 
 		}
 	}
 
-	for _, arg := range givenArgs {
-		if _, ok := requiredArgs[arg.Name]; !ok {
-			return oops.InternalService("arg %q specified but not required by Dockerfile", arg)
-		}
-	}
+	// TODO: support default args that aren't always required, like "revision".
+	// for _, arg := range givenArgs {
+	// 	if _, ok := requiredArgs[arg.Name]; !ok {
+	// 		return oops.InternalService("arg %q specified but not required by Dockerfile", arg)
+	// 	}
+	// }
 
 	return nil
 }
