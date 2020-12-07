@@ -9,3 +9,14 @@ apis:
         enabled: true
         config:
           attempts: 3
+
+  dmx:
+    name: DMX Controller
+    prefix: dmx
+    upstream_url: http://dmx
+    allow_cross_origin: true
+    plugins:
+      - name: retry
+          enabled: true
+          config:
+            attempts: 3
