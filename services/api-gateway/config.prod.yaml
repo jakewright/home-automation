@@ -17,6 +17,6 @@ apis:
     allow_cross_origin: true
     plugins:
       - name: retry
-          enabled: true
-          config:
-            attempts: 3
+        enabled: true
+        config:
+          attempts: 3
